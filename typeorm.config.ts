@@ -1,14 +1,15 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { getEnv } from './src/util/constants';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: process.env.POSTGRES_HOST,
-  port: Number(process.env.POSTGRES_PORT),
-  username: process.env.POSTGRES_USERNAME,
+  host: getEnv('POSTGRES_HOST'),
+  port: Number(getEnv('POSTGRES_PORT')),
+  username: getEnv('POSTGRES_USERNAME'),
   namingStrategy: new SnakeNamingStrategy(),
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DB,
+  password: getEnv('POSTGRES_PASSWORD'),
+  database: getEnv('POSTGRES_DB'),
   logging: false,
   entities: ['./src/rdb/entities/**/*.entity.ts'],
   uuidExtension: 'pgcrypto',

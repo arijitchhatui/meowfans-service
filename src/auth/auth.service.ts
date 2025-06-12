@@ -1,8 +1,8 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import bcryptjs from 'bcryptjs';
+import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
-import moment from 'moment';
+import * as moment from 'moment';
 import { UsersEntity } from 'src/rdb/entities';
 import { UserProfilesRepository, UsersRepository } from 'src/rdb/repositories';
 import { JwtUser } from './decorators/current-user.decorator';
