@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthGuard } from '@nestjs/passport';
-import { ExtractJwt } from 'passport-jwt';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { AuthGuardStrategyMapping } from '../constants';
 import { JwtUser } from '../decorators';
 
 @Injectable()
-export class JwtStrategy extends AuthGuard(AuthGuardStrategyMapping.JWT) {
+export class JwtStrategy extends PassportStrategy(Strategy, AuthGuardStrategyMapping.JWT) {
   constructor(
     configService: ConfigService,
     private authService: AuthService,
