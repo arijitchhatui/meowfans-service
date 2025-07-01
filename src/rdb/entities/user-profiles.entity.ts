@@ -5,10 +5,12 @@ import {
   Entity,
   Index,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PostsEntity } from './posts.entity';
 import { UsersEntity } from './users.entity';
 
 @ObjectType()
@@ -25,6 +27,10 @@ export class UserProfilesEntity {
   user: UsersEntity;
 
   @Field()
+  @OneToMany(() => PostsEntity, (post) => post.userProfile, { cascade: true })
+  posts: PostsEntity[];
+
+  @Field()
   @Column()
   fullName: string;
 
@@ -32,19 +38,19 @@ export class UserProfilesEntity {
   @Column()
   username: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ nullable: true })
   bio: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ nullable: true })
   avatarUrl: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ nullable: true })
   bannerUrl: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ nullable: true })
   websiteUrl: string;
 
