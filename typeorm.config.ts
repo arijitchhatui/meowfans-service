@@ -12,6 +12,7 @@ export const dataSourceOptions: DataSourceOptions = {
   database: getEnv('POSTGRES_DB'),
   logging: false,
   entities: ['./src/rdb/entities/**/*.entity.ts'],
+  migrations: ['./src/rdb/migrations/**/*.ts'],
   uuidExtension: 'pgcrypto',
   synchronize: false,
 };
