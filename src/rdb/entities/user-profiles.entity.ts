@@ -2,15 +2,14 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   JoinColumn,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PostsEntity } from './posts.entity';
 import { UsersEntity } from './users.entity';
 
 @ObjectType()
@@ -27,10 +26,6 @@ export class UserProfilesEntity {
   user: UsersEntity;
 
   @Field()
-  @OneToMany(() => PostsEntity, (post) => post.userProfile, { cascade: true })
-  posts: PostsEntity[];
-
-  @Field()
   @Column()
   fullName: string;
 
@@ -40,23 +35,18 @@ export class UserProfilesEntity {
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  bio: string;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
   avatarUrl: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
   bannerUrl: string;
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  websiteUrl: string;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date;
 }
