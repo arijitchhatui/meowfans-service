@@ -10,30 +10,27 @@ import {
 } from 'typeorm';
 import { UserProfilesEntity } from './user-profiles.entity';
 
-@Entity({ name: 'post_comments' })
-export class PostCommentsEntity {
+@Entity({ name: 'group_replies' })
+export class MessageRepliesEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  comment: string;
+  messageId: string;
 
   @Column()
-  userId: string;
-
-  @Column()
-  postId: string;
+  replierId: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ nullable: true })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
   @JoinColumn({ name: 'user_id' })
-  @ManyToOne(() => UserProfilesEntity, ({ postComments }) => postComments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserProfilesEntity, ({ messageReplies }) => messageReplies, { onDelete: 'CASCADE' })
   userProfile: UserProfilesEntity;
 }

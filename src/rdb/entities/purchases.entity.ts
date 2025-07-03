@@ -1,21 +1,24 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserProfilesEntity } from './user-profiles.entity';
 
-@Entity({ name: 'post_likes' })
-export class PostLikesEntity {
+@Entity({ name: 'purchases' })
+export class PurchasesEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  postId: string;
+  type: string;
 
   @Column()
-  userId: string;
+  relatedEntityId: string;
+
+  @Column()
+  fanId: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  purchasedAt: Date;
 
-  @JoinColumn({ name: 'user_id' })
-  @ManyToOne(() => UserProfilesEntity, ({ postLikes }) => postLikes, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
+  @ManyToOne(() => UserProfilesEntity, ({ purchases }) => purchases, { onDelete: 'CASCADE' })
   userProfile: UserProfilesEntity;
 }

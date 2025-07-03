@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { CreatorProfilesEntity } from './creator-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'posts' })
@@ -21,6 +21,9 @@ export class PostsEntity {
   @Field()
   @Column()
   caption: string;
+
+  @Column()
+  creatorId: string;
 
   @Field()
   @Column()
@@ -55,7 +58,7 @@ export class PostsEntity {
   deletedAt: Date;
 
   @Field()
-  @ManyToOne(() => UserProfilesEntity, { onDelete: 'CASCADE' })
-  @JoinColumn()
-  userProfile: UserProfilesEntity;
+  @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.posts, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'creator_id' })
+  creatorProfile: CreatorProfilesEntity;
 }

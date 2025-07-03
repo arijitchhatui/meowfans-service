@@ -1,7 +1,16 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'post_saves' })
-export class SavesEntity {
+export class PostSavesEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -16,4 +25,8 @@ export class SavesEntity {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @JoinColumn({ name: 'user_id' })
+  @ManyToOne(() => UserProfilesEntity, ({ postSaves }) => postSaves, { onDelete: 'CASCADE' })
+  userProfile: UserProfilesEntity;
 }

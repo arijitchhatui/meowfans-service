@@ -4,14 +4,15 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
-@Entity({ name: 'message_channels' })
-export class MessageChannelsEntity {
+@Entity({ name: 'social_accounts' })
+export class SocialAccountsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -19,37 +20,27 @@ export class MessageChannelsEntity {
   creatorId: string;
 
   @Column()
-  fanId: string;
+  faceBook: string;
 
   @Column()
-  creatorLastSeenAt: Date;
+  twitter: string;
 
   @Column()
-  fanLastSeenAt: Date;
+  instagram: string;
 
   @Column()
-  creatorLastSentAt: Date;
-
-  @Column()
-  fanLastSentAt: Date;
-
-  @Column()
-  isPinned: boolean;
-
-  @Column()
-  label: string;
+  website: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
+  @OneToOne(() => UserProfilesEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
-  @ManyToOne(() => CreatorProfilesEntity, ({ channels }) => channels, { onDelete: 'CASCADE' })
   creatorProfile: CreatorProfilesEntity;
-
-  @JoinColumn({ name: 'fan_id' })
-  @ManyToOne(() => UserProfilesEntity, ({ channels }) => channels, { onDelete: 'CASCADE' })
-  userProfile: UserProfilesEntity;
 }

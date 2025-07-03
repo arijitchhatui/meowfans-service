@@ -6,11 +6,12 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 
-@Entity({ name: 'creator_assets' })
-export class CreatorAssetsEntity {
+@Entity({ name: 'subscription_plans' })
+export class SubscriptionPlansEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -18,15 +19,27 @@ export class CreatorAssetsEntity {
   creatorId: string;
 
   @Column()
-  assetId: string;
+  description: string;
+
+  @Column()
+  tier: string;
+
+  @Column()
+  price: number;
+
+  @Column()
+  bannerUrl: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  subscribedAt: Date;
+
+  @UpdateDateColumn()
+  syncedAt: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
   @JoinColumn({ name: 'creator_id' })
-  @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.creatorAssets, { onDelete: 'CASCADE' })
+  @ManyToOne(() => CreatorProfilesEntity, ({ subscriptionPlans }) => subscriptionPlans, { onDelete: 'CASCADE' })
   creatorProfile: CreatorProfilesEntity;
 }
