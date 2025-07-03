@@ -1,4 +1,13 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'fan_assets' })
 export class FanAssetsEntity {
@@ -16,4 +25,8 @@ export class FanAssetsEntity {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
+
+  @JoinColumn({ name: 'fan_id' })
+  @ManyToOne(() => UserProfilesEntity, ({ fanAssets }) => fanAssets, { onDelete: 'CASCADE' })
+  userProfile: UserProfilesEntity;
 }

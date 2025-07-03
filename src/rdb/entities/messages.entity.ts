@@ -9,13 +9,14 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'messages' })
 export class MessagesEntity {
   @Field()
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Field()
@@ -23,10 +24,10 @@ export class MessagesEntity {
   content: string;
 
   @Column()
-  senderId: string;
+  creatorId: string;
 
   @Column()
-  receiverId: string;
+  fanId: string;
 
   @Column()
   channelId: string;
@@ -39,11 +40,12 @@ export class MessagesEntity {
   @Column({ default: false })
   isExclusive: boolean;
 
-  @Column({ default: null })
-  repliedTo: string;
+  @ManyToOne(() => MessagesEntity, { nullable: true })
+  @JoinColumn({ name: 'replied_to' })
+  repliedTo?: MessagesEntity;
 
   @Field()
-  @Column({ default: null })
+  @Column({ default: null, type: 'timestamp' })
   unlockedAt: Date;
 
   @Field()
@@ -59,7 +61,11 @@ export class MessagesEntity {
   deletedAt: Date;
 
   @Field()
-  @ManyToOne(() => UserProfilesEntity, { onDelete: 'CASCADE' })
-  @JoinColumn()
+  @ManyToOne(() => UserProfilesEntity, ({ messages }) => messages, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
   userProfile: UserProfilesEntity;
+
+  @JoinColumn({ name: 'creator_id' })
+  @ManyToOne(() => CreatorProfilesEntity, ({ messages }) => messages, { onDelete: 'CASCADE' })
+  creatorProfile: CreatorProfilesEntity;
 }

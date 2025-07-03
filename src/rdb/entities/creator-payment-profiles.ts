@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { CreatorProfilesEntity } from './creator-profiles.entity';
 
 @Entity({ name: 'creator_payment_profiles' })
 export class CreatorPaymentProfiles {
@@ -16,4 +17,8 @@ export class CreatorPaymentProfiles {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @JoinColumn({ name: 'creator_id' })
+  @OneToOne(() => CreatorProfilesEntity, ({ paymentProfile }) => paymentProfile, { onDelete: 'CASCADE' })
+  creatorProfile: CreatorProfilesEntity;
 }

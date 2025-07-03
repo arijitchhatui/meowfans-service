@@ -1,4 +1,4 @@
-export const env = {
+export const envs = {
   PORT: process.env.PORT || '',
   ENABLE_DEV_TOOLS: process.env.ENABLE_DEV_TOOLS || '',
   NODE_ENV: process.env.NODE_ENV || '',
@@ -12,5 +12,5 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET || '',
 };
 
-type envKeys = keyof typeof env;
-export const getEnv = (key: envKeys) => env[key];
+type envKeys = keyof typeof envs;
+export const getConfigService = (key: envKeys) => envs[key];

@@ -1,7 +1,16 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'post_shares' })
-export class SharesEntity {
+export class PostSharesEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -16,4 +25,8 @@ export class SharesEntity {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
+
+  @JoinColumn({ name: 'user_id' })
+  @ManyToOne(() => UserProfilesEntity, ({ postShares }) => postShares, { onDelete: 'CASCADE' })
+  userProfile: UserProfilesEntity;
 }

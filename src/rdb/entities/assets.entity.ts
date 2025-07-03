@@ -1,4 +1,14 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { CreatorProfilesEntity } from './creator-profiles.entity';
 
 @Entity({ name: 'assets' })
 export class AssetsEntity {
@@ -14,6 +24,18 @@ export class AssetsEntity {
   @Column()
   creatorId: string;
 
+  @Column()
+  type: string;
+
+  @Column()
+  mimeType: string;
+
+  @Column()
+  contentType: string;
+
+  @Column({ default: false })
+  isVideo: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -22,4 +44,8 @@ export class AssetsEntity {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
+
+  @JoinColumn({ name: 'creator_id' })
+  @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.assets, { onDelete: 'CASCADE' })
+  creatorProfile: CreatorProfilesEntity;
 }

@@ -10,30 +10,48 @@ import {
 } from 'typeorm';
 import { UserProfilesEntity } from './user-profiles.entity';
 
-@Entity({ name: 'post_comments' })
-export class PostCommentsEntity {
+@Entity({ name: 'group_messages' })
+export class GroupMessagesEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  comment: string;
+  groupId: string;
 
   @Column()
-  userId: string;
+  senderId: string;
 
   @Column()
-  postId: string;
+  receiversId: string[];
+
+  @Column()
+  message: string;
+
+  @Column()
+  isExclusive: boolean;
+
+  @Column()
+  isPinned: boolean;
+
+  @Column()
+  price: number;
+
+  @Column()
+  isCreator: boolean;
+
+  @Column()
+  repliedTo: GroupMessagesEntity;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ nullable: true })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
   @JoinColumn({ name: 'user_id' })
-  @ManyToOne(() => UserProfilesEntity, ({ postComments }) => postComments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserProfilesEntity, ({ groupMessages }) => groupMessages, { onDelete: 'CASCADE' })
   userProfile: UserProfilesEntity;
 }

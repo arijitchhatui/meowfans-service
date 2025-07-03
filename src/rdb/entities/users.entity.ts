@@ -18,10 +18,6 @@ export class UsersEntity {
   @Field()
   id: string;
 
-  @Field(() => UserProfilesEntity)
-  @OneToOne(() => UserProfilesEntity, (userProfile) => userProfile.user, { cascade: true })
-  userProfile: UserProfilesEntity;
-
   @Field()
   @Index()
   @Column({ unique: true })
@@ -43,4 +39,8 @@ export class UsersEntity {
 
   @DeleteDateColumn()
   deletedAt: Date | null;
+
+  @Field(() => UserProfilesEntity)
+  @OneToOne(() => UserProfilesEntity, (userProfile) => userProfile.user, { cascade: true })
+  userProfile: UserProfilesEntity;
 }
