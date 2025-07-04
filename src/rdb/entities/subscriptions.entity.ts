@@ -5,10 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CreatorPaymentProfilesEntity } from './creator-payment-profiles.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { SubscriptionPlansEntity } from './subscription-plans.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'subscriptions' })
@@ -46,11 +49,21 @@ export class SubscriptionsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
+  @ManyToOne(() => CreatorPaymentProfilesEntity, (creatorPaymentProfile) => creatorPaymentProfile.subscriptions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'creator_payment_profile_id' })
-  @ManyToOne(() => CreatorProfilesEntity, ({ subscriptions }) => subscriptions, { onDelete: 'CASCADE' })
+  creatorPaymentProfile: CreatorPaymentProfilesEntity;
+
+  @ManyToOne(() => UserProfilesEntity, ({ subscriptions }) => subscriptions, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'subscriber_id' })
+  userProfile: UserProfilesEntity;
+
+  @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.subscriptions, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @JoinColumn({ name: 'subscriber_id' })
-  @ManyToOne(() => UserProfilesEntity, ({ subscriptions }) => subscriptions, { onDelete: 'CASCADE' })
-  userProfile: UserProfilesEntity;
+  @OneToOne(() => SubscriptionPlansEntity, { cascade: true })
+  @JoinColumn({ name: 'subscription_plan_id' })
+  subscriptionPlan: SubscriptionPlansEntity;
 }

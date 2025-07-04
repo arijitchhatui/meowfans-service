@@ -16,27 +16,28 @@ import { CreatorBlocksEntity } from './creator-blocks.entity';
 import { CreatorFollowsEntity } from './creator-follows.entity';
 import { CreatorRestrictsEntity } from './creator-restricts.entity';
 import { FanAssetsEntity } from './fan-assets.entity';
-import { FanPaymentProfilesEntity } from './fan-payment-profiles';
+import { FanPaymentProfilesEntity } from './fan-payment-profiles.entity';
+import { GroupMessageRepliesEntity } from './group-message-replies.entity';
 import { GroupMessagesEntity } from './group-messages.entity';
-import { GroupRepliesEntity } from './group-replies.entity';
 import { GroupsEntity } from './groups.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
+import { MessagePurchasesEntity } from './message-purchases.entity';
 import { MessageRepliesEntity } from './message-replies.entity';
 import { MessagesEntity } from './messages.entity';
 import { PaymentsEntity } from './payments.entity';
 import { PostCommentsEntity } from './post-comments.entity';
 import { PostLikesEntity } from './post-likes.entity';
+import { PostPurchasesEntity } from './post-purchases.entity';
 import { PostSavesEntity } from './post-saves.entity';
 import { PostSharesEntity } from './post-shares.entity';
-import { PurchasesEntity } from './purchases.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 import { UsersEntity } from './users.entity';
 
 @ObjectType()
 @Entity({ name: 'user_profiles' })
 export class UserProfilesEntity {
-  @PrimaryGeneratedColumn('uuid')
   @Field(() => String)
+  @PrimaryGeneratedColumn('uuid')
   userId: string;
 
   @Field()
@@ -97,19 +98,19 @@ export class UserProfilesEntity {
   @OneToMany(() => FanAssetsEntity, ({ userProfile }) => userProfile, { cascade: true })
   fanAssets: FanAssetsEntity[];
 
-  @OneToMany(() => GroupMessagesEntity, ({ userProfile }) => userProfile, { cascade: true })
-  groupMessages: GroupMessagesEntity[];
+  @ManyToMany(() => GroupMessagesEntity, (userProfile) => userProfile.receivers, { cascade: true })
+  groupReceivers: GroupMessagesEntity[];
 
   @OneToMany(() => SubscriptionsEntity, ({ userProfile }) => userProfile, { cascade: true })
   subscriptions: SubscriptionsEntity[];
 
-  @OneToMany(() => PurchasesEntity, ({ userProfile }) => userProfile, { cascade: true })
-  purchases: PurchasesEntity[];
+  @OneToMany(() => PostPurchasesEntity, (purchases) => purchases.userProfile, { cascade: true })
+  postPurchases: PostPurchasesEntity[];
 
-  @OneToMany(() => GroupRepliesEntity, ({ userProfile }) => userProfile, { cascade: true })
-  groupReplies: GroupRepliesEntity[];
+  @ManyToMany(() => GroupMessageRepliesEntity, (groupMessageReplies) => groupMessageReplies.repliers, { cascade: true })
+  groupMessageReplies: GroupMessageRepliesEntity[];
 
-  @OneToMany(() => MessageRepliesEntity, ({ userProfile }) => userProfile, { cascade: true })
+  @OneToMany(() => MessageRepliesEntity, (messageReplies) => messageReplies.userProfile, { cascade: true })
   messageReplies: MessageRepliesEntity[];
 
   @OneToMany(() => PostSharesEntity, ({ userProfile }) => userProfile, { cascade: true })
@@ -126,4 +127,7 @@ export class UserProfilesEntity {
 
   @OneToMany(() => MessagesEntity, ({ userProfile }) => userProfile, { cascade: true })
   messages: MessagesEntity[];
+
+  @OneToMany(() => MessagePurchasesEntity, ({ userProfile }) => userProfile, { cascade: true })
+  messagePurchases: MessagePurchasesEntity[];
 }

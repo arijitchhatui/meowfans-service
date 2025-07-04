@@ -1,8 +1,9 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserProfilesEntity } from './user-profiles.entity';
+import { PostsEntity } from './posts.entity';
 
 @Entity({ name: 'purchases' })
-export class PurchasesEntity {
+export class PostPurchasesEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -18,7 +19,11 @@ export class PurchasesEntity {
   @CreateDateColumn()
   purchasedAt: Date;
 
+  @ManyToOne(() => UserProfilesEntity, ({ postPurchases }) => postPurchases, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fan_id' })
-  @ManyToOne(() => UserProfilesEntity, ({ purchases }) => purchases, { onDelete: 'CASCADE' })
   userProfile: UserProfilesEntity;
+
+  @ManyToOne(() => PostsEntity, ({ postPurchases }) => postPurchases, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'post_id' })
+  post: PostsEntity;
 }

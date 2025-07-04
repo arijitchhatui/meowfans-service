@@ -5,10 +5,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { SubscriptionsEntity } from './subscriptions.entity';
 
 @Entity({ name: 'subscription_plans' })
 export class SubscriptionPlansEntity {
@@ -39,7 +41,10 @@ export class SubscriptionPlansEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @JoinColumn({ name: 'creator_id' })
   @ManyToOne(() => CreatorProfilesEntity, ({ subscriptionPlans }) => subscriptionPlans, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
+
+  @OneToOne(() => SubscriptionsEntity, { onDelete: 'CASCADE' })
+  subscription: SubscriptionsEntity;
 }

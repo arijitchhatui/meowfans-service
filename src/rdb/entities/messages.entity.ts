@@ -6,10 +6,17 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { MessageAssetsEntity } from './message-assets.entity';
+import { MessageChannelsEntity } from './message-channels.entity';
+import { MessagePurchasesEntity } from './message-purchases.entity';
+import { MessageReactionsEntity } from './message-reactions.entity';
+import { MessageRepliesEntity } from './message-replies.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
@@ -61,11 +68,27 @@ export class MessagesEntity {
   deletedAt: Date;
 
   @Field()
-  @ManyToOne(() => UserProfilesEntity, ({ messages }) => messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fan_id' })
+  @ManyToOne(() => UserProfilesEntity, (userProfile) => userProfile.messages, { onDelete: 'CASCADE' })
   userProfile: UserProfilesEntity;
 
+  @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
-  @ManyToOne(() => CreatorProfilesEntity, ({ messages }) => messages, { onDelete: 'CASCADE' })
   creatorProfile: CreatorProfilesEntity;
+
+  @OneToMany(() => MessageRepliesEntity, (replies) => replies.message, { cascade: true })
+  replies: MessageRepliesEntity[];
+
+  @OneToOne(() => MessageReactionsEntity, { cascade: true })
+  reaction: MessageReactionsEntity;
+
+  @OneToMany(() => MessagePurchasesEntity, (messagePurchases) => messagePurchases.message, { cascade: true })
+  messagePurchases: MessagePurchasesEntity[];
+
+  @ManyToOne(() => MessageChannelsEntity, (channels) => channels.messages, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'channel_id' })
+  channel: MessageChannelsEntity;
+
+  @OneToMany(() => MessageAssetsEntity, (messageAsset) => messageAsset.message, { cascade: true })
+  messageAssets: MessageAssetsEntity[];
 }

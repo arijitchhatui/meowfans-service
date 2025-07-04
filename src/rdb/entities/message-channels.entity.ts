@@ -5,9 +5,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { MessagesEntity } from './messages.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'message_channels' })
@@ -45,11 +47,14 @@ export class MessageChannelsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @JoinColumn({ name: 'creator_id' })
   @ManyToOne(() => CreatorProfilesEntity, ({ channels }) => channels, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @JoinColumn({ name: 'fan_id' })
   @ManyToOne(() => UserProfilesEntity, ({ channels }) => channels, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
   userProfile: UserProfilesEntity;
+
+  @OneToMany(() => MessagesEntity, (message) => message.channel, { cascade: true })
+  messages: MessagesEntity[];
 }

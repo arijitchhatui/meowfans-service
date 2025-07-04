@@ -46,11 +46,11 @@ export class PaymentsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @JoinColumn({ name: 'creator_id' })
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.payments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @JoinColumn({ name: 'fan_id' })
   @ManyToOne(() => UserProfilesEntity, ({ payments }) => payments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
   userProfile: UserProfilesEntity;
 }

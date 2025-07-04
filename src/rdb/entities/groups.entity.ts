@@ -7,9 +7,11 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { GroupMessagesEntity } from './group-messages.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'groups' })
@@ -20,8 +22,8 @@ export class GroupsEntity {
   @Column()
   adminId: string;
 
-  @JoinColumn({ name: 'admin_id' })
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.groups)
+  @JoinColumn({ name: 'admin_id' })
   admin: CreatorProfilesEntity;
 
   @Column()
@@ -72,4 +74,7 @@ export class GroupsEntity {
     inverseJoinColumn: { name: 'user_id' },
   })
   moderators: UserProfilesEntity[];
+
+  @OneToMany(() => GroupMessagesEntity, (groupMessages) => groupMessages.group, { cascade: true })
+  groupMessages: GroupMessagesEntity[];
 }
