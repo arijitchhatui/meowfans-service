@@ -1,7 +1,8 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class SignupInput {
+  @IsEmail()
   @IsNotEmpty()
   @Transform(({ value }) => value.toLowerCase())
   email: string;

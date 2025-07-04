@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { IsEmail } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -20,6 +21,7 @@ export class UsersEntity {
 
   @Field()
   @Index()
+  @IsEmail()
   @Column({ unique: true })
   email: string;
 

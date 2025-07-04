@@ -11,6 +11,7 @@ import { LoginInput } from './dto/login.dto';
 import { SignupInput } from './dto/signup.dto';
 
 const jwtVersion = 'v1';
+const salt = 10;
 
 @Injectable()
 export class AuthService {
@@ -41,7 +42,7 @@ export class AuthService {
 
     const userEntity = this.usersRepository.create({
       email: input.email,
-      password: await bcryptjs.hash(input.password, 10),
+      password: await bcryptjs.hash(input.password, salt),
       userProfile: this.userProfilesRepository.create({
         fullName: input.fullName,
         username: username,
