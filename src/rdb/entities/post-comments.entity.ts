@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserProfilesEntity } from './user-profiles.entity';
+import { PostsEntity } from './posts.entity';
 
 @Entity({ name: 'post_comments' })
 export class PostCommentsEntity {
@@ -33,7 +34,11 @@ export class PostCommentsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @JoinColumn({ name: 'user_id' })
   @ManyToOne(() => UserProfilesEntity, ({ postComments }) => postComments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   userProfile: UserProfilesEntity;
+
+  @ManyToOne(() => PostsEntity, ({ postComments }) => postComments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'post_id' })
+  post: PostsEntity;
 }

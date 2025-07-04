@@ -5,10 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CreatorAssetsEntity } from './creator-assets.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { FanAssetsEntity } from './fan-assets.entity';
 
 @Entity({ name: 'assets' })
 export class AssetsEntity {
@@ -45,7 +48,13 @@ export class AssetsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @JoinColumn({ name: 'creator_id' })
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.assets, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
+
+  @OneToMany(() => FanAssetsEntity, (fanAssets) => fanAssets.asset, { cascade: true })
+  fanAssets: FanAssetsEntity[];
+
+  @OneToMany(() => CreatorAssetsEntity, (creatorAssets) => creatorAssets.asset, { cascade: true })
+  creatorAssets: CreatorAssetsEntity[];
 }

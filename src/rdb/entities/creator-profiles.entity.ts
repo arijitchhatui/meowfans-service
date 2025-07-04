@@ -16,8 +16,9 @@ import { CreatorAssetsEntity } from './creator-assets.entity';
 import { CreatorBlocksEntity } from './creator-blocks.entity';
 import { CreatorFollowsEntity } from './creator-follows.entity';
 import { CreatorInterfacesEntity } from './creator-interfaces.entity';
-import { CreatorPaymentProfiles } from './creator-payment-profiles';
+import { CreatorPaymentProfilesEntity } from './creator-payment-profiles.entity';
 import { CreatorRestrictsEntity } from './creator-restricts.entity';
+import { GroupMessagesEntity } from './group-messages.entity';
 import { GroupsEntity } from './groups.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
 import { MessagesEntity } from './messages.entity';
@@ -127,8 +128,8 @@ export class CreatorProfilesEntity {
   @OneToMany(() => PaymentsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   payments: PaymentsEntity[];
 
-  @OneToOne(() => CreatorPaymentProfiles, ({ creatorProfile }) => creatorProfile, { cascade: true })
-  paymentProfile: CreatorPaymentProfiles;
+  @OneToOne(() => CreatorPaymentProfilesEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
+  creatorPayMentProfile: CreatorPaymentProfilesEntity;
 
   @OneToMany(() => SubscriptionPlansEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   subscriptionPlans: SubscriptionPlansEntity[];
@@ -142,9 +143,12 @@ export class CreatorProfilesEntity {
   @OneToMany(() => MessagesEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   messages: MessagesEntity[];
 
-  @OneToMany(() => SubscriptionsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
+  @OneToOne(() => SocialAccountsEntity, { cascade: true })
+  socialAccount: SocialAccountsEntity;
+
+  @OneToMany(() => SubscriptionsEntity, (subscriptions) => subscriptions.creatorProfile, { cascade: true })
   subscriptions: SubscriptionsEntity[];
 
-  @OneToOne(() => SocialAccountsEntity, { cascade: true })
-  socialAccounts: SocialAccountsEntity;
+  @OneToMany(() => GroupMessagesEntity, (groupMessages) => groupMessages.creatorProfile, { cascade: true })
+  groupMessages: GroupMessagesEntity[];
 }

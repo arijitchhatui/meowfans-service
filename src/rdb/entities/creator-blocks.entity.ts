@@ -27,11 +27,11 @@ export class CreatorBlocksEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @JoinColumn({ name: 'blocking_creator_id' })
   @ManyToOne(() => CreatorProfilesEntity, ({ creatorBlocks }) => creatorBlocks, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'blocking_creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @JoinColumn({ name: 'blocked_user_id' })
   @ManyToOne(() => UserProfilesEntity, ({ blockedByCreators }) => blockedByCreators, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'blocked_user_id' })
   blockedUserProfile: UserProfilesEntity;
 }

@@ -4,10 +4,16 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { GroupMessageRepliesEntity } from './group-message-replies.entity';
+import { GroupsEntity } from './groups.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'group_messages' })
@@ -21,8 +27,13 @@ export class GroupMessagesEntity {
   @Column()
   senderId: string;
 
-  @Column()
-  receiversId: string[];
+  @ManyToMany(() => UserProfilesEntity, (userProfiles) => userProfiles.groupReceivers, { onDelete: 'CASCADE' })
+  @JoinTable({
+    name: 'group_receivers',
+    joinColumn: { name: 'group_message_id' },
+    inverseJoinColumn: { name: 'user_id' },
+  })
+  receivers: UserProfilesEntity[];
 
   @Column()
   message: string;
@@ -39,9 +50,6 @@ export class GroupMessagesEntity {
   @Column()
   isCreator: boolean;
 
-  @Column()
-  repliedTo: GroupMessagesEntity;
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -51,7 +59,16 @@ export class GroupMessagesEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @JoinColumn({ name: 'user_id' })
-  @ManyToOne(() => UserProfilesEntity, ({ groupMessages }) => groupMessages, { onDelete: 'CASCADE' })
-  userProfile: UserProfilesEntity;
+  @ManyToOne(() => GroupsEntity, (group) => group.groupMessages, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'group_id' })
+  group: GroupsEntity;
+
+  @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.groupMessages, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'sender_id' })
+  creatorProfile: CreatorProfilesEntity;
+
+  @OneToMany(() => GroupMessageRepliesEntity, (groupMessageReplies) => groupMessageReplies.groupMessage, {
+    cascade: true,
+  })
+  groupMessageReplies: GroupMessageRepliesEntity[];
 }

@@ -7,6 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { PostsEntity } from './posts.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @Entity({ name: 'post_shares' })
@@ -26,7 +27,11 @@ export class PostSharesEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @JoinColumn({ name: 'user_id' })
   @ManyToOne(() => UserProfilesEntity, ({ postShares }) => postShares, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   userProfile: UserProfilesEntity;
+
+  @ManyToOne(() => PostsEntity, ({ postShares }) => postShares, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'post_id' })
+  post: PostsEntity;
 }
