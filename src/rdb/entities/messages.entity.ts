@@ -30,12 +30,15 @@ export class MessagesEntity {
   @Column()
   content: string;
 
+  @Field()
   @Column()
   creatorId: string;
 
+  @Field()
   @Column()
   fanId: string;
 
+  @Field()
   @Column()
   channelId: string;
 
@@ -47,6 +50,7 @@ export class MessagesEntity {
   @Column({ default: false })
   isExclusive: boolean;
 
+  @Field(() => MessagesEntity)
   @ManyToOne(() => MessagesEntity, { nullable: true })
   @JoinColumn({ name: 'replied_to' })
   repliedTo?: MessagesEntity;
@@ -67,28 +71,34 @@ export class MessagesEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field()
+  @Field(() => UserProfilesEntity)
   @JoinColumn({ name: 'fan_id' })
   @ManyToOne(() => UserProfilesEntity, (userProfile) => userProfile.messages, { onDelete: 'CASCADE' })
   userProfile: UserProfilesEntity;
 
+  @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @OneToMany(() => MessageRepliesEntity, (replies) => replies.message, { cascade: true })
-  replies: MessageRepliesEntity[];
-
-  @OneToOne(() => MessageReactionsEntity, { cascade: true })
-  reaction: MessageReactionsEntity;
-
-  @OneToMany(() => MessagePurchasesEntity, (messagePurchases) => messagePurchases.message, { cascade: true })
-  messagePurchases: MessagePurchasesEntity[];
-
-  @ManyToOne(() => MessageChannelsEntity, (channels) => channels.messages, { onDelete: 'CASCADE' })
+  @Field(() => MessageChannelsEntity)
+  @ManyToOne(() => MessageChannelsEntity, (channel) => channel.messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'channel_id' })
   channel: MessageChannelsEntity;
 
+  @Field(() => [MessageRepliesEntity])
+  @OneToMany(() => MessageRepliesEntity, (replies) => replies.message, { cascade: true })
+  replies: MessageRepliesEntity[];
+
+  @Field(() => MessageReactionsEntity)
+  @OneToOne(() => MessageReactionsEntity, { cascade: true })
+  reaction: MessageReactionsEntity;
+
+  @Field(() => [MessagePurchasesEntity])
+  @OneToMany(() => MessagePurchasesEntity, (messagePurchases) => messagePurchases.message, { cascade: true })
+  messagePurchases: MessagePurchasesEntity[];
+
+  @Field(() => [MessageAssetsEntity])
   @OneToMany(() => MessageAssetsEntity, (messageAsset) => messageAsset.message, { cascade: true })
   messageAssets: MessageAssetsEntity[];
 }

@@ -10,7 +10,7 @@ export class UsersResolver {
 
   @Auth(GqlAuthGuard, [])
   @Query(() => UserProfilesEntity)
-  public getUserProfile(@Args('userId') userId: string) {
+  public getUserProfile(@CurrentUser() @Args('userId') userId: string) {
     return this.usersService.getUserProfile(userId);
   }
 
