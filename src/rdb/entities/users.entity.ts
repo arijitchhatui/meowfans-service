@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
@@ -30,7 +31,7 @@ export class UsersEntity {
 
   @Field()
   @Column({ default: false })
-  isAdmin: boolean;
+  isCreator: boolean;
 
   @Field()
   @CreateDateColumn()
@@ -47,4 +48,8 @@ export class UsersEntity {
   @Field(() => UserProfilesEntity)
   @OneToOne(() => UserProfilesEntity, (userProfile) => userProfile.user, { cascade: true })
   userProfile: UserProfilesEntity;
+
+  @Field(() => CreatorProfilesEntity)
+  @OneToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.user, { cascade: true })
+  creatorProfile: CreatorProfilesEntity;
 }

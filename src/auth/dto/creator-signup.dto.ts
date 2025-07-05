@@ -9,4 +9,13 @@ export class CreatorSignupInput {
 
   @IsNotEmpty()
   password: string;
+
+  @IsNotEmpty()
+  fullName: string;
+
+  @IsNotEmpty()
+  gender: string;
+
+  @IsNotEmpty()
+  region: string;
 }

@@ -30,7 +30,7 @@ import { SubscriptionsEntity } from './subscriptions.entity';
 import { UsersEntity } from './users.entity';
 
 @ObjectType()
-@Entity({ name: 'creator-profiles' })
+@Entity({ name: 'creator_profiles' })
 export class CreatorProfilesEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => String)
@@ -86,7 +86,7 @@ export class CreatorProfilesEntity {
   @Column({ default: 0 })
   totalSubscriber: number;
 
-  @Column()
+  @Column({ default: 'primary' })
   themeColor: string;
 
   @CreateDateColumn()
@@ -100,7 +100,7 @@ export class CreatorProfilesEntity {
 
   @Field(() => UsersEntity)
   @OneToOne(() => UsersEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'creator_id' })
   @Index()
   user: UsersEntity;
 

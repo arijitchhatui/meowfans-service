@@ -5,8 +5,10 @@ import { randomBytes, randomUUID } from 'crypto';
 import * as moment from 'moment';
 import { UsersEntity } from 'src/rdb/entities';
 import { UserProfilesRepository, UsersRepository } from 'src/rdb/repositories';
+import { CreatorProfilesRepository } from 'src/rdb/repositories/creator-profiles.repository';
 import { JwtUser } from './decorators/current-user.decorator';
 import { UserRoles } from './decorators/roles.decorator';
+import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { LoginInput } from './dto/login.dto';
 import { SignupInput } from './dto/signup.dto';
 
@@ -19,6 +21,7 @@ export class AuthService {
     private usersRepository: UsersRepository,
     private jwtService: JwtService,
     private userProfilesRepository: UserProfilesRepository,
+    private creatorProfilesRepository: CreatorProfilesRepository,
   ) {}
 
   async login(input: LoginInput) {
@@ -40,7 +43,7 @@ export class AuthService {
       .replace(/\s+/g, '')
       .replace(/[^a-z0-9]/g, '')}-${randomBytes(3).toString('hex')}`;
 
-    const userEntity = this.usersRepository.create({
+    const userProfileEntity = this.usersRepository.create({
       email: input.email,
       password: await bcryptjs.hash(input.password, salt),
       userProfile: this.userProfilesRepository.create({
@@ -48,9 +51,35 @@ export class AuthService {
         username: username,
       }),
     });
-    const user = await this.usersRepository.save(userEntity);
+    const user = await this.usersRepository.save(userProfileEntity);
 
     return this.createToken(user);
+  }
+
+  async creatorSignup(input: CreatorSignupInput) {
+    const userExists = await this.usersRepository.findOne({ where: { email: input.email } });
+    if (userExists) throw new ConflictException({ message: 'Email already exists!' });
+
+    const username = `${input.fullName
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9]/g, '')}-${randomBytes(3).toString('hex')}`;
+
+    const creatorProfileEntity = this.usersRepository.create({
+      email: input.email,
+      password: await bcryptjs.hash(input.password, salt),
+      isCreator: true,
+      creatorProfile: this.creatorProfilesRepository.create({
+        fullName: input.fullName,
+        gender: input.gender,
+        region: input.region,
+        username: username,
+      }),
+    });
+
+    const creator = await this.usersRepository.save(creatorProfileEntity);
+
+    return this.createToken(creator);
   }
 
   async getCurrentUser(jwtUser: JwtUser) {
@@ -60,6 +89,16 @@ export class AuthService {
       cache: true,
     });
     return userProfile;
+  }
+
+  async getOnboardingCreator(jwtUser: JwtUser) {
+    const creatorProfile = await this.creatorProfilesRepository.findOneOrFail({
+      where: { creatorId: jwtUser.sub },
+      relations: { user: true },
+      cache: true,
+    });
+
+    return creatorProfile;
   }
 
   validateJwt(jwtUser: JwtUser) {
@@ -72,7 +111,7 @@ export class AuthService {
       sub: user.id,
       jti: randomUUID(),
       version: jwtVersion,
-      roles: user.isAdmin ? [UserRoles.ADMIN] : [UserRoles.USER],
+      roles: user.isCreator ? [UserRoles.CREATOR] : [UserRoles.USER],
     } satisfies Partial<JwtUser>;
 
     return {

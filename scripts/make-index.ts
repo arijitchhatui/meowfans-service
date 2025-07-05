@@ -20,16 +20,16 @@ const makeIndex = async (directory: string) => {
 };
 
 const paths = [
-  // 'src/rdb/entities',
-  // 'src/rdb/repositories',
-  // 'src/util',
-  // 'src/users/dto',
-  // 'src/auth',
-  // 'src/auth/constants',
-  // 'src/auth/decorators',
-  // 'src/auth/dto',
-  // 'src/auth/guards',
-  // 'src/auth/strategies',
+  'src/rdb/entities',
+  'src/rdb/repositories',
+  'src/util',
+  'src/users/dto',
+  'src/auth',
+  'src/auth/constants',
+  'src/auth/decorators',
+  'src/auth/dto',
+  'src/auth/guards',
+  'src/auth/strategies',
 ];
 
 (async () => {

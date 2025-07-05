@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { Auth, CurrentUserExpanded, JwtUser } from './decorators';
 import { LoginInput, SignupInput } from './dto';
+import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { JwtAuthGuard } from './guards';
 
 @ApiTags('auth')
@@ -18,6 +19,11 @@ export class AuthController {
   @Post('/signup')
   async signup(@Body() body: SignupInput) {
     return this.authService.signup(body);
+  }
+
+  @Post('/onboarding')
+  async creatorSignup(@Body() body: CreatorSignupInput) {
+    return this.authService.creatorSignup(body);
   }
 
   @Auth(JwtAuthGuard, [])

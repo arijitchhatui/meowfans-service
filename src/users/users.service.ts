@@ -7,10 +7,6 @@ import { UpdateUserInput } from './dto';
 export class UsersService {
   public constructor(private userProfilesRepository: UserProfilesRepository) {}
 
-  public async getUserProfile(userId: string) {
-    return this.userProfilesRepository.findOneOrFail({ where: { userId }, relations: { user: true } });
-  }
-
   public async updateUserProfile(userId: string, input: UpdateUserInput) {
     const userProfile = await this.userProfilesRepository.findOneOrFail({
       where: { userId },

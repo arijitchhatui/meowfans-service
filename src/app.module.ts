@@ -3,10 +3,12 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { AuthModule } from './auth/auth.module';
-import { RdbModule } from './rdb/rdb.module';
-import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
+import { AuthModule } from './auth/auth.module';
+import { CreatorProfilesModule } from './creator-profiles/creator-profiles.module';
+import { RdbModule } from './rdb/rdb.module';
+import { UserProfilesModule } from './user-profiles/user-profiles.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -27,7 +29,10 @@ import { AppController } from './app.controller';
     }),
     AuthModule,
     UsersModule,
+    UserProfilesModule,
+    CreatorProfilesModule,
   ],
   controllers: [AppController],
+  providers: [],
 })
 export class AppModule {}
