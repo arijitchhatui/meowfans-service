@@ -23,10 +23,10 @@ export class AuthService {
 
   async login(input: LoginInput) {
     const user = await this.usersRepository.findOne({ where: { email: input.email } });
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException({ message: 'Invalid credentials!' });
 
     const isCorrect = await bcryptjs.compare(input.password, user.password);
-    if (!isCorrect) throw new UnauthorizedException();
+    if (!isCorrect) throw new UnauthorizedException({ message: 'Invalid credentials!' });
 
     return this.createToken(user);
   }
@@ -72,7 +72,7 @@ export class AuthService {
       sub: user.id,
       jti: randomUUID(),
       version: jwtVersion,
-      roles: user.isAdmin ? [UserRoles.USER] : [UserRoles.USER],
+      roles: user.isAdmin ? [UserRoles.ADMIN] : [UserRoles.USER],
     } satisfies Partial<JwtUser>;
 
     return {

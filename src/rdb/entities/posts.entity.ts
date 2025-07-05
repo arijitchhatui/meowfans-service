@@ -64,26 +64,32 @@ export class PostsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field()
+  @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.posts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
+  @Field(() => [PostLikesEntity])
   @OneToMany(() => PostLikesEntity, ({ post }) => post, { cascade: true })
   postLikes: PostLikesEntity[];
 
+  @Field(() => [PostAssetsEntity])
   @OneToMany(() => PostAssetsEntity, ({ post }) => post, { cascade: true })
   postAssets: PostAssetsEntity[];
 
+  @Field(() => [PostCommentsEntity])
   @OneToMany(() => PostCommentsEntity, ({ post }) => post, { cascade: true })
   postComments: PostCommentsEntity[];
 
+  @Field(() => [PostPurchasesEntity])
   @OneToMany(() => PostPurchasesEntity, ({ post }) => post, { cascade: true })
   postPurchases: PostPurchasesEntity[];
 
+  @Field(() => [PostSavesEntity])
   @OneToMany(() => PostSavesEntity, ({ post }) => post, { cascade: true })
   postSaves: PostSavesEntity[];
 
+  @Field(() => [PostSharesEntity])
   @OneToMany(() => PostSharesEntity, ({ post }) => post, { cascade: true })
   postShares: PostSharesEntity[];
 }

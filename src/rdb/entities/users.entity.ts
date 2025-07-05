@@ -25,7 +25,6 @@ export class UsersEntity {
   @Column({ unique: true })
   email: string;
 
-  @Field()
   @Column()
   password: string;
 
@@ -33,14 +32,17 @@ export class UsersEntity {
   @Column({ default: false })
   isAdmin: boolean;
 
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
-  deletedAt: Date | null;
+  @Field({ nullable: true })
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date;
 
   @Field(() => UserProfilesEntity)
   @OneToOne(() => UserProfilesEntity, (userProfile) => userProfile.user, { cascade: true })

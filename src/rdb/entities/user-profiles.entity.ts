@@ -56,12 +56,15 @@ export class UserProfilesEntity {
   @Column({ nullable: true })
   bannerUrl: string;
 
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
@@ -71,63 +74,83 @@ export class UserProfilesEntity {
   @Index()
   user: UsersEntity;
 
+  @Field(() => [FanPaymentProfilesEntity])
   @OneToMany(() => FanPaymentProfilesEntity, ({ userProfile }) => userProfile, { cascade: true })
   fanPaymentProfiles: FanPaymentProfilesEntity[];
 
+  @Field(() => [CreatorFollowsEntity])
   @OneToMany(() => CreatorFollowsEntity, ({ userProfile }) => userProfile, { cascade: true })
   following: CreatorFollowsEntity[];
 
+  @Field(() => [CreatorRestrictsEntity])
   @OneToMany(() => CreatorRestrictsEntity, ({ restrictedUserProfile }) => restrictedUserProfile, { cascade: true })
   restrictedByCreators: CreatorRestrictsEntity[];
 
+  @Field(() => [CreatorBlocksEntity])
   @OneToMany(() => CreatorBlocksEntity, ({ blockedUserProfile }) => blockedUserProfile, { cascade: true })
   blockedByCreators: CreatorBlocksEntity[];
 
+  @Field(() => [MessageChannelsEntity])
   @OneToMany(() => MessageChannelsEntity, ({ userProfile }) => userProfile, { cascade: true })
   channels: MessageChannelsEntity[];
 
+  @Field(() => [PaymentsEntity])
   @OneToMany(() => PaymentsEntity, ({ userProfile }) => userProfile, { cascade: true })
   payments: PaymentsEntity[];
 
+  @Field(() => [GroupsEntity])
   @ManyToMany(() => GroupsEntity, ({ participants }) => participants, { cascade: true })
   participantGroups: GroupsEntity[];
 
+  @Field(() => [GroupsEntity])
   @ManyToMany(() => GroupsEntity, ({ moderators }) => moderators, { cascade: true })
   moderatorGroups: GroupsEntity[];
 
+  @Field(() => [FanAssetsEntity])
   @OneToMany(() => FanAssetsEntity, ({ userProfile }) => userProfile, { cascade: true })
   fanAssets: FanAssetsEntity[];
 
+  @Field(() => [GroupMessagesEntity])
   @ManyToMany(() => GroupMessagesEntity, (userProfile) => userProfile.receivers, { cascade: true })
   groupReceivers: GroupMessagesEntity[];
 
+  @Field(() => [SubscriptionsEntity])
   @OneToMany(() => SubscriptionsEntity, ({ userProfile }) => userProfile, { cascade: true })
   subscriptions: SubscriptionsEntity[];
 
+  @Field(() => [PostPurchasesEntity])
   @OneToMany(() => PostPurchasesEntity, (purchases) => purchases.userProfile, { cascade: true })
   postPurchases: PostPurchasesEntity[];
 
+  @Field(() => [GroupMessageRepliesEntity])
   @ManyToMany(() => GroupMessageRepliesEntity, (groupMessageReplies) => groupMessageReplies.repliers, { cascade: true })
   groupMessageReplies: GroupMessageRepliesEntity[];
 
+  @Field(() => [MessageRepliesEntity])
   @OneToMany(() => MessageRepliesEntity, (messageReplies) => messageReplies.userProfile, { cascade: true })
   messageReplies: MessageRepliesEntity[];
 
+  @Field(() => [PostSharesEntity])
   @OneToMany(() => PostSharesEntity, ({ userProfile }) => userProfile, { cascade: true })
   postShares: PostSharesEntity[];
 
+  @Field(() => [PostSavesEntity])
   @OneToMany(() => PostSavesEntity, ({ userProfile }) => userProfile, { cascade: true })
   postSaves: PostSavesEntity[];
 
+  @Field(() => [MessageRepliesEntity])
   @OneToMany(() => PostLikesEntity, ({ userProfile }) => userProfile, { cascade: true })
   postLikes: MessageRepliesEntity[];
 
+  @Field(() => [PostCommentsEntity])
   @OneToMany(() => PostCommentsEntity, ({ userProfile }) => userProfile, { cascade: true })
   postComments: PostCommentsEntity[];
 
+  @Field(() => [MessagesEntity])
   @OneToMany(() => MessagesEntity, ({ userProfile }) => userProfile, { cascade: true })
   messages: MessagesEntity[];
 
+  @Field(() => [MessagePurchasesEntity])
   @OneToMany(() => MessagePurchasesEntity, ({ userProfile }) => userProfile, { cascade: true })
   messagePurchases: MessagePurchasesEntity[];
 }

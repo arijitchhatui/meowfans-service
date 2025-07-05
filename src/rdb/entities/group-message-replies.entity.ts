@@ -1,3 +1,4 @@
+import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -13,14 +14,18 @@ import {
 import { GroupMessagesEntity } from './group-messages.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
+@ObjectType()
 @Entity({ name: 'group_message_replies' })
 export class GroupMessageRepliesEntity {
+  @Field()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Field()
   @Column()
   messageId: string;
 
+  @Field(() => [UserProfilesEntity])
   @ManyToMany(() => UserProfilesEntity, (userProfiles) => userProfiles.groupMessageReplies, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'group_message_repliers',
@@ -29,15 +34,19 @@ export class GroupMessageRepliesEntity {
   })
   repliers: UserProfilesEntity[];
 
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
+  @Field(() => GroupMessagesEntity)
   @ManyToOne(() => GroupMessagesEntity, (groupMessage) => groupMessage.groupMessageReplies, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'message_id' })
   groupMessage: GroupMessagesEntity;

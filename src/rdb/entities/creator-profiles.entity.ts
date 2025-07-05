@@ -1,4 +1,4 @@
-import { Field } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -29,6 +29,7 @@ import { SubscriptionPlansEntity } from './subscription-plans.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 import { UsersEntity } from './users.entity';
 
+@ObjectType()
 @Entity({ name: 'creator-profiles' })
 export class CreatorProfilesEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -103,7 +104,7 @@ export class CreatorProfilesEntity {
   @Index()
   user: UsersEntity;
 
-  @Field()
+  @Field(() => [PostsEntity])
   @OneToMany(() => PostsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   posts: PostsEntity[];
 
