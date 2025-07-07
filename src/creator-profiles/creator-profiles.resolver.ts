@@ -1,4 +1,4 @@
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
 import { CreatorProfilesEntity } from 'src/rdb/entities';
 import { CreatorProfilesService } from './creator-profiles.service';
@@ -9,7 +9,7 @@ export class CreatorProfilesResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Query(() => CreatorProfilesEntity)
-  public getCreatorProfile(@CurrentUser() @Args('creatorId') creatorId: string) {
-    return this.creatorProfilesService.getCreatorProfile(creatorId);
+  public async getCreatorProfile(@CurrentUser() creatorId: string): Promise<CreatorProfilesEntity> {
+    return await this.creatorProfilesService.getCreatorProfile(creatorId);
   }
 }

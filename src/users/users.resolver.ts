@@ -1,16 +1,7 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import { Auth, CurrentUser, GqlAuthGuard } from 'src/auth';
-import { UserProfilesEntity } from 'src/rdb/entities';
-import { UpdateUserInput } from './dto';
+import { Resolver } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 
 @Resolver()
 export class UsersResolver {
   constructor(private usersService: UsersService) {}
-
-  @Auth(GqlAuthGuard, [])
-  @Mutation(() => UserProfilesEntity)
-  public updateUserProfile(@CurrentUser() userId: string, @Args('input') input: UpdateUserInput) {
-    return this.usersService.updateUserProfile(userId, input);
-  }
 }
