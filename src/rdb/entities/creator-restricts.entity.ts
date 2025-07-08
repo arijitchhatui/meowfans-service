@@ -30,7 +30,7 @@ export class CreatorRestrictsEntity {
   @CreateDateColumn()
   restrictedAt: Date;
 
-  @Field()
+  @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   unRestrictedAt: Date;
 

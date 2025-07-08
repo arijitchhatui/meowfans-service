@@ -6,6 +6,7 @@ import * as moment from 'moment';
 import { UsersEntity } from 'src/rdb/entities';
 import { UserProfilesRepository, UsersRepository } from 'src/rdb/repositories';
 import { CreatorProfilesRepository } from 'src/rdb/repositories/creator-profiles.repository';
+import { UploadsService } from 'src/uploads/uploads.service';
 import { JwtUser } from './decorators/current-user.decorator';
 import { UserRoles } from './decorators/roles.decorator';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
@@ -18,8 +19,9 @@ const salt = 10;
 @Injectable()
 export class AuthService {
   constructor(
-    private usersRepository: UsersRepository,
     private jwtService: JwtService,
+    private uploadsService: UploadsService,
+    private usersRepository: UsersRepository,
     private userProfilesRepository: UserProfilesRepository,
     private creatorProfilesRepository: CreatorProfilesRepository,
   ) {}
@@ -49,6 +51,8 @@ export class AuthService {
       userProfile: this.userProfilesRepository.create({
         fullName: input.fullName,
         username: username,
+        avatarUrl: this.uploadsService.generateDefaultFanAvatarUrl(input.fullName.replace(/\s+/g, '+')),
+        bannerUrl: this.uploadsService.generateDefaultFanBannerUrl(),
       }),
     });
     const user = await this.usersRepository.save(userProfileEntity);
@@ -74,6 +78,8 @@ export class AuthService {
         gender: input.gender,
         region: input.region,
         username: username,
+        avatarUrl: this.uploadsService.generateDefaultCreatorAvatarUrl(input.fullName),
+        bannerUrl: this.uploadsService.generateDefaultCreatorBannerUrl(),
       }),
     });
 

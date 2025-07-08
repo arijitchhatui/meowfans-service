@@ -30,7 +30,7 @@ export class CreatorFollowsEntity {
   @CreateDateColumn()
   followedAt: Date;
 
-  @Field()
+  @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   unFollowedAt: Date;
 
