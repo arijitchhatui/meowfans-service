@@ -7,8 +7,10 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { CreatorProfilesModule } from './creator-profiles/creator-profiles.module';
 import { RdbModule } from './rdb/rdb.module';
+import { UploadsModule } from './uploads/uploads.module';
 import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { UsersModule } from './users/users.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -29,8 +31,10 @@ import { UsersModule } from './users/users.module';
     }),
     AuthModule,
     UsersModule,
+    UploadsModule,
     UserProfilesModule,
     CreatorProfilesModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [],

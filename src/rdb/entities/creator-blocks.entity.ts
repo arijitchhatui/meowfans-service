@@ -2,11 +2,11 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
@@ -30,9 +30,9 @@ export class CreatorBlocksEntity {
   @CreateDateColumn()
   blockedAt: Date;
 
-  @Field()
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Field({ nullable: true })
+  @DeleteDateColumn({ nullable: true })
+  unBlockedAt: Date;
 
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, ({ creatorBlocks }) => creatorBlocks, { onDelete: 'CASCADE' })

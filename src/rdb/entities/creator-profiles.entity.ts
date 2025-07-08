@@ -108,48 +108,63 @@ export class CreatorProfilesEntity {
   @OneToMany(() => PostsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   posts: PostsEntity[];
 
+  @Field(() => [CreatorFollowsEntity])
   @OneToMany(() => CreatorFollowsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   followers: CreatorFollowsEntity[];
 
+  @Field(() => [CreatorRestrictsEntity])
   @OneToMany(() => CreatorRestrictsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   creatorRestricts: CreatorRestrictsEntity[];
 
+  @Field(() => [CreatorBlocksEntity])
   @OneToMany(() => CreatorBlocksEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   creatorBlocks: CreatorBlocksEntity[];
 
+  @Field(() => [CreatorInterfacesEntity])
   @OneToMany(() => CreatorInterfacesEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   interfaces: CreatorInterfacesEntity[];
 
+  @Field(() => [AssetsEntity])
   @OneToMany(() => AssetsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   assets: AssetsEntity[];
 
+  @Field(() => [MessageChannelsEntity])
   @OneToMany(() => MessageChannelsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   channels: MessageChannelsEntity[];
 
+  @Field(() => [PaymentsEntity])
   @OneToMany(() => PaymentsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   payments: PaymentsEntity[];
 
+  @Field(() => [CreatorPaymentProfilesEntity])
   @OneToOne(() => CreatorPaymentProfilesEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   creatorPayMentProfile: CreatorPaymentProfilesEntity;
 
+  @Field(() => [SubscriptionPlansEntity])
   @OneToMany(() => SubscriptionPlansEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   subscriptionPlans: SubscriptionPlansEntity[];
 
+  @Field(() => [GroupsEntity])
   @OneToMany(() => GroupsEntity, ({ admin }) => admin, { cascade: true })
   groups: GroupsEntity[];
 
+  @Field(() => [CreatorAssetsEntity])
   @OneToMany(() => CreatorAssetsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   creatorAssets: CreatorAssetsEntity[];
 
+  @Field(() => [MessagesEntity])
   @OneToMany(() => MessagesEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   messages: MessagesEntity[];
 
+  @Field(() => [SocialAccountsEntity])
   @OneToOne(() => SocialAccountsEntity, { cascade: true })
   socialAccount: SocialAccountsEntity;
 
+  @Field(() => [SubscriptionsEntity])
   @OneToMany(() => SubscriptionsEntity, (subscriptions) => subscriptions.creatorProfile, { cascade: true })
   subscriptions: SubscriptionsEntity[];
 
+  @Field(() => [GroupsEntity])
   @OneToMany(() => GroupMessagesEntity, (groupMessages) => groupMessages.creatorProfile, { cascade: true })
   groupMessages: GroupMessagesEntity[];
 }

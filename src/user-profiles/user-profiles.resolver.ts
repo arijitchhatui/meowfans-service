@@ -35,7 +35,7 @@ export class UserProfilesResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.USER])
-  @Query(() => UserProfilesEntity)
+  @Mutation(() => UserProfilesEntity)
   public async unFollowCreator(
     @CurrentUser() userId: string,
     @Args('input') input: UnFollowCreatorInput,

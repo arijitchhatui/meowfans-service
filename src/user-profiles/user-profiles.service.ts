@@ -3,8 +3,8 @@ import { shake } from 'radash';
 import { CreatorProfilesRepository, UserProfilesRepository } from 'src/rdb/repositories';
 import { CreatorFollowsRepository } from 'src/rdb/repositories/creator-follows.repository';
 import { FollowCreatorInput } from './dto/follow-creator.dto';
-import { UpdateUserProfileInput } from './dto/update-userProfile.dto';
 import { UnFollowCreatorInput } from './dto/unfollow-creator.dto';
+import { UpdateUserProfileInput } from './dto/update-userProfile.dto';
 
 @Injectable()
 export class UserProfilesService {
