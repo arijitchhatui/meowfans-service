@@ -81,6 +81,9 @@ export class CreatorProfilesEntity {
   totalPublicPost: number;
 
   @Column({ default: 0 })
+  totalPost: number;
+
+  @Column({ default: 0 })
   totalExclusivePost: number;
 
   @Column({ default: 0 })

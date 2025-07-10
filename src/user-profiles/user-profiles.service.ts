@@ -28,38 +28,23 @@ export class UserProfilesService {
   }
 
   public async followCreator(userId: string, input: FollowCreatorInput) {
-    const userProfile = await this.userProfilesRepository.findOneOrFail({
-      where: { userId },
-      relations: { following: true },
-    });
-
-    const hasFollowed = userProfile.following.some((user) => user.followedCreatorId === input.creatorId);
-    if (hasFollowed) return userProfile;
-
     const followedCreator = this.creatorFollowsRepository.create({
       followingUserId: userId,
       followedCreatorId: input.creatorId,
     });
-    await this.creatorFollowsRepository.save(followedCreator);
-    return await this.userProfilesRepository.findOneOrFail({ where: { userId }, relations: { following: true } });
+    return await this.creatorFollowsRepository.save(followedCreator);
   }
 
   public async unFollowCreator(userId: string, input: UnFollowCreatorInput) {
-    const userProfile = await this.userProfilesRepository.findOneOrFail({
-      where: { userId },
-      relations: { following: true },
+    const unFollowed = await this.creatorFollowsRepository.delete({
+      followedCreatorId: input.creatorId,
+      followingUserId: userId,
     });
-    const following = await this.creatorFollowsRepository.findOneOrFail({ where: { followingUserId: userId } });
-    const userProfileIndex = userProfile.following.findIndex((user) => user.followedCreatorId === input.creatorId);
-    if (userProfileIndex === -1) return userProfile;
-
-    userProfile.following.splice(userProfileIndex, 1);
-    await this.creatorFollowsRepository.save(following);
-    return await this.userProfilesRepository.findOneOrFail({ where: { userId }, relations: { following: true } });
+    return !!unFollowed.affected;
   }
 
   public async getFollowing(userId: string) {
-    return await this.userProfilesRepository.findOneOrFail({
+    return await this.userProfilesRepository.find({
       where: { userId },
       relations: { following: true },
     });

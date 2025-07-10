@@ -1,10 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
-import { UserProfilesEntity } from 'src/rdb/entities';
+import { CreatorFollowsEntity, UserProfilesEntity } from 'src/rdb/entities';
 import { FollowCreatorInput } from './dto/follow-creator.dto';
+import { UnFollowCreatorInput } from './dto/unfollow-creator.dto';
 import { UpdateUserProfileInput } from './dto/update-userProfile.dto';
 import { UserProfilesService } from './user-profiles.service';
-import { UnFollowCreatorInput } from './dto/unfollow-creator.dto';
 
 @Resolver()
 export class UserProfilesResolver {
@@ -26,26 +26,26 @@ export class UserProfilesResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.USER])
-  @Mutation(() => UserProfilesEntity)
+  @Mutation(() => CreatorFollowsEntity)
   public async followCreator(
     @CurrentUser() userId: string,
     @Args('input') input: FollowCreatorInput,
-  ): Promise<UserProfilesEntity> {
+  ): Promise<CreatorFollowsEntity> {
     return await this.userProfilesService.followCreator(userId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.USER])
-  @Mutation(() => UserProfilesEntity)
+  @Mutation(() => Boolean)
   public async unFollowCreator(
     @CurrentUser() userId: string,
     @Args('input') input: UnFollowCreatorInput,
-  ): Promise<UserProfilesEntity> {
+  ): Promise<boolean> {
     return await this.userProfilesService.unFollowCreator(userId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.USER])
-  @Query(() => UserProfilesEntity)
-  public async getFollowing(@CurrentUser() userId: string): Promise<UserProfilesEntity> {
+  @Query(() => [UserProfilesEntity])
+  public async getFollowing(@CurrentUser() userId: string): Promise<UserProfilesEntity[]> {
     return await this.userProfilesService.getFollowing(userId);
   }
 }

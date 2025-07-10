@@ -1,13 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
-import { CreatorProfilesRepository, PostsRepository } from 'src/rdb/repositories';
-import { DeletePostInput, GetPostInput, UpdatePostInput } from './dto';
+import {
+  CreatorProfilesRepository,
+  PostAssetsRepository,
+  PostCommentsRepository,
+  PostLikesRepository,
+  PostSavesRepository,
+  PostSharesRepository,
+  PostsRepository,
+} from 'src/rdb/repositories';
+import {
+  CreateCommentInput,
+  DeleteCommentInput,
+  DeletePostInput,
+  DeleteSharePostInput,
+  GetPostInput,
+  LikePostInput,
+  SavePostInput,
+  SharePostInput,
+  UpdateCommentInput,
+  UpdatePostInput,
+} from './dto';
 import { CreatePostInput } from './dto/create-post.dto';
 
 @Injectable()
 export class PostsService {
   public constructor(
     private creatorProfilesRepository: CreatorProfilesRepository,
+    private postCommentsRepository: PostCommentsRepository,
+    private postAssetsRepository: PostAssetsRepository,
+    private postSharesRepository: PostSharesRepository,
+    private postsSavesRepository: PostSavesRepository,
+    private postLikesRepository: PostLikesRepository,
     private postsRepository: PostsRepository,
   ) {}
 
@@ -29,6 +53,12 @@ export class PostsService {
       isExclusive: input.isExclusive,
       price: input.price,
     });
+    await Promise.all(
+      input.assetIds.map(async (assetId) => {
+        await this.postAssetsRepository.save({ assetId, postId: post.id });
+      }),
+    );
+    await this.creatorProfilesRepository.increment({ creatorId }, 'totalPost', 1);
     return await this.postsRepository.save(post);
   }
 
@@ -43,19 +73,88 @@ export class PostsService {
 
   public async deletePost(creatorId: string, input: DeletePostInput) {
     const post = await this.postsRepository.findOneOrFail({
-      where: { id: input.postId },
+      where: { id: input.postId, creatorId: creatorId },
       relations: { creatorProfile: true },
     });
-    if (!post)
-      return await this.postsRepository.find({
-        where: { creatorId },
-        relations: { creatorProfile: true },
-      });
+    await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPost', 1);
 
-    await this.postsRepository.remove(post);
-    return await this.postsRepository.find({
-      where: { creatorId },
-      relations: { creatorProfile: true },
+    const result = await this.postsRepository.delete(post);
+    return !!result.affected;
+  }
+
+  public async createComment(userId: string, input: CreateCommentInput) {
+    const post = await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
+    const comment = this.postCommentsRepository.create({
+      postId: input.postId,
+      userId: userId,
+      comment: input.comment,
     });
+    post.postComments.push(comment);
+    return this.postsRepository.save(post);
+  }
+
+  public async updateComment(userId: string, input: UpdateCommentInput) {
+    const comment = await this.postCommentsRepository.findOneOrFail({
+      where: { postId: input.postId, userId: userId },
+    });
+
+    return await this.postCommentsRepository.save(Object.assign(comment, shake(input)));
+  }
+
+  public async deleteComment(userId: string, input: DeleteCommentInput) {
+    const comment = await this.postCommentsRepository.findOneOrFail({
+      where: { postId: input.postId, userId: userId },
+    });
+    const result = await this.postCommentsRepository.delete(comment);
+    return !!result.affected;
+  }
+
+  public async likePost(userId: string, input: LikePostInput) {
+    await this.postsRepository.findOneOrFail({
+      where: { id: input.postId },
+      relations: { postLikes: true },
+    });
+
+    const isLiked = await this.postLikesRepository.findOne({ where: { postId: input.postId, userId: userId } });
+    if (isLiked) {
+      await this.postLikesRepository.delete({ postId: input.postId, userId: userId });
+      await this.postsRepository.decrement({ id: input.postId }, 'likeCount', 1);
+    } else {
+      this.postLikesRepository.save({
+        postId: input.postId,
+        userId: userId,
+      });
+      await this.postsRepository.increment({ id: input.postId }, 'likeCount', 1);
+    }
+    return await this.postsRepository.findOneOrFail({ where: { id: input.postId }, relations: { postLikes: true } });
+  }
+
+  public async sharePost(userId: string, input: SharePostInput) {
+    await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
+
+    const shared = this.postSharesRepository.create({ postId: input.postId, userId: userId });
+    return await this.postSharesRepository.save(shared);
+  }
+
+  public async deleteShare(userId: string, input: DeleteSharePostInput) {
+    await this.postSharesRepository.findOneOrFail({
+      where: { id: input.shareId, userId: userId, postId: input.postId },
+    });
+
+    const result = await this.postSharesRepository.delete({ id: input.shareId, postId: input.postId });
+    return !!result.affected;
+  }
+
+  public async savePost(userId: string, input: SavePostInput) {
+    await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
+    const isSaved = await this.postsSavesRepository.findOne({ where: { postId: input.postId, userId: userId } });
+    if (isSaved) {
+      await this.postsSavesRepository.delete({ userId: userId, postId: input.postId });
+      await this.postsRepository.decrement({ id: input.postId }, 'saveCount', 1);
+    }
+    await this.postsSavesRepository.save({ userId: userId, postId: input.postId });
+    await this.postsRepository.increment({ id: input.postId }, 'saveCount', 1);
+
+    return await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
   }
 }

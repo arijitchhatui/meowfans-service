@@ -43,7 +43,7 @@ export class CreatorAssetsEntity {
   creatorProfile: CreatorProfilesEntity;
 
   @Field(() => AssetsEntity)
-  @ManyToOne(() => AssetsEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => AssetsEntity, { onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'asset_id' })
   asset: AssetsEntity;
 

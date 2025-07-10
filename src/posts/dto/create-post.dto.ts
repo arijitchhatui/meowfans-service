@@ -1,4 +1,4 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, ID, InputType } from '@nestjs/graphql';
 import { Column } from 'typeorm';
 
 @InputType()
@@ -14,4 +14,8 @@ export class CreatePostInput {
   @Field()
   @Column()
   price: number;
+
+  @Field(() => [ID])
+  @Column()
+  assetIds: string[];
 }

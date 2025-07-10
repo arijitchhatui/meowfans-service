@@ -2,7 +2,6 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -56,10 +55,6 @@ export class AssetsEntity {
   @Field()
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @Field({ nullable: true })
-  @DeleteDateColumn({ nullable: true })
-  deletedAt: Date;
 
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.assets, { onDelete: 'CASCADE' })
