@@ -16,7 +16,7 @@ export class UploadsService {
   private bucketName: string;
   private bucketUrl: string;
 
-  constructor(private configService: ConfigService) {
+  public constructor(configService: ConfigService) {
     this.s3 = new AWS.S3({
       region: 'auto',
       endpoint: configService.getOrThrow('AWS_S3_ENDPOINT'),
@@ -39,7 +39,9 @@ export class UploadsService {
       ContentType: input.contentType,
     });
 
-    return `${this.bucketUrl}/${input.path}`;
+    return {
+      url: `${this.bucketUrl}/${input.path}`,
+    };
   }
 
   public generateDefaultFanAvatarUrl(username: string) {

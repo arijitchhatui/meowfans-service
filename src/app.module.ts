@@ -11,6 +11,8 @@ import { UploadsModule } from './uploads/uploads.module';
 import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
+import { AssetsService } from './assets/assets.service';
+import { AssetsModule } from './assets/assets.module';
 
 @Module({
   imports: [
@@ -35,8 +37,9 @@ import { PostsModule } from './posts/posts.module';
     UserProfilesModule,
     CreatorProfilesModule,
     PostsModule,
+    AssetsModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [AssetsService],
 })
 export class AppModule {}
