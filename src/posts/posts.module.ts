@@ -3,6 +3,6 @@ import { PostsResolver } from './posts.resolver';
 import { PostsService } from './posts.service';
 
 @Module({
-  providers: [PostsResolver, PostsService]
+  providers: [PostsResolver, PostsService],
 })
 export class PostsModule {}

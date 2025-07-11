@@ -51,7 +51,7 @@ export class PostsService {
       creatorId: creatorId,
       caption: input.caption,
       isExclusive: input.isExclusive,
-      price: input.price,
+      unlockPrice: input.unlockPrice,
     });
     await Promise.all(
       input.assetIds.map(async (assetId) => {

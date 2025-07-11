@@ -11,6 +11,7 @@ export * from './fan-payment-profiles.entity';
 export * from './group-message-replies.entity';
 export * from './group-messages.entity';
 export * from './groups.entity';
+export * from './message-access.entity';
 export * from './message-assets.entity';
 export * from './message-channels.entity';
 export * from './message-purchases.entity';

@@ -1,0 +1,34 @@
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { GetChannelInput } from 'src/messages/dto';
+import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { MessageChannelsEntity, MessagesEntity } from '../entities';
+
+@Injectable()
+export class MessageChannelsRepository extends Repository<MessageChannelsEntity> {
+  private logger = new Logger(MessageChannelsEntity.name);
+
+  constructor(@Optional() _target: EntityTarget<MessageChannelsEntity>, entityManager: EntityManager) {
+    super(MessageChannelsEntity, entityManager);
+  }
+
+  public getChannel(userId: string, input: GetChannelInput) {
+    const subQuery = this.createQueryBuilder('messages')
+      .select('messages.id')
+      .where('messages.channelId = message_channels.id')
+      .orderBy('messages.createdAt', 'DESC')
+      .limit(1);
+    return this.createQueryBuilder('message_channels')
+      .leftJoinAndMapOne(
+        'message_channels.lastMessage',
+        MessagesEntity,
+        'lastMessage',
+        `lastMessage.id = ${subQuery.getQuery()}`,
+      )
+      .setParameters(subQuery.getParameters())
+      .leftJoinAndSelect('message_channels.creatorProfile', 'creatorProfile')
+      .leftJoinAndSelect('message_channels.userProfile', 'userProfile')
+      .where('message_channels.id = :channelId', { channelId: input.channelId })
+      .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId })
+      .getOne();
+  }
+}

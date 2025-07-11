@@ -38,7 +38,7 @@ export class PostsEntity {
 
   @Field()
   @Column()
-  price: number;
+  unlockPrice: number;
 
   @Field({ defaultValue: 0 })
   @Column({ default: 0 })

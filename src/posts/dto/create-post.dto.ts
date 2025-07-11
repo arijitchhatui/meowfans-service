@@ -13,7 +13,7 @@ export class CreatePostInput {
 
   @Field()
   @Column()
-  price: number;
+  unlockPrice: number;
 
   @Field(() => [ID])
   @Column()

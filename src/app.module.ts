@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { AssetsService } from './assets/assets.service';
 import { AssetsModule } from './assets/assets.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AssetsModule } from './assets/assets.module';
     CreatorProfilesModule,
     PostsModule,
     AssetsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AssetsService],
