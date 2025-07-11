@@ -21,7 +21,6 @@ import { CreatorRestrictsEntity } from './creator-restricts.entity';
 import { GroupMessagesEntity } from './group-messages.entity';
 import { GroupsEntity } from './groups.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
-import { MessagesEntity } from './messages.entity';
 import { PaymentsEntity } from './payments.entity';
 import { PostsEntity } from './posts.entity';
 import { SocialAccountsEntity } from './social-accounts.entity';
@@ -154,10 +153,6 @@ export class CreatorProfilesEntity {
   @Field(() => [CreatorAssetsEntity])
   @OneToMany(() => CreatorAssetsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   creatorAssets: CreatorAssetsEntity[];
-
-  @Field(() => [MessagesEntity])
-  @OneToMany(() => MessagesEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
-  messages: MessagesEntity[];
 
   @Field(() => [SocialAccountsEntity])
   @OneToOne(() => SocialAccountsEntity, { cascade: true })

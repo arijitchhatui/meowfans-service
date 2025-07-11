@@ -11,13 +11,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { MessageAssetsEntity } from './message-assets.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
 import { MessagePurchasesEntity } from './message-purchases.entity';
 import { MessageReactionsEntity } from './message-reactions.entity';
 import { MessageRepliesEntity } from './message-replies.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'messages' })
@@ -32,23 +30,27 @@ export class MessagesEntity {
 
   @Field()
   @Column()
-  creatorId: string;
+  senderId: string;
 
   @Field()
   @Column()
-  fanId: string;
+  recipientUserId: string;
 
   @Field()
   @Column()
   channelId: string;
 
-  @Field()
-  @Column({ default: 0 })
-  price: number;
+  @Field(() => Number, { nullable: true })
+  @Column({ type: 'float', nullable: true, default: null })
+  unlockPrice: number | null;
 
   @Field()
   @Column({ default: false })
   isExclusive: boolean;
+
+  @Field({ defaultValue: false })
+  @Column({ default: false })
+  hasAccess: boolean;
 
   @Field(() => MessagesEntity)
   @ManyToOne(() => MessagesEntity, { nullable: true })
@@ -70,16 +72,6 @@ export class MessagesEntity {
   @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
-
-  @Field(() => UserProfilesEntity)
-  @JoinColumn({ name: 'fan_id' })
-  @ManyToOne(() => UserProfilesEntity, (userProfile) => userProfile.messages, { onDelete: 'CASCADE' })
-  userProfile: UserProfilesEntity;
-
-  @Field(() => CreatorProfilesEntity)
-  @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.messages, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'creator_id' })
-  creatorProfile: CreatorProfilesEntity;
 
   @Field(() => MessageChannelsEntity)
   @ManyToOne(() => MessageChannelsEntity, (channel) => channel.messages, { onDelete: 'CASCADE' })

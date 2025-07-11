@@ -24,6 +24,10 @@ export class MessageReactionsEntity {
 
   @Field()
   @Column()
+  userId: string;
+
+  @Field()
+  @Column()
   reaction: string;
 
   @Field()

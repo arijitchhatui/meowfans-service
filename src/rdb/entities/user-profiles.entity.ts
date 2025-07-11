@@ -23,7 +23,6 @@ import { GroupsEntity } from './groups.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
 import { MessagePurchasesEntity } from './message-purchases.entity';
 import { MessageRepliesEntity } from './message-replies.entity';
-import { MessagesEntity } from './messages.entity';
 import { PaymentsEntity } from './payments.entity';
 import { PostCommentsEntity } from './post-comments.entity';
 import { PostLikesEntity } from './post-likes.entity';
@@ -145,10 +144,6 @@ export class UserProfilesEntity {
   @Field(() => [PostCommentsEntity])
   @OneToMany(() => PostCommentsEntity, ({ userProfile }) => userProfile, { cascade: true })
   postComments: PostCommentsEntity[];
-
-  @Field(() => [MessagesEntity])
-  @OneToMany(() => MessagesEntity, ({ userProfile }) => userProfile, { cascade: true })
-  messages: MessagesEntity[];
 
   @Field(() => [MessagePurchasesEntity])
   @OneToMany(() => MessagePurchasesEntity, ({ userProfile }) => userProfile, { cascade: true })

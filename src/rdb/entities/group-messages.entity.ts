@@ -55,7 +55,7 @@ export class GroupMessagesEntity {
 
   @Field()
   @Column()
-  price: number;
+  unlockPrice: number;
 
   @Field()
   @Column()

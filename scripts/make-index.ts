@@ -31,7 +31,16 @@ const paths = [
   'src/auth/guards',
   'src/auth/strategies',
   'src/creator-profiles',
+  'src/creator-profiles/dto',
+  'src/user-profiles/dto',
   'src/user-profiles',
+  'src/posts',
+  'src/posts/dto',
+  'src/uploads',
+  'src/users',
+  'src/assets',
+  'src/assets/dto',
+  'src/messages',
 ];
 
 (async () => {
