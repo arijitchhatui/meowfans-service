@@ -26,6 +26,7 @@ export * from './post-purchases.entity';
 export * from './post-saves.entity';
 export * from './post-shares.entity';
 export * from './posts.entity';
+export * from './premium-post-unlocks.entity';
 export * from './social-accounts.entity';
 export * from './subscription-plans.entity';
 export * from './subscriptions.entity';

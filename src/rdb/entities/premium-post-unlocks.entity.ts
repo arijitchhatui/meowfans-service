@@ -1,18 +1,26 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { PostsEntity } from './posts.entity';
 import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
-@Entity({ name: 'purchases' })
-export class PostPurchasesEntity {
+@Entity({ name: 'premium_post_unlocks' })
+export class PremiumPostUnlocksEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Field()
   @Column()
-  type: string;
+  fanId: string;
 
   @Field()
   @Column()
@@ -20,19 +28,21 @@ export class PostPurchasesEntity {
 
   @Field()
   @Column()
-  fanId: string;
+  amount: number;
 
   @Field()
   @CreateDateColumn()
-  purchasedAt: Date;
+  createdAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ postPurchases }) => postPurchases, { onDelete: 'CASCADE' })
+  @Field()
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ManyToOne(() => UserProfilesEntity)
   @JoinColumn({ name: 'fan_id' })
   userProfile: UserProfilesEntity;
 
-  @Field(() => PostsEntity)
-  @ManyToOne(() => PostsEntity, ({ postPurchases }) => postPurchases, { onDelete: 'CASCADE' })
+  @ManyToOne(() => PostsEntity)
   @JoinColumn({ name: 'post_id' })
   post: PostsEntity;
 }
