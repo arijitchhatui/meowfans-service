@@ -11,13 +11,13 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
     super(MessageChannelsEntity, entityManager);
   }
 
-  public getChannel(userId: string, input: GetChannelInput) {
+  public async getChannel(userId: string, input: GetChannelInput) {
     const subQuery = this.createQueryBuilder('messages')
       .select('messages.id')
       .where('messages.channelId = message_channels.id')
       .orderBy('messages.createdAt', 'DESC')
       .limit(1);
-    return this.createQueryBuilder('message_channels')
+    const query = this.createQueryBuilder('message_channels')
       .leftJoinAndMapOne(
         'message_channels.lastMessage',
         MessagesEntity,
@@ -28,7 +28,8 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       .leftJoinAndSelect('message_channels.creatorProfile', 'creatorProfile')
       .leftJoinAndSelect('message_channels.userProfile', 'userProfile')
       .where('message_channels.id = :channelId', { channelId: input.channelId })
-      .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId })
-      .getOne();
+      .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId });
+
+    return await query.getOne();
   }
 }

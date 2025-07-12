@@ -13,8 +13,10 @@ import {
   CreateCommentInput,
   DeleteCommentInput,
   DeletePostInput,
+  DeletePostsInput,
   DeleteSharePostInput,
   GetPostInput,
+  GetPostsInfoInput,
   LikePostInput,
   SavePostInput,
   SharePostInput,
@@ -59,6 +61,10 @@ export class PostsService {
       }),
     );
     await this.creatorProfilesRepository.increment({ creatorId }, 'totalPost', 1);
+
+    if (input.isExclusive) await this.creatorProfilesRepository.increment({ creatorId }, 'totalExclusivePost', 1);
+    else await this.creatorProfilesRepository.increment({ creatorId }, 'totalPublicPost', 1);
+
     return await this.postsRepository.save(post);
   }
 
@@ -90,6 +96,7 @@ export class PostsService {
       comment: input.comment,
     });
     post.postComments.push(comment);
+    await this.postsRepository.increment({ id: input.postId }, 'commentCount', 1);
     return this.postsRepository.save(post);
   }
 
@@ -106,6 +113,7 @@ export class PostsService {
       where: { postId: input.postId, userId: userId },
     });
     const result = await this.postCommentsRepository.delete(comment);
+    await this.postsRepository.decrement({ id: input.postId }, 'commentCount', 1);
     return !!result.affected;
   }
 
@@ -116,16 +124,15 @@ export class PostsService {
     });
 
     const isLiked = await this.postLikesRepository.findOne({ where: { postId: input.postId, userId: userId } });
+
     if (isLiked) {
       await this.postLikesRepository.delete({ postId: input.postId, userId: userId });
       await this.postsRepository.decrement({ id: input.postId }, 'likeCount', 1);
     } else {
-      this.postLikesRepository.save({
-        postId: input.postId,
-        userId: userId,
-      });
+      this.postLikesRepository.save({ postId: input.postId, userId: userId });
       await this.postsRepository.increment({ id: input.postId }, 'likeCount', 1);
     }
+
     return await this.postsRepository.findOneOrFail({ where: { id: input.postId }, relations: { postLikes: true } });
   }
 
@@ -156,5 +163,24 @@ export class PostsService {
     await this.postsRepository.increment({ id: input.postId }, 'saveCount', 1);
 
     return await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
+  }
+
+  public async deletePosts(creatorId: string, input: DeletePostsInput) {
+    const deleteResult = await Promise.all(
+      input.postIds.map(async (postId) => {
+        const message = await this.postsRepository.findOne({ where: { id: postId, creatorId: creatorId } });
+        if (message) {
+          await this.postsRepository.delete({ id: postId });
+          await this.creatorProfilesRepository.decrement({ creatorId }, 'postCount', 1);
+          return true;
+        }
+        return false;
+      }),
+    );
+    return deleteResult.some((deleted) => deleted);
+  }
+
+  public async getPostsInfo(creatorId: string, input: GetPostsInfoInput) {
+    return await this.postsRepository.getPostsInfo(creatorId, input);
   }
 }

@@ -29,6 +29,7 @@ import { PostLikesEntity } from './post-likes.entity';
 import { PostPurchasesEntity } from './post-purchases.entity';
 import { PostSavesEntity } from './post-saves.entity';
 import { PostSharesEntity } from './post-shares.entity';
+import { PremiumPostUnlocksEntity } from './premium-post-unlocks.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 import { UsersEntity } from './users.entity';
 
@@ -148,4 +149,8 @@ export class UserProfilesEntity {
   @Field(() => [MessagePurchasesEntity])
   @OneToMany(() => MessagePurchasesEntity, ({ userProfile }) => userProfile, { cascade: true })
   messagePurchases: MessagePurchasesEntity[];
+
+  @Field(() => [PremiumPostUnlocksEntity])
+  @OneToMany(() => PremiumPostUnlocksEntity, (postUnlocks) => postUnlocks.userProfile)
+  postUnlocks: PremiumPostUnlocksEntity[];
 }

@@ -113,7 +113,7 @@ export class MessagesService {
       input.messageIds.map(async (messageId) => {
         const message = await this.messagesRepository.findOne({ where: { id: messageId, senderId: userId } });
         if (message) {
-          await this.messagesRepository.delete(messageId);
+          await this.messagesRepository.delete({ id: messageId });
           return true;
         }
         return false;
