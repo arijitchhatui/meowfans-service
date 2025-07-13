@@ -1,8 +1,20 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
-import { CreatorFollowsEntity, CreatorProfilesEntity } from 'src/rdb/entities';
+import {
+  CreatorBlocksEntity,
+  CreatorFollowsEntity,
+  CreatorProfilesEntity,
+  CreatorRestrictsEntity,
+} from 'src/rdb/entities';
 import { CreatorProfilesService } from './creator-profiles.service';
-import { BlockFanInput, DeleteFollowerInput, UpdateCreatorProfileInput } from './dto';
+import {
+  BlockFanInput,
+  DeleteFollowerInput,
+  GetBlockedUsersInput,
+  GetFollowersInput,
+  GetRestrictedUsersInput,
+  UpdateCreatorProfileInput,
+} from './dto';
 import { RestrictFanInput } from './dto/restrict-fan.dto';
 
 @Resolver()
@@ -35,8 +47,20 @@ export class CreatorProfilesResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Query(() => [CreatorFollowsEntity])
-  public async getFollowers(@CurrentUser() creatorId: string): Promise<CreatorFollowsEntity[]> {
-    return await this.creatorProfilesService.getFollowers(creatorId);
+  public async getFollowers(
+    @CurrentUser() creatorId: string,
+    @Args('input') input: GetFollowersInput,
+  ): Promise<CreatorFollowsEntity[]> {
+    return await this.creatorProfilesService.getFollowers(creatorId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Query(() => [CreatorBlocksEntity])
+  public async getBlockedUsers(
+    @CurrentUser() creatorId: string,
+    @Args('input') input: GetBlockedUsersInput,
+  ): Promise<CreatorBlocksEntity[]> {
+    return await this.creatorProfilesService.getBlockedUsers(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
@@ -49,6 +73,15 @@ export class CreatorProfilesResolver {
   @Mutation(() => Boolean)
   public async unBlockFan(@CurrentUser() creatorId: string, @Args('input') input: BlockFanInput): Promise<boolean> {
     return await this.creatorProfilesService.unBlockFan(creatorId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Query(() => [CreatorRestrictsEntity])
+  public async getRestrictedUsers(
+    @CurrentUser() creatorId: string,
+    @Args('input') input: GetRestrictedUsersInput,
+  ): Promise<CreatorRestrictsEntity[]> {
+    return await this.creatorProfilesService.getRestrictedUsers(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])

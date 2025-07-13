@@ -1,41 +1,31 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { Column } from 'typeorm';
 
 @InputType()
 export class UpdateCreatorProfileInput {
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   username: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   avatarUrl: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   bannerUrl: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   bio: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   allowsMessaging: boolean;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   displayOnlineStatus: boolean;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   allowsComment: boolean;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   displayTotalPost: boolean;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   displayTotalSubscriber: boolean;
 }

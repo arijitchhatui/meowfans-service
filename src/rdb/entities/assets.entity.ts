@@ -34,10 +34,6 @@ export class AssetsEntity {
 
   @Field()
   @Column()
-  type: string;
-
-  @Field()
-  @Column()
   mimeType: string;
 
   @Field()

@@ -1,17 +1,13 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { Column } from 'typeorm';
 
 @InputType()
 export class UpdateUserProfileInput {
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   username: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   avatarUrl: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
   bannerUrl: string;
 }

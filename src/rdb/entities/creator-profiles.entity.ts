@@ -43,9 +43,11 @@ export class CreatorProfilesEntity {
   @Column({ unique: true })
   username: string;
 
+  @Field()
   @Column()
   gender: string;
 
+  @Field()
   @Column()
   region: string;
 
@@ -61,33 +63,43 @@ export class CreatorProfilesEntity {
   @Column({ nullable: true })
   bannerUrl: string;
 
+  @Field({ defaultValue: false })
   @Column({ default: false })
   allowsMessaging: boolean;
 
+  @Field({ defaultValue: false })
   @Column({ default: false })
   displayOnlineStatus: boolean;
 
+  @Field({ defaultValue: false })
   @Column({ default: false })
   allowsComment: boolean;
 
+  @Field({ defaultValue: true })
   @Column({ default: true })
   displayTotalPost: boolean;
 
+  @Field({ defaultValue: false })
   @Column({ default: false })
   displayTotalSubscriber: boolean;
 
+  @Field({ defaultValue: 0 })
   @Column({ default: 0 })
   totalPublicPost: number;
 
+  @Field({ defaultValue: 0 })
   @Column({ default: 0 })
   totalPost: number;
 
+  @Field({ defaultValue: 0 })
   @Column({ default: 0 })
   totalExclusivePost: number;
 
+  @Field({ defaultValue: 0 })
   @Column({ default: 0 })
   totalSubscriber: number;
 
+  @Field({ defaultValue: 'primary' })
   @Column({ default: 'primary' })
   themeColor: string;
 
