@@ -52,7 +52,7 @@ export class MessagesEntity {
   @Column({ default: false })
   hasAccess: boolean;
 
-  @Field(() => MessagesEntity)
+  @Field(() => MessagesEntity, { nullable: true })
   @ManyToOne(() => MessagesEntity, { nullable: true })
   @JoinColumn({ name: 'replied_to' })
   repliedTo?: MessagesEntity;

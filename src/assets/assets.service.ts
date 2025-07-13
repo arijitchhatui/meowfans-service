@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import sharp from 'sharp';
 import { AssetsRepository, CreatorAssetsRepository, PostAssetsRepository } from 'src/rdb/repositories';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { DeleteCreatorAsset } from './dto';
@@ -15,6 +16,12 @@ export class AssetsService {
   public async insertAsset(creatorId: string, file: { buffer: Buffer; originalname: string; mimetype: string }) {
     const path = `assets/${creatorId}/${randomUUID()}/${file.originalname}`;
 
+    const blurredBuffer = await sharp(file.buffer)
+      .blur(20)
+      .resize(200, 200, { fit: sharp.fit.inside, withoutEnlargement: true })
+      .toFormat('webp')
+      .toBuffer();
+
     const [raw, blur] = await Promise.all([
       this.uploadsService.uploadImage({
         buffer: file.buffer,
@@ -26,7 +33,7 @@ export class AssetsService {
         path,
       }),
       this.uploadsService.uploadImage({
-        buffer: file.buffer,
+        buffer: blurredBuffer,
         contentType: file.mimetype,
         metaData: {
           mimeType: file.mimetype,

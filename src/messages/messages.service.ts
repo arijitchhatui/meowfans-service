@@ -10,6 +10,7 @@ import {
 } from 'src/rdb/repositories';
 import {
   CreateChannelInput,
+  DeleteMessageInput,
   DeleteMessagesInput,
   GetChannelInput,
   GetMessagesInput,
@@ -56,10 +57,8 @@ export class MessagesService {
     return await this.messageChannelsRepository.save(Object.assign(channel, shake(rest)));
   }
 
-  public async getCreatorChannels(userId: string) {
-    return await this.messageChannelsRepository.find({
-      where: [{ creatorId: userId }, { fanId: userId }],
-    });
+  public async getChannels(userId: string) {
+    return await this.messageChannelsRepository.getChannels(userId);
   }
 
   public async getChannel(userId: string, input: GetChannelInput) {
@@ -122,9 +121,9 @@ export class MessagesService {
     return deleteResult.some((deleted) => deleted);
   }
 
-  public async deleteMessage(userId: string, messageId: string) {
-    await this.messagesRepository.findOneOrFail({ where: { id: messageId, senderId: userId } });
-    const result = await this.messagesRepository.delete({ id: messageId, senderId: userId });
+  public async deleteMessage(userId: string, input: DeleteMessageInput) {
+    await this.messagesRepository.findOneOrFail({ where: { id: input.messageId, senderId: userId } });
+    const result = await this.messagesRepository.delete({ id: input.messageId, senderId: userId });
     return !!result.affected;
   }
 

@@ -41,6 +41,8 @@ const paths = [
   'src/assets',
   'src/assets/dto',
   'src/messages',
+  'src/post-comments',
+  'src/post-comments/dto',
 ];
 
 (async () => {

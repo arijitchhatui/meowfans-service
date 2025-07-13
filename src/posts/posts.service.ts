@@ -129,7 +129,7 @@ export class PostsService {
       await this.postLikesRepository.delete({ postId: input.postId, userId: userId });
       await this.postsRepository.decrement({ id: input.postId }, 'likeCount', 1);
     } else {
-      this.postLikesRepository.save({ postId: input.postId, userId: userId });
+      await this.postLikesRepository.save({ postId: input.postId, userId: userId });
       await this.postsRepository.increment({ id: input.postId }, 'likeCount', 1);
     }
 

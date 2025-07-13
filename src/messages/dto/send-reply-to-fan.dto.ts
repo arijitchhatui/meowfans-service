@@ -1,6 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsUUID } from 'class-validator';
-import { MessagesEntity } from 'src/rdb/entities';
 
 @InputType()
 export class SendReplyToFanInput {
@@ -20,9 +19,6 @@ export class SendReplyToFanInput {
 
   @Field()
   isExclusive: boolean;
-
-  @Field(() => MessagesEntity)
-  repliedTo: MessagesEntity;
 
   @Field()
   messageId: string;
