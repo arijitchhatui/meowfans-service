@@ -3,7 +3,8 @@ import { randomUUID } from 'crypto';
 import sharp from 'sharp';
 import { AssetsRepository, CreatorAssetsRepository, PostAssetsRepository } from 'src/rdb/repositories';
 import { UploadsService } from 'src/uploads/uploads.service';
-import { DeleteCreatorAsset } from './dto';
+import { DeleteCreatorAsset, GetCreatorAssetsInput } from './dto';
+import { CreateAssetInput } from './dto/create-asset.dto';
 
 @Injectable()
 export class AssetsService {
@@ -13,6 +14,7 @@ export class AssetsService {
     private assetsRepository: AssetsRepository,
     private uploadsService: UploadsService,
   ) {}
+
   public async insertAsset(creatorId: string, file: { buffer: Buffer; originalname: string; mimetype: string }) {
     const path = `assets/${creatorId}/${randomUUID()}/${file.originalname}`;
 
@@ -49,7 +51,6 @@ export class AssetsService {
       isVideo: file.mimetype === 'video/mp4' ? true : false,
       mimeType: file.mimetype,
       rawUrl: raw.url,
-      type: file.mimetype,
       creatorId: creatorId,
     });
 
@@ -59,6 +60,23 @@ export class AssetsService {
     ]);
 
     return await this.assetsRepository.save(savedAsset);
+  }
+
+  public async createAsset(creatorId: string, input: CreateAssetInput) {
+    const asset = this.assetsRepository.create({
+      blurredUrl: input.blurredUrl,
+      rawUrl: input.rawUrl,
+      contentType: input.type,
+      creatorId: creatorId,
+      mimeType: input.mimeType,
+      isVideo: input.isVideo,
+    });
+    await this.creatorAssetsRepository.save({ assetId: asset.id, creatorId: creatorId });
+    return await this.assetsRepository.save(asset);
+  }
+
+  public async getCreatorAssets(creatorId: string, input: GetCreatorAssetsInput) {
+    return await this.creatorAssetsRepository.getCreatorAssets(creatorId, input);
   }
 
   public async deleteCreatorAsset(creatorId: string, input: DeleteCreatorAsset) {

@@ -1,7 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
-export class LikePostInput {
+export class GetRestrictedUsersInput {
   @Field()
-  postId: string;
+  offset: number;
 }

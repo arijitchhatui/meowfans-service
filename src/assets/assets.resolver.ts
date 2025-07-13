@@ -1,7 +1,9 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
+import { AssetsEntity, CreatorAssetsEntity } from 'src/rdb/entities';
 import { AssetsService } from './assets.service';
-import { DeleteCreatorAsset } from './dto';
+import { DeleteCreatorAsset, GetCreatorAssetsInput } from './dto';
+import { CreateAssetInput } from './dto/create-asset.dto';
 
 @Resolver()
 export class AssetsResolver {
@@ -14,5 +16,23 @@ export class AssetsResolver {
     @Args('input') input: DeleteCreatorAsset,
   ): Promise<boolean> {
     return this.assetsService.deleteCreatorAsset(creatorId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Mutation(() => AssetsEntity)
+  public async createAsset(
+    @CurrentUser() creatorId: string,
+    @Args('input') input: CreateAssetInput,
+  ): Promise<AssetsEntity> {
+    return await this.assetsService.createAsset(creatorId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Query(() => [CreatorAssetsEntity])
+  public async getCreatorAssets(
+    @CurrentUser() creatorId: string,
+    @Args('input') input: GetCreatorAssetsInput,
+  ): Promise<CreatorAssetsEntity[]> {
+    return await this.assetsService.getCreatorAssets(creatorId, input);
   }
 }

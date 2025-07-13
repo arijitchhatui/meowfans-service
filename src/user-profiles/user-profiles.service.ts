@@ -2,9 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { CreatorProfilesRepository, UserProfilesRepository } from 'src/rdb/repositories';
 import { CreatorFollowsRepository } from 'src/rdb/repositories/creator-follows.repository';
+import { GetFollowingInput } from './dto';
 import { FollowCreatorInput } from './dto/follow-creator.dto';
 import { UnFollowCreatorInput } from './dto/unfollow-creator.dto';
-import { UpdateUserProfileInput } from './dto/update-userProfile.dto';
+import { UpdateUserProfileInput } from './dto/update-user-profile.dto';
 
 @Injectable()
 export class UserProfilesService {
@@ -21,8 +22,10 @@ export class UserProfilesService {
   public async updateUserProfile(userId: string, input: UpdateUserProfileInput) {
     const userProfile = await this.userProfilesRepository.findOneOrFail({ where: { userId } });
 
-    const exists = await this.userProfilesRepository.findOne({ where: { username: input.username } });
-    if (exists) throw new BadRequestException('Username already exists!');
+    if (input.username && input.username !== userProfile.username) {
+      const exists = await this.userProfilesRepository.findOne({ where: { username: input.username } });
+      if (exists) throw new BadRequestException('Username already exists!');
+    }
 
     return this.userProfilesRepository.save(Object.assign(userProfile, shake(input)));
   }
@@ -43,10 +46,7 @@ export class UserProfilesService {
     return !!unFollowed.affected;
   }
 
-  public async getFollowing(userId: string) {
-    return await this.userProfilesRepository.find({
-      where: { userId },
-      relations: { following: true },
-    });
+  public async getFollowing(userId: string, input: GetFollowingInput) {
+    return await this.creatorFollowsRepository.getFollowing(userId, input);
   }
 }

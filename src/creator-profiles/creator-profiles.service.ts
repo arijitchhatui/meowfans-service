@@ -1,9 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { shake } from 'radash';
-import { CreatorFollowsEntity } from 'src/rdb/entities';
 import { CreatorBlocksRepository, CreatorFollowsRepository, CreatorProfilesRepository } from 'src/rdb/repositories';
 import { CreatorRestrictsRepository } from 'src/rdb/repositories/creator-restricts.repository';
-import { DeleteFollowerInput, UpdateCreatorProfileInput } from './dto';
+import {
+  DeleteFollowerInput,
+  GetBlockedUsersInput,
+  GetFollowersInput,
+  GetRestrictedUsersInput,
+  UpdateCreatorProfileInput,
+} from './dto';
 import { BlockFanInput } from './dto/block-fan.dto';
 import { RestrictFanInput } from './dto/restrict-fan.dto';
 
@@ -34,12 +39,8 @@ export class CreatorProfilesService {
     return this.creatorProfilesRepository.save(Object.assign(creatorProfile, shake(input)));
   }
 
-  public async getFollowers(creatorId: string): Promise<CreatorFollowsEntity[]> {
-    const creatorProfile = await this.creatorProfilesRepository.findOneOrFail({
-      where: { creatorId },
-      relations: { followers: true },
-    });
-    return creatorProfile.followers;
+  public async getFollowers(creatorId: string, input: GetFollowersInput) {
+    return await this.creatorFollowsRepository.getFollowers(creatorId, input);
   }
 
   public async deleteFollower(creatorId: string, input: DeleteFollowerInput): Promise<boolean> {
@@ -62,6 +63,10 @@ export class CreatorProfilesService {
     return !!result;
   }
 
+  public async getBlockedUsers(creatorId: string, input: GetBlockedUsersInput) {
+    return await this.creatorBlocksRepository.getBlockedUsers(creatorId, input);
+  }
+
   public async unBlockFan(creatorId: string, input: BlockFanInput): Promise<boolean> {
     const blocked = await this.creatorBlocksRepository.delete({
       blockedUserId: input.userId,
@@ -70,8 +75,12 @@ export class CreatorProfilesService {
     return !!blocked.affected;
   }
 
+  public async getRestrictedUsers(creatorId: string, input: GetRestrictedUsersInput) {
+    return await this.creatorRestrictsRepository.getRestrictedUsers(creatorId, input);
+  }
+
   public async restrictFan(creatorId: string, input: RestrictFanInput): Promise<boolean> {
-    const wasRestricted = await this.creatorRestrictsRepository.findOneOrFail({
+    const wasRestricted = await this.creatorRestrictsRepository.findOne({
       where: { creatorId, restrictedUserId: input.userId },
     });
     if (wasRestricted) return true;
