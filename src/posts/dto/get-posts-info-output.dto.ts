@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { PostCommentsEntity } from 'src/rdb/entities';
 
 @ObjectType()
 export class GetPostsInfoOutput {
@@ -37,4 +38,7 @@ export class GetPostsInfoOutput {
 
   @Field({ defaultValue: 0 })
   earning: number;
+
+  @Field(() => PostCommentsEntity)
+  latestComment: PostCommentsEntity;
 }

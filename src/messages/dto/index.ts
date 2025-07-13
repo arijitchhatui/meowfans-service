@@ -1,4 +1,5 @@
 export * from './create-channel.dto';
+export * from './delete-message.dto';
 export * from './delete-messages.dto';
 export * from './get-channel-output.dto';
 export * from './get-channel.dto';

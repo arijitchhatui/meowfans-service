@@ -6,8 +6,11 @@ import {
   CreatePostInput,
   DeleteCommentInput,
   DeletePostInput,
+  DeletePostsInput,
   DeleteSharePostInput,
   GetPostInput,
+  GetPostsInfoInput,
+  GetPostsInfoOutput,
   LikePostInput,
   SavePostInput,
   UpdateCommentInput,
@@ -107,5 +110,17 @@ export class PostsResolver {
   @Mutation(() => PostsEntity)
   public async savePost(@CurrentUser() userId: string, @Args('input') input: SavePostInput): Promise<PostsEntity> {
     return await this.savePost(userId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Mutation(() => Boolean)
+  public async deletePosts(@CurrentUser() creatorId: string, @Args('input') input: DeletePostsInput): Promise<boolean> {
+    return await this.postsService.deletePosts(creatorId, input);
+  }
+  //
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Query(() => [GetPostsInfoOutput])
+  public async getPostsInfo(@CurrentUser() creatorId: string, input: GetPostsInfoInput): Promise<GetPostsInfoOutput[]> {
+    return await this.postsService.getPostsInfo(creatorId, input);
   }
 }

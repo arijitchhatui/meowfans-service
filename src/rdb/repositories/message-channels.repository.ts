@@ -32,4 +32,27 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
 
     return await query.getOne();
   }
+
+  public async getChannels(userId: string) {
+    const messageSubQuery = this.createQueryBuilder('messages')
+      .select('messages.id')
+      .where('messages.channelId = message_channels.id')
+      .orderBy('messages.createdAt', 'DESC')
+      .limit(1);
+
+    const query = this.createQueryBuilder('message_channels')
+      .leftJoinAndMapOne(
+        'message_channels.lastMessage',
+        MessagesEntity,
+        'lastMessage',
+        `lastMessage.id = ${messageSubQuery.getQuery()}`,
+      )
+      .setParameters(messageSubQuery.getParameters())
+      .leftJoinAndSelect('message_channels.creatorProfile', 'creatorProfile')
+      .leftJoinAndSelect('message_channels.userProfile', 'userProfile')
+      .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId })
+      .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', 'DESC');
+
+    return await query.getRawMany();
+  }
 }

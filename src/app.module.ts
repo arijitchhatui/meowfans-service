@@ -4,16 +4,18 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AppController } from './app.controller';
+import { AssetsModule } from './assets/assets.module';
+import { AssetsService } from './assets/assets.service';
 import { AuthModule } from './auth/auth.module';
 import { CreatorProfilesModule } from './creator-profiles/creator-profiles.module';
+import { MessagesModule } from './messages/messages.module';
+import { PostCommentsService } from './post-comments/post-comments.service';
+import { PostsModule } from './posts/posts.module';
 import { RdbModule } from './rdb/rdb.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/posts.module';
-import { AssetsService } from './assets/assets.service';
-import { AssetsModule } from './assets/assets.module';
-import { MessagesModule } from './messages/messages.module';
+import { PostCommentsModule } from './post-comments/post-comments.module';
 
 @Module({
   imports: [
@@ -40,8 +42,9 @@ import { MessagesModule } from './messages/messages.module';
     PostsModule,
     AssetsModule,
     MessagesModule,
+    PostCommentsModule,
   ],
   controllers: [AppController],
-  providers: [AssetsService],
+  providers: [AssetsService, PostCommentsService],
 })
 export class AppModule {}
