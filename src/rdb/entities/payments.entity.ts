@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'payments' })
@@ -64,8 +64,8 @@ export class PaymentsEntity {
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ payments }) => payments, { onDelete: 'CASCADE' })
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ payments }) => payments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fan_id' })
-  userProfile: UserProfilesEntity;
+  fanProfile: FanProfilesEntity;
 }

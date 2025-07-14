@@ -14,5 +14,5 @@ export class MessageAccessEntity {
 
   @Field()
   @Column()
-  userId: string;
+  fanId: string;
 }

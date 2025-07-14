@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { PostsEntity } from './posts.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'premium_post_unlocks' })
@@ -38,9 +38,9 @@ export class PremiumPostUnlocksEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => UserProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity)
   @JoinColumn({ name: 'fan_id' })
-  userProfile: UserProfilesEntity;
+  fanProfile: FanProfilesEntity;
 
   @ManyToOne(() => PostsEntity)
   @JoinColumn({ name: 'post_id' })

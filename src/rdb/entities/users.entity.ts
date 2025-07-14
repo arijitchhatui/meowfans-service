@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'users' })
@@ -45,9 +45,9 @@ export class UsersEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @OneToOne(() => UserProfilesEntity, (userProfile) => userProfile.user, { cascade: true })
-  userProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @OneToOne(() => FanProfilesEntity, (fanProfile) => fanProfile.user, { cascade: true })
+  fanProfile: FanProfilesEntity;
 
   @Field(() => CreatorProfilesEntity)
   @OneToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.user, { cascade: true })

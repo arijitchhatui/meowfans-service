@@ -1,7 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PostsEntity } from './posts.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { FanProfilesEntity } from './fan-profiles.entity';
+import { PostsEntity } from './posts.entity';
 
 @ObjectType()
 @Entity({ name: 'post_likes' })
@@ -16,17 +16,18 @@ export class PostLikesEntity {
 
   @Field()
   @Column()
-  userId: string;
+  fanId: string;
 
   @Field()
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ postLikes }) => postLikes, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  userProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ postLikes }) => postLikes, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
+  fanProfile: FanProfilesEntity;
 
+  @Field(() => PostsEntity)
   @ManyToOne(() => PostsEntity, ({ postLikes }) => postLikes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'post_id' })
   post: PostsEntity;

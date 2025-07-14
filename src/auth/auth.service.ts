@@ -4,7 +4,7 @@ import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import * as moment from 'moment';
 import { UsersEntity } from 'src/rdb/entities';
-import { UserProfilesRepository, UsersRepository } from 'src/rdb/repositories';
+import { FanProfilesRepository, UsersRepository } from 'src/rdb/repositories';
 import { CreatorProfilesRepository } from 'src/rdb/repositories/creator-profiles.repository';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { JwtUser } from './decorators/current-user.decorator';
@@ -22,7 +22,7 @@ export class AuthService {
     private jwtService: JwtService,
     private uploadsService: UploadsService,
     private usersRepository: UsersRepository,
-    private userProfilesRepository: UserProfilesRepository,
+    private fanProfilesRepository: FanProfilesRepository,
     private creatorProfilesRepository: CreatorProfilesRepository,
   ) {}
 
@@ -48,7 +48,7 @@ export class AuthService {
     const userProfileEntity = this.usersRepository.create({
       email: input.email,
       password: await bcryptjs.hash(input.password, salt),
-      userProfile: this.userProfilesRepository.create({
+      fanProfile: this.fanProfilesRepository.create({
         fullName: input.fullName,
         username: username,
         avatarUrl: this.uploadsService.generateDefaultFanAvatarUrl(input.fullName.replace(/\s+/g, '+')),
@@ -89,12 +89,12 @@ export class AuthService {
   }
 
   async getCurrentUser(jwtUser: JwtUser) {
-    const userProfile = await this.userProfilesRepository.findOneOrFail({
-      where: { userId: jwtUser.sub },
+    const fanProfile = await this.fanProfilesRepository.findOneOrFail({
+      where: { fanId: jwtUser.sub },
       relations: { user: true },
       cache: true,
     });
-    return userProfile;
+    return fanProfile;
   }
 
   async getOnboardingCreator(jwtUser: JwtUser) {
@@ -121,7 +121,7 @@ export class AuthService {
     } satisfies Partial<JwtUser>;
 
     return {
-      userId: user.id,
+      fanId: user.id,
       expiresIn: moment().add(72, 'hours').toDate().getTime(),
       accessToken: this.jwtService.sign(payload),
     };

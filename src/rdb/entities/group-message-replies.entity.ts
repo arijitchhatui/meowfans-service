@@ -11,8 +11,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { GroupMessagesEntity } from './group-messages.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'group_message_replies' })
@@ -25,14 +25,14 @@ export class GroupMessageRepliesEntity {
   @Column()
   messageId: string;
 
-  @Field(() => [UserProfilesEntity])
-  @ManyToMany(() => UserProfilesEntity, (userProfiles) => userProfiles.groupMessageReplies, { onDelete: 'CASCADE' })
+  @Field(() => [FanProfilesEntity])
+  @ManyToMany(() => FanProfilesEntity, (userProfiles) => userProfiles.groupMessageReplies, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'group_message_repliers',
     joinColumn: { name: 'group_reply_id' },
-    inverseJoinColumn: { name: 'user_id' },
+    inverseJoinColumn: { name: 'fan_id' },
   })
-  repliers: UserProfilesEntity[];
+  repliers: FanProfilesEntity[];
 
   @Field()
   @CreateDateColumn()

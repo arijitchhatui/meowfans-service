@@ -1,7 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { MessagesEntity } from './messages.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'message_purchases' })
@@ -22,10 +22,10 @@ export class MessagePurchasesEntity {
   @CreateDateColumn()
   purchasedAt: string;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ messagePurchases }) => messagePurchases, { onDelete: 'CASCADE' })
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ messagePurchases }) => messagePurchases, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fan_id' })
-  userProfile: UserProfilesEntity;
+  fanProfile: FanProfilesEntity;
 
   @Field(() => MessagesEntity)
   @ManyToOne(() => MessagesEntity, (message) => message.messagePurchases, { onDelete: 'CASCADE' })

@@ -8,7 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'fan_payment_profiles' })
@@ -33,8 +33,8 @@ export class FanPaymentProfilesEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ fanPaymentProfiles }) => fanPaymentProfiles, { onDelete: 'CASCADE' })
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ fanPaymentProfiles }) => fanPaymentProfiles, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fan_id' })
-  userProfile: UserProfilesEntity;
+  fanProfile: FanProfilesEntity;
 }

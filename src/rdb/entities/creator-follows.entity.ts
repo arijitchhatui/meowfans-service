@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'creator_follows' })
@@ -20,11 +20,11 @@ export class CreatorFollowsEntity {
 
   @Field()
   @Column()
-  followingUserId: string;
+  fanId: string;
 
   @Field()
   @Column()
-  followedCreatorId: string;
+  creatorId: string;
 
   @Field()
   @CreateDateColumn()
@@ -36,11 +36,11 @@ export class CreatorFollowsEntity {
 
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, ({ followers }) => followers, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'followed_creator_id' })
+  @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ following }) => following, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'following_user_id' })
-  userProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ following }) => following, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
+  fanProfile: FanProfilesEntity;
 }

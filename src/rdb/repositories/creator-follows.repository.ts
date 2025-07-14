@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { GetFollowersInput } from 'src/creator-profiles';
-import { GetFollowingInput } from 'src/user-profiles';
+import { GetFollowingInput } from 'src/fan-profiles';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { CreatorFollowsEntity } from '../entities';
 
@@ -14,8 +14,8 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
 
   public async getFollowers(creatorId: string, input: GetFollowersInput) {
     const query = this.createQueryBuilder('creator_follows')
-      .leftJoin('creator_follows.userProfile', 'userProfile')
-      .addSelect(['userProfile.username', 'userProfile.userId', 'userProfile.fullName', 'userProfile.avatarUrl'])
+      .leftJoin('creator_follows.fanProfile', 'fanProfile')
+      .addSelect(['fanProfile.username', 'fanProfile.fanId', 'fanProfile.fullName', 'fanProfile.avatarUrl'])
       .where('creator_follows.followedCreatorId = :creatorId', { creatorId: creatorId })
       .limit(40)
       .offset(input.offset);
@@ -23,7 +23,7 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
     return await query.getMany();
   }
 
-  public async getFollowing(userId: string, input: GetFollowingInput) {
+  public async getFollowing(fanId: string, input: GetFollowingInput) {
     const query = this.createQueryBuilder('creator_follows')
       .leftJoin('creator_follows.creatorProfile', 'creatorProfile')
       .addSelect([
@@ -32,7 +32,7 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
         'creatorProfile.avatarUrl',
         'creatorProfile.creatorId',
       ])
-      .where('creator_follows.followingUserId = :userId', { userId: userId })
+      .where('creator_follows.followingUserId = :fanId', { fanId: fanId })
       .limit(40)
       .offset(input.offset);
 

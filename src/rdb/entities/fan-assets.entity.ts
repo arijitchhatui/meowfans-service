@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { AssetsEntity } from './assets.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'fan_assets' })
@@ -34,10 +34,10 @@ export class FanAssetsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, (userProfile) => userProfile.fanAssets, { onDelete: 'CASCADE' })
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, (fanProfile) => fanProfile.fanAssets, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fan_id' })
-  userProfile: UserProfilesEntity;
+  fanProfile: FanProfilesEntity;
 
   @Field(() => AssetsEntity)
   @ManyToOne(() => AssetsEntity, (assets) => assets.fanAssets, { onDelete: 'CASCADE' })

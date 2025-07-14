@@ -45,20 +45,20 @@ export class CreatorProfilesService {
 
   public async deleteFollower(creatorId: string, input: DeleteFollowerInput): Promise<boolean> {
     const result = await this.creatorFollowsRepository.delete({
-      followedCreatorId: creatorId,
-      followingUserId: input.userId,
+      creatorId: creatorId,
+      fanId: input.fanId,
     });
     return !!result;
   }
 
   public async blockFan(creatorId: string, input: BlockFanInput): Promise<boolean> {
     const wasBlocked = await this.creatorBlocksRepository.findOne({
-      where: { blockingCreatorId: creatorId, blockedUserId: input.userId },
+      where: { creatorId: creatorId, fanId: input.fanId },
     });
     if (wasBlocked) return true;
     const result = await this.creatorBlocksRepository.save({
-      blockingCreatorId: creatorId,
-      blockedUserId: input.userId,
+      creatorId: creatorId,
+      fanId: input.fanId,
     });
     return !!result;
   }
@@ -69,8 +69,8 @@ export class CreatorProfilesService {
 
   public async unBlockFan(creatorId: string, input: BlockFanInput): Promise<boolean> {
     const blocked = await this.creatorBlocksRepository.delete({
-      blockedUserId: input.userId,
-      blockingCreatorId: creatorId,
+      fanId: input.fanId,
+      creatorId: creatorId,
     });
     return !!blocked.affected;
   }
@@ -81,12 +81,12 @@ export class CreatorProfilesService {
 
   public async restrictFan(creatorId: string, input: RestrictFanInput): Promise<boolean> {
     const wasRestricted = await this.creatorRestrictsRepository.findOne({
-      where: { creatorId, restrictedUserId: input.userId },
+      where: { creatorId, fanId: input.fanId },
     });
     if (wasRestricted) return true;
     const result = await this.creatorRestrictsRepository.save({
       creatorId: creatorId,
-      restrictedUserId: input.userId,
+      fanId: input.fanId,
     });
     return !!result;
   }
@@ -94,7 +94,7 @@ export class CreatorProfilesService {
   public async unRestrictFan(creatorId: string, input: RestrictFanInput): Promise<boolean> {
     const restricted = await this.creatorRestrictsRepository.delete({
       creatorId: creatorId,
-      restrictedUserId: input.userId,
+      fanId: input.fanId,
     });
     return !!restricted.affected;
   }

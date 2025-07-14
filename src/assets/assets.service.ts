@@ -63,10 +63,10 @@ export class AssetsService {
   }
 
   public async createAsset(creatorId: string, input: CreateAssetInput) {
-    const asset = this.assetsRepository.create({
+    const asset = await this.assetsRepository.save({
       blurredUrl: input.blurredUrl,
       rawUrl: input.rawUrl,
-      contentType: input.type,
+      contentType: input.contentType,
       creatorId: creatorId,
       mimeType: input.mimeType,
       isVideo: input.isVideo,

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserProfilesResolver } from './user-profiles.resolver';
+import { FanProfilesResolver } from './fan-profiles.resolver';
 
-describe('UserProfilesResolver', () => {
-  let resolver: UserProfilesResolver;
+describe('FanProfilesResolver', () => {
+  let resolver: FanProfilesResolver;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserProfilesResolver],
+      providers: [FanProfilesResolver],
     }).compile();
 
-    resolver = module.get<UserProfilesResolver>(UserProfilesResolver);
+    resolver = module.get<FanProfilesResolver>(FanProfilesResolver);
   });
 
   it('should be defined', () => {

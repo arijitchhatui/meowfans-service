@@ -13,8 +13,8 @@ export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
 
   public async getBlockedUsers(creatorId: string, input: GetBlockedUsersInput) {
     const query = this.createQueryBuilder('creator_blocks')
-      .leftJoin('creator_blocks.blockedUserProfile', 'userProfile')
-      .addSelect(['userProfile.username', 'userProfile.fullName', 'userProfile.avatarUrl', 'userProfile.userId'])
+      .leftJoin('creator_blocks.fanProfile', 'fanProfile')
+      .addSelect(['fanProfile.username', 'fanProfile.fullName', 'fanProfile.avatarUrl', 'fanProfile.fanId'])
       .where('creator_blocks.blockingCreatorId = :creatorId', { creatorId: creatorId })
       .limit(30)
       .offset(input.offset);

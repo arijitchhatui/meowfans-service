@@ -12,8 +12,8 @@ import {
 } from 'typeorm';
 import { CreatorPaymentProfilesEntity } from './creator-payment-profiles.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { SubscriptionPlansEntity } from './subscription-plans.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'subscriptions' })
@@ -28,7 +28,7 @@ export class SubscriptionsEntity {
 
   @Field()
   @Column()
-  subscriberId: string;
+  fanId: string;
 
   @Field()
   @Column()
@@ -69,10 +69,10 @@ export class SubscriptionsEntity {
   @JoinColumn({ name: 'creator_payment_profile_id' })
   creatorPaymentProfile: CreatorPaymentProfilesEntity;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ subscriptions }) => subscriptions, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'subscriber_id' })
-  userProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ subscriptions }) => subscriptions, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
+  fanProfile: FanProfilesEntity;
 
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.subscriptions, { onDelete: 'CASCADE' })

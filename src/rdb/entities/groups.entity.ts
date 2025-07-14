@@ -12,8 +12,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { GroupMessagesEntity } from './group-messages.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'groups' })
@@ -75,23 +75,23 @@ export class GroupsEntity {
   @Column()
   backgroundColor: string;
 
-  @Field(() => [UserProfilesEntity])
-  @ManyToMany(() => UserProfilesEntity, { onDelete: 'CASCADE' })
+  @Field(() => [FanProfilesEntity])
+  @ManyToMany(() => FanProfilesEntity, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'group_participants',
     joinColumn: { name: 'group_id' },
-    inverseJoinColumn: { name: 'user_id' },
+    inverseJoinColumn: { name: 'fan_id' },
   })
-  participants: UserProfilesEntity[];
+  participants: FanProfilesEntity[];
 
-  @Field(() => [UserProfilesEntity])
-  @ManyToMany(() => UserProfilesEntity, { onDelete: 'CASCADE' })
+  @Field(() => [FanProfilesEntity])
+  @ManyToMany(() => FanProfilesEntity, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'group_moderators',
     joinColumn: { name: 'group_id' },
-    inverseJoinColumn: { name: 'user_id' },
+    inverseJoinColumn: { name: 'fan_id' },
   })
-  moderators: UserProfilesEntity[];
+  moderators: FanProfilesEntity[];
 
   @Field(() => [GroupMessagesEntity])
   @OneToMany(() => GroupMessagesEntity, (groupMessages) => groupMessages.group, { cascade: true })
