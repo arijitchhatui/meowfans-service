@@ -5,12 +5,12 @@ export class UpdatePostInput {
   @Field()
   postId: string;
 
-  @Field()
+  @Field({ nullable: true })
   caption: string;
 
-  @Field()
+  @Field({ nullable: true })
   price: number;
 
-  @Field()
+  @Field({ nullable: true })
   isExclusive: boolean;
 }

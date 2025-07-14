@@ -26,9 +26,9 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       )
       .setParameters(subQuery.getParameters())
       .leftJoinAndSelect('message_channels.creatorProfile', 'creatorProfile')
-      .leftJoinAndSelect('message_channels.userProfile', 'userProfile')
+      .leftJoinAndSelect('message_channels.fanProfile', 'fanProfile')
       .where('message_channels.id = :channelId', { channelId: input.channelId })
-      .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId });
+      .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId });
 
     return await query.getOne();
   }
@@ -49,8 +49,8 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       )
       .setParameters(messageSubQuery.getParameters())
       .leftJoinAndSelect('message_channels.creatorProfile', 'creatorProfile')
-      .leftJoinAndSelect('message_channels.userProfile', 'userProfile')
-      .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId })
+      .leftJoinAndSelect('message_channels.fanProfile', 'fanProfile')
+      .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
       .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', 'DESC');
 
     return await query.getRawMany();

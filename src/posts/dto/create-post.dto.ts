@@ -1,16 +1,16 @@
-import { Field, ID, InputType } from '@nestjs/graphql';
+import { Field, ID, InputType, Int } from '@nestjs/graphql';
 
 @InputType()
 export class CreatePostInput {
-  @Field()
+  @Field(() => String)
   caption: string;
 
-  @Field()
+  @Field(() => Boolean)
   isExclusive: boolean;
 
-  @Field()
+  @Field(() => Int)
   unlockPrice: number;
 
   @Field(() => [ID])
-  assetIds: string[];
+  creatorAssetIds: string[];
 }

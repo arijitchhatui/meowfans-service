@@ -103,12 +103,15 @@ export class CreatorProfilesEntity {
   @Column({ default: 'primary' })
   themeColor: string;
 
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Field({ nullable: true })
   @DeleteDateColumn()
   deletedAt: Date;
 

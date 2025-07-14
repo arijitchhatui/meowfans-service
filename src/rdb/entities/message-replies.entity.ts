@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { MessagesEntity } from './messages.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'group_replies' })
@@ -39,10 +39,10 @@ export class MessageRepliesEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, (userProfile) => userProfile.messageReplies, { onDelete: 'CASCADE' })
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, (fanProfile) => fanProfile.messageReplies, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'replier_id' })
-  userProfile: UserProfilesEntity;
+  fanProfile: FanProfilesEntity;
 
   @Field(() => MessagesEntity)
   @ManyToOne(() => MessagesEntity, (messages) => messages.replies, { onDelete: 'CASCADE' })

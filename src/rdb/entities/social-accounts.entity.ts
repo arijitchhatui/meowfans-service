@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'social_accounts' })
@@ -52,7 +52,7 @@ export class SocialAccountsEntity {
   deletedAt: Date;
 
   @Field(() => CreatorProfilesEntity)
-  @OneToOne(() => UserProfilesEntity, { onDelete: 'CASCADE' })
+  @OneToOne(() => FanProfilesEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 }

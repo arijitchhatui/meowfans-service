@@ -1,20 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { shake } from 'radash';
-import { UserProfilesRepository } from 'src/rdb/repositories';
-import { UpdateUserInput } from './dto';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class UsersService {
-  public constructor(private userProfilesRepository: UserProfilesRepository) {}
-
-  public async updateUserProfile(userId: string, input: UpdateUserInput) {
-    const userProfile = await this.userProfilesRepository.findOneOrFail({
-      where: { userId },
-      relations: { user: true },
-    });
-    const exists = await this.userProfilesRepository.findOne({ where: { username: input.username } });
-    if (exists) throw new BadRequestException('Username already exists!');
-
-    return this.userProfilesRepository.save(Object.assign(userProfile, shake(input)));
-  }
-}
+export class UsersService {}

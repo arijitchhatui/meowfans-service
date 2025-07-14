@@ -5,5 +5,5 @@ export class GrantMessageAccessInput {
   messageId: string;
 
   @IsUUID()
-  userId: string;
+  fanId: string;
 }

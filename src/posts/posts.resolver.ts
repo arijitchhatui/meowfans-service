@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
-import { PostCommentsEntity, PostsEntity } from 'src/rdb/entities';
+import { PostCommentsEntity, PostsEntity, PostSharesEntity } from 'src/rdb/entities';
 import {
   CreateCommentInput,
   CreatePostInput,
@@ -61,55 +61,49 @@ export class PostsResolver {
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.ADMIN])
   @Mutation(() => PostsEntity)
   public async createComment(
-    @CurrentUser() userId: string,
+    @CurrentUser() fanId: string,
     @Args('input') input: CreateCommentInput,
   ): Promise<PostsEntity> {
-    return this.postsService.createComment(userId, input);
+    return this.postsService.createComment(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.USER])
   @Mutation(() => PostCommentsEntity)
   public async updateComment(
-    @CurrentUser() userId: string,
+    @CurrentUser() fanId: string,
     @Args('input') input: UpdateCommentInput,
   ): Promise<PostCommentsEntity> {
-    return this.postsService.updateComment(userId, input);
+    return this.postsService.updateComment(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.USER])
   @Mutation(() => Boolean)
-  public async deleteComment(
-    @CurrentUser() userId: string,
-    @Args('input') input: DeleteCommentInput,
-  ): Promise<boolean> {
-    return this.postsService.deleteComment(userId, input);
+  public async deleteComment(@CurrentUser() fanId: string, @Args('input') input: DeleteCommentInput): Promise<boolean> {
+    return this.postsService.deleteComment(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.USER])
   @Mutation(() => PostsEntity)
-  public async likePost(@CurrentUser() userId: string, @Args('input') input: LikePostInput): Promise<PostsEntity> {
-    return await this.likePost(userId, input);
+  public async likePost(@CurrentUser() fanId: string, @Args('input') input: LikePostInput): Promise<PostsEntity> {
+    return await this.postsService.likePost(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.USER])
-  @Mutation(() => PostsEntity)
-  public async sharePost(@CurrentUser() userId: string, @Args('input') input: LikePostInput): Promise<PostsEntity> {
-    return await this.sharePost(userId, input);
+  @Mutation(() => PostSharesEntity)
+  public async sharePost(@CurrentUser() fanId: string, @Args('input') input: LikePostInput): Promise<PostSharesEntity> {
+    return await this.postsService.sharePost(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.USER])
   @Mutation(() => Boolean)
-  public async deleteShare(
-    @CurrentUser() userId: string,
-    @Args('input') input: DeleteSharePostInput,
-  ): Promise<boolean> {
-    return await this.deleteShare(userId, input);
+  public async deleteShare(@CurrentUser() fanId: string, @Args('input') input: DeleteSharePostInput): Promise<boolean> {
+    return await this.postsService.deleteShare(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.USER])
   @Mutation(() => PostsEntity)
-  public async savePost(@CurrentUser() userId: string, @Args('input') input: SavePostInput): Promise<PostsEntity> {
-    return await this.savePost(userId, input);
+  public async savePost(@CurrentUser() fanId: string, @Args('input') input: SavePostInput): Promise<PostsEntity> {
+    return await this.postsService.savePost(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])

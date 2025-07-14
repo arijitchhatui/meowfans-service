@@ -13,8 +13,8 @@ export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntit
 
   public async getRestrictedUsers(creatorId: string, input: GetRestrictedUsersInput) {
     const query = this.createQueryBuilder('creator_restricts')
-      .leftJoin('creator_restricts.restrictedUserProfile', 'userProfile')
-      .addSelect(['userProfile.fullName', 'userProfile.username', 'userProfile.userId', 'userProfile.avatarUrl'])
+      .leftJoin('creator_restricts.fanProfile', 'fanProfile')
+      .addSelect(['fanProfile.fullName', 'fanProfile.username', 'fanProfile.fanId', 'fanProfile.avatarUrl'])
       .where('creator_restricts.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('creator_restricts.restrictedAt', 'DESC')
       .limit(30)

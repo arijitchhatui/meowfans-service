@@ -8,8 +8,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { PostsEntity } from './posts.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'post_saves' })
@@ -24,7 +24,7 @@ export class PostSavesEntity {
 
   @Field()
   @Column()
-  userId: string;
+  fanId: string;
 
   @Field()
   @CreateDateColumn()
@@ -34,10 +34,10 @@ export class PostSavesEntity {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ postSaves }) => postSaves, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  userProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ postSaves }) => postSaves, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
+  fanProfile: FanProfilesEntity;
 
   @Field(() => PostsEntity)
   @ManyToOne(() => PostsEntity, ({ postSaves }) => postSaves, { onDelete: 'CASCADE' })

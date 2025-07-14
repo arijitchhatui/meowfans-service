@@ -25,7 +25,7 @@ export class MessageAssetsEntity {
 
   @Field()
   @Column()
-  assetId: string;
+  creatorAssetId: string;
 
   @Field()
   @CreateDateColumn()
@@ -41,7 +41,7 @@ export class MessageAssetsEntity {
 
   @Field(() => CreatorAssetsEntity)
   @ManyToOne(() => CreatorAssetsEntity, (creatorAsset) => creatorAsset.messageAssets, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'asset_id' })
+  @JoinColumn({ name: 'creator_asset_id' })
   creatorAsset: CreatorAssetsEntity;
 
   @Field(() => MessagesEntity)

@@ -33,14 +33,14 @@ export class MessagesService {
     private messagesRepository: MessagesRepository,
   ) {}
 
-  public async createChannel(userId: string, input: CreateChannelInput) {
+  public async createChannel(fanId: string, input: CreateChannelInput) {
     const channel = await this.messageChannelsRepository.findOne({
       where: { id: input.channelId },
     });
     if (channel) return channel;
 
     const newChannel = this.messageChannelsRepository.create({
-      fanId: userId,
+      fanId: fanId,
       creatorId: input.creatorId,
       fanLastSeenAt: new Date(),
       fanLastSentAt: new Date(),
@@ -57,16 +57,16 @@ export class MessagesService {
     return await this.messageChannelsRepository.save(Object.assign(channel, shake(rest)));
   }
 
-  public async getChannels(userId: string) {
-    return await this.messageChannelsRepository.getChannels(userId);
+  public async getChannels(fanId: string) {
+    return await this.messageChannelsRepository.getChannels(fanId);
   }
 
-  public async getChannel(userId: string, input: GetChannelInput) {
-    return await this.messageChannelsRepository.getChannel(userId, input);
+  public async getChannel(fanId: string, input: GetChannelInput) {
+    return await this.messageChannelsRepository.getChannel(fanId, input);
   }
 
-  public async getChannelMessages(userId: string, input: GetMessagesInput) {
-    const messages = await this.messagesRepository.getChannelMessages(userId, input);
+  public async getChannelMessages(fanId: string, input: GetMessagesInput) {
+    const messages = await this.messagesRepository.getChannelMessages(fanId, input);
 
     return await Promise.all(
       messages.map(async (msg) => {
@@ -102,15 +102,15 @@ export class MessagesService {
     return await this.messagesRepository.save(newMessage);
   }
 
-  public async updateMessage(userId: string, input: UpdateMessageInput) {
-    const message = await this.messagesRepository.findOneOrFail({ where: { id: input.messageId, senderId: userId } });
+  public async updateMessage(fanId: string, input: UpdateMessageInput) {
+    const message = await this.messagesRepository.findOneOrFail({ where: { id: input.messageId, senderId: fanId } });
     return await this.messagesRepository.save(Object.assign(message, shake(input)));
   }
 
-  public async deleteMessages(userId: string, input: DeleteMessagesInput) {
+  public async deleteMessages(fanId: string, input: DeleteMessagesInput) {
     const deleteResult = await Promise.all(
       input.messageIds.map(async (messageId) => {
-        const message = await this.messagesRepository.findOne({ where: { id: messageId, senderId: userId } });
+        const message = await this.messagesRepository.findOne({ where: { id: messageId, senderId: fanId } });
         if (message) {
           await this.messagesRepository.delete({ id: messageId });
           return true;
@@ -121,9 +121,9 @@ export class MessagesService {
     return deleteResult.some((deleted) => deleted);
   }
 
-  public async deleteMessage(userId: string, input: DeleteMessageInput) {
-    await this.messagesRepository.findOneOrFail({ where: { id: input.messageId, senderId: userId } });
-    const result = await this.messagesRepository.delete({ id: input.messageId, senderId: userId });
+  public async deleteMessage(fanId: string, input: DeleteMessageInput) {
+    await this.messagesRepository.findOneOrFail({ where: { id: input.messageId, senderId: fanId } });
+    const result = await this.messagesRepository.delete({ id: input.messageId, senderId: fanId });
     return !!result.affected;
   }
 

@@ -9,9 +9,6 @@ export class CreateAssetInput {
   rawUrl: string;
 
   @Field()
-  type: string;
-
-  @Field()
   mimeType: string;
 
   @Field({ defaultValue: false })

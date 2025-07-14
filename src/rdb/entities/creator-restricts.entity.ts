@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'creator_restricts' })
@@ -24,7 +24,7 @@ export class CreatorRestrictsEntity {
 
   @Field()
   @Column()
-  restrictedUserId: string;
+  fanId: string;
 
   @Field()
   @CreateDateColumn()
@@ -39,8 +39,8 @@ export class CreatorRestrictsEntity {
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ restrictedByCreators }) => restrictedByCreators)
-  @JoinColumn({ name: 'restricted_user_id' })
-  restrictedUserProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ restrictedByCreators }) => restrictedByCreators)
+  @JoinColumn({ name: 'fan_id' })
+  fanProfile: FanProfilesEntity;
 }

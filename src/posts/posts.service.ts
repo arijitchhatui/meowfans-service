@@ -49,15 +49,15 @@ export class PostsService {
   }
 
   public async createPost(creatorId: string, input: CreatePostInput) {
-    const post = this.postsRepository.create({
+    const post = await this.postsRepository.save({
       creatorId: creatorId,
       caption: input.caption,
       isExclusive: input.isExclusive,
       unlockPrice: input.unlockPrice,
     });
     await Promise.all(
-      input.assetIds.map(async (assetId) => {
-        await this.postAssetsRepository.save({ assetId, postId: post.id });
+      input.creatorAssetIds.map(async (assetId) => {
+        await this.postAssetsRepository.save({ creatorAssetId: assetId, postId: post.id });
       }),
     );
     await this.creatorProfilesRepository.increment({ creatorId }, 'totalPost', 1);
@@ -65,7 +65,7 @@ export class PostsService {
     if (input.isExclusive) await this.creatorProfilesRepository.increment({ creatorId }, 'totalExclusivePost', 1);
     else await this.creatorProfilesRepository.increment({ creatorId }, 'totalPublicPost', 1);
 
-    return await this.postsRepository.save(post);
+    return post;
   }
 
   public async updatePost(creatorId: string, input: UpdatePostInput) {
@@ -82,17 +82,21 @@ export class PostsService {
       where: { id: input.postId, creatorId: creatorId },
       relations: { creatorProfile: true },
     });
+
     await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPost', 1);
+
+    if (post.isExclusive) await this.creatorProfilesRepository.decrement({ creatorId }, 'totalExclusivePost', 1);
+    else await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPublicPost', 1);
 
     const result = await this.postsRepository.delete(post);
     return !!result.affected;
   }
 
-  public async createComment(userId: string, input: CreateCommentInput) {
+  public async createComment(fanId: string, input: CreateCommentInput) {
     const post = await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
     const comment = this.postCommentsRepository.create({
       postId: input.postId,
-      userId: userId,
+      fanId: fanId,
       comment: input.comment,
     });
     post.postComments.push(comment);
@@ -100,66 +104,66 @@ export class PostsService {
     return this.postsRepository.save(post);
   }
 
-  public async updateComment(userId: string, input: UpdateCommentInput) {
+  public async updateComment(fanId: string, input: UpdateCommentInput) {
     const comment = await this.postCommentsRepository.findOneOrFail({
-      where: { postId: input.postId, userId: userId },
+      where: { postId: input.postId, fanId: fanId },
     });
 
     return await this.postCommentsRepository.save(Object.assign(comment, shake(input)));
   }
 
-  public async deleteComment(userId: string, input: DeleteCommentInput) {
+  public async deleteComment(fanId: string, input: DeleteCommentInput) {
     const comment = await this.postCommentsRepository.findOneOrFail({
-      where: { postId: input.postId, userId: userId },
+      where: { postId: input.postId, fanId: fanId },
     });
     const result = await this.postCommentsRepository.delete(comment);
     await this.postsRepository.decrement({ id: input.postId }, 'commentCount', 1);
     return !!result.affected;
   }
 
-  public async likePost(userId: string, input: LikePostInput) {
+  public async likePost(fanId: string, input: LikePostInput) {
     await this.postsRepository.findOneOrFail({
       where: { id: input.postId },
       relations: { postLikes: true },
     });
 
-    const isLiked = await this.postLikesRepository.findOne({ where: { postId: input.postId, userId: userId } });
+    const isLiked = await this.postLikesRepository.findOne({ where: { postId: input.postId, fanId: fanId } });
 
     if (isLiked) {
-      await this.postLikesRepository.delete({ postId: input.postId, userId: userId });
+      await this.postLikesRepository.delete({ postId: input.postId, fanId: fanId });
       await this.postsRepository.decrement({ id: input.postId }, 'likeCount', 1);
     } else {
-      await this.postLikesRepository.save({ postId: input.postId, userId: userId });
+      await this.postLikesRepository.save({ postId: input.postId, fanId: fanId });
       await this.postsRepository.increment({ id: input.postId }, 'likeCount', 1);
     }
 
     return await this.postsRepository.findOneOrFail({ where: { id: input.postId }, relations: { postLikes: true } });
   }
 
-  public async sharePost(userId: string, input: SharePostInput) {
+  public async sharePost(fanId: string, input: SharePostInput) {
     await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
 
-    const shared = this.postSharesRepository.create({ postId: input.postId, userId: userId });
+    const shared = this.postSharesRepository.create({ postId: input.postId, fanId: fanId });
     return await this.postSharesRepository.save(shared);
   }
 
-  public async deleteShare(userId: string, input: DeleteSharePostInput) {
+  public async deleteShare(fanId: string, input: DeleteSharePostInput) {
     await this.postSharesRepository.findOneOrFail({
-      where: { id: input.shareId, userId: userId, postId: input.postId },
+      where: { id: input.shareId, fanId: fanId, postId: input.postId },
     });
 
     const result = await this.postSharesRepository.delete({ id: input.shareId, postId: input.postId });
     return !!result.affected;
   }
 
-  public async savePost(userId: string, input: SavePostInput) {
+  public async savePost(fanId: string, input: SavePostInput) {
     await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
-    const isSaved = await this.postsSavesRepository.findOne({ where: { postId: input.postId, userId: userId } });
+    const isSaved = await this.postsSavesRepository.findOne({ where: { postId: input.postId, fanId: fanId } });
     if (isSaved) {
-      await this.postsSavesRepository.delete({ userId: userId, postId: input.postId });
+      await this.postsSavesRepository.delete({ fanId: fanId, postId: input.postId });
       await this.postsRepository.decrement({ id: input.postId }, 'saveCount', 1);
     }
-    await this.postsSavesRepository.save({ userId: userId, postId: input.postId });
+    await this.postsSavesRepository.save({ fanId: fanId, postId: input.postId });
     await this.postsRepository.increment({ id: input.postId }, 'saveCount', 1);
 
     return await this.postsRepository.findOneOrFail({ where: { id: input.postId } });

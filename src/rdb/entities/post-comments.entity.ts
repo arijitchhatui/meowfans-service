@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { PostsEntity } from './posts.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'post_comments' })
@@ -25,7 +25,7 @@ export class PostCommentsEntity {
 
   @Field()
   @Column()
-  userId: string;
+  fanId: string;
 
   @Field()
   @Column()
@@ -43,10 +43,10 @@ export class PostCommentsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ postComments }) => postComments, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  userProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ postComments }) => postComments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
+  fanProfile: FanProfilesEntity;
 
   @Field(() => PostsEntity)
   @ManyToOne(() => PostsEntity, ({ postComments }) => postComments, { onDelete: 'CASCADE' })

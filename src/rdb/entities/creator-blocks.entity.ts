@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'creator_blocks' })
@@ -20,11 +20,11 @@ export class CreatorBlocksEntity {
 
   @Field()
   @Column()
-  blockedUserId: string;
+  fanId: string;
 
   @Field()
   @Column()
-  blockingCreatorId: string;
+  creatorId: string;
 
   @Field()
   @CreateDateColumn()
@@ -36,11 +36,11 @@ export class CreatorBlocksEntity {
 
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, ({ creatorBlocks }) => creatorBlocks, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'blocking_creator_id' })
+  @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ blockedByCreators }) => blockedByCreators, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'blocked_user_id' })
-  blockedUserProfile: UserProfilesEntity;
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ blockedByCreators }) => blockedByCreators, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fan_id' })
+  fanProfile: FanProfilesEntity;
 }

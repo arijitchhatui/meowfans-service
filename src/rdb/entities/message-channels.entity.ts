@@ -10,8 +10,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { FanProfilesEntity } from './fan-profiles.entity';
 import { MessagesEntity } from './messages.entity';
-import { UserProfilesEntity } from './user-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'message_channels' })
@@ -81,10 +81,10 @@ export class MessageChannelsEntity {
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
-  @Field(() => UserProfilesEntity)
-  @ManyToOne(() => UserProfilesEntity, ({ channels }) => channels, { onDelete: 'CASCADE' })
+  @Field(() => FanProfilesEntity)
+  @ManyToOne(() => FanProfilesEntity, ({ channels }) => channels, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fan_id' })
-  userProfile: UserProfilesEntity;
+  fanProfile: FanProfilesEntity;
 
   @Field(() => [MessagesEntity])
   @OneToMany(() => MessagesEntity, (message) => message.channel, { cascade: true })

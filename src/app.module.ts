@@ -8,14 +8,14 @@ import { AssetsModule } from './assets/assets.module';
 import { AssetsService } from './assets/assets.service';
 import { AuthModule } from './auth/auth.module';
 import { CreatorProfilesModule } from './creator-profiles/creator-profiles.module';
+import { FanProfilesModule } from './fan-profiles/fan-profiles.module';
 import { MessagesModule } from './messages/messages.module';
+import { PostCommentsModule } from './post-comments/post-comments.module';
 import { PostCommentsService } from './post-comments/post-comments.service';
 import { PostsModule } from './posts/posts.module';
 import { RdbModule } from './rdb/rdb.module';
 import { UploadsModule } from './uploads/uploads.module';
-import { UserProfilesModule } from './user-profiles/user-profiles.module';
 import { UsersModule } from './users/users.module';
-import { PostCommentsModule } from './post-comments/post-comments.module';
 
 @Module({
   imports: [
@@ -37,7 +37,7 @@ import { PostCommentsModule } from './post-comments/post-comments.module';
     AuthModule,
     UsersModule,
     UploadsModule,
-    UserProfilesModule,
+    FanProfilesModule,
     CreatorProfilesModule,
     PostsModule,
     AssetsModule,

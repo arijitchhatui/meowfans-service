@@ -72,7 +72,7 @@ export class PostsEntity {
   creatorProfile: CreatorProfilesEntity;
 
   @Field(() => [PostLikesEntity])
-  @OneToMany(() => PostLikesEntity, ({ post }) => post, { cascade: true })
+  @OneToMany(() => PostLikesEntity, (postLikes) => postLikes.post, { cascade: true })
   postLikes: PostLikesEntity[];
 
   @Field(() => [PostAssetsEntity])
