@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import {
   CreatorProfilesRepository,
@@ -37,6 +37,18 @@ export class PostsService {
     private postsRepository: PostsRepository,
   ) {}
 
+  public async updatePostCount(creatorId: string, count: 1 | -1, isExclusive: boolean) {
+    if (count === 1) {
+      await this.creatorProfilesRepository.increment({ creatorId }, 'totalPost', 1);
+      if (isExclusive) await this.creatorProfilesRepository.increment({ creatorId }, 'totalExclusivePost', 1);
+      else await this.creatorProfilesRepository.increment({ creatorId }, 'totalPublicPost', 1);
+    } else {
+      await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPost', 1);
+      if (isExclusive) await this.creatorProfilesRepository.decrement({ creatorId }, 'totalExclusivePost', 1);
+      else await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPublicPost', 1);
+    }
+  }
+
   public async getPosts(creatorId: string) {
     return await this.postsRepository.find({ where: { creatorId }, relations: { creatorProfile: true } });
   }
@@ -49,22 +61,20 @@ export class PostsService {
   }
 
   public async createPost(creatorId: string, input: CreatePostInput) {
+    if (input.isExclusive && !input.unlockPrice) throw new BadRequestException({ message: 'Invalid Query' });
+
     const post = await this.postsRepository.save({
       creatorId: creatorId,
       caption: input.caption,
       isExclusive: input.isExclusive,
-      unlockPrice: input.unlockPrice,
+      unlockPrice: input.isExclusive ? input.unlockPrice : null,
     });
     await Promise.all(
       input.creatorAssetIds.map(async (assetId) => {
         await this.postAssetsRepository.save({ creatorAssetId: assetId, postId: post.id });
       }),
     );
-    await this.creatorProfilesRepository.increment({ creatorId }, 'totalPost', 1);
-
-    if (input.isExclusive) await this.creatorProfilesRepository.increment({ creatorId }, 'totalExclusivePost', 1);
-    else await this.creatorProfilesRepository.increment({ creatorId }, 'totalPublicPost', 1);
-
+    await this.updatePostCount(creatorId, 1, input.isExclusive);
     return post;
   }
 
@@ -78,30 +88,21 @@ export class PostsService {
   }
 
   public async deletePost(creatorId: string, input: DeletePostInput) {
-    const post = await this.postsRepository.findOneOrFail({
-      where: { id: input.postId, creatorId: creatorId },
-      relations: { creatorProfile: true },
-    });
+    const post = await this.postsRepository.findOneOrFail({ where: { id: input.postId, creatorId: creatorId } });
 
-    await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPost', 1);
+    await this.updatePostCount(creatorId, -1, post.isExclusive);
 
-    if (post.isExclusive) await this.creatorProfilesRepository.decrement({ creatorId }, 'totalExclusivePost', 1);
-    else await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPublicPost', 1);
-
-    const result = await this.postsRepository.delete(post);
+    const result = await this.postsRepository.delete({ id: input.postId });
     return !!result.affected;
   }
 
   public async createComment(fanId: string, input: CreateCommentInput) {
-    const post = await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
-    const comment = this.postCommentsRepository.create({
-      postId: input.postId,
-      fanId: fanId,
-      comment: input.comment,
-    });
-    post.postComments.push(comment);
+    await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
+
+    const comment = this.postCommentsRepository.create({ postId: input.postId, fanId: fanId, comment: input.comment });
     await this.postsRepository.increment({ id: input.postId }, 'commentCount', 1);
-    return this.postsRepository.save(post);
+
+    return this.postCommentsRepository.save(comment);
   }
 
   public async updateComment(fanId: string, input: UpdateCommentInput) {
@@ -162,9 +163,10 @@ export class PostsService {
     if (isSaved) {
       await this.postsSavesRepository.delete({ fanId: fanId, postId: input.postId });
       await this.postsRepository.decrement({ id: input.postId }, 'saveCount', 1);
+    } else {
+      await this.postsSavesRepository.save({ fanId: fanId, postId: input.postId });
+      await this.postsRepository.increment({ id: input.postId }, 'saveCount', 1);
     }
-    await this.postsSavesRepository.save({ fanId: fanId, postId: input.postId });
-    await this.postsRepository.increment({ id: input.postId }, 'saveCount', 1);
 
     return await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
   }

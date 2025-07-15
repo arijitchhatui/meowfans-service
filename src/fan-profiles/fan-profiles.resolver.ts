@@ -11,13 +11,13 @@ import { FanProfilesService } from './fan-profiles.service';
 export class FanProfilesResolver {
   public constructor(private userProfilesService: FanProfilesService) {}
 
-  @Auth(GqlAuthGuard, [UserRoles.USER])
+  @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Query(() => FanProfilesEntity)
   public async getFanProfile(@CurrentUser() fanId: string): Promise<FanProfilesEntity> {
     return await this.userProfilesService.getFanProfile(fanId);
   }
 
-  @Auth(GqlAuthGuard, [UserRoles.USER])
+  @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Mutation(() => FanProfilesEntity)
   public async updateFanProfile(
     @CurrentUser() fanId: string,
@@ -26,7 +26,7 @@ export class FanProfilesResolver {
     return await this.userProfilesService.updateFanProfile(fanId, input);
   }
 
-  @Auth(GqlAuthGuard, [UserRoles.USER])
+  @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Mutation(() => CreatorFollowsEntity)
   public async followCreator(
     @CurrentUser() fanId: string,
@@ -35,7 +35,7 @@ export class FanProfilesResolver {
     return await this.userProfilesService.followCreator(fanId, input);
   }
 
-  @Auth(GqlAuthGuard, [UserRoles.USER])
+  @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Mutation(() => Boolean)
   public async unFollowCreator(
     @CurrentUser() fanId: string,
@@ -44,7 +44,7 @@ export class FanProfilesResolver {
     return await this.userProfilesService.unFollowCreator(fanId, input);
   }
 
-  @Auth(GqlAuthGuard, [UserRoles.USER])
+  @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Query(() => [CreatorFollowsEntity])
   public async getFollowing(
     @CurrentUser() fanId: string,

@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -38,9 +38,9 @@ export class PostsEntity {
   @Column()
   isExclusive: boolean;
 
-  @Field()
-  @Column()
-  unlockPrice: number;
+  @Field(() => Int, { nullable: true })
+  @Column({ type: 'int', nullable: true })
+  unlockPrice: number | null;
 
   @Field({ defaultValue: 0 })
   @Column({ default: 0 })
@@ -53,6 +53,10 @@ export class PostsEntity {
   @Field({ defaultValue: 0 })
   @Column({ default: 0 })
   shareCount: number;
+
+  @Field({ defaultValue: 0 })
+  @Column({ default: 0 })
+  commentCount: number;
 
   @Field()
   @CreateDateColumn()
