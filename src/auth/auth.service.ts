@@ -88,7 +88,7 @@ export class AuthService {
     return this.createToken(creator);
   }
 
-  async getCurrentUser(jwtUser: JwtUser) {
+  async getCurrentFan(jwtUser: JwtUser) {
     const fanProfile = await this.fanProfilesRepository.findOneOrFail({
       where: { fanId: jwtUser.sub },
       relations: { user: true },
@@ -117,11 +117,11 @@ export class AuthService {
       sub: user.id,
       jti: randomUUID(),
       version: jwtVersion,
-      roles: user.isCreator ? [UserRoles.CREATOR] : [UserRoles.USER],
+      roles: user.isCreator ? [UserRoles.CREATOR] : [UserRoles.FAN],
     } satisfies Partial<JwtUser>;
 
     return {
-      fanId: user.id,
+      userId: user.id,
       expiresIn: moment().add(72, 'hours').toDate().getTime(),
       accessToken: this.jwtService.sign(payload),
     };

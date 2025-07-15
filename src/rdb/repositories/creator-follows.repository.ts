@@ -16,7 +16,7 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
     const query = this.createQueryBuilder('creator_follows')
       .leftJoin('creator_follows.fanProfile', 'fanProfile')
       .addSelect(['fanProfile.username', 'fanProfile.fanId', 'fanProfile.fullName', 'fanProfile.avatarUrl'])
-      .where('creator_follows.followedCreatorId = :creatorId', { creatorId: creatorId })
+      .where('creator_follows.creatorId = :creatorId', { creatorId: creatorId })
       .limit(40)
       .offset(input.offset);
 
@@ -32,7 +32,7 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
         'creatorProfile.avatarUrl',
         'creatorProfile.creatorId',
       ])
-      .where('creator_follows.followingUserId = :fanId', { fanId: fanId })
+      .where('creator_follows.fanId = :fanId', { fanId: fanId })
       .limit(40)
       .offset(input.offset);
 

@@ -30,6 +30,6 @@ export class AuthController {
   @ApiBearerAuth()
   @Get('/status')
   async getStatus(@CurrentUserExpanded() user: JwtUser) {
-    return this.authService.getCurrentUser(user);
+    return this.authService.getCurrentFan(user);
   }
 }

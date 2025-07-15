@@ -15,7 +15,7 @@ export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
     const query = this.createQueryBuilder('creator_blocks')
       .leftJoin('creator_blocks.fanProfile', 'fanProfile')
       .addSelect(['fanProfile.username', 'fanProfile.fullName', 'fanProfile.avatarUrl', 'fanProfile.fanId'])
-      .where('creator_blocks.blockingCreatorId = :creatorId', { creatorId: creatorId })
+      .where('creator_blocks.creatorId = :creatorId', { creatorId: creatorId })
       .limit(30)
       .offset(input.offset);
 

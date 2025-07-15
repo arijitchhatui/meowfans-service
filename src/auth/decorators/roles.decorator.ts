@@ -1,7 +1,7 @@
 import { CustomDecorator, SetMetadata } from '@nestjs/common';
 
 export enum UserRoles {
-  USER = 'user',
+  FAN = 'fan',
   ADMIN = 'admin',
   VIEWER = 'viewer',
   CREATOR = 'creator',
