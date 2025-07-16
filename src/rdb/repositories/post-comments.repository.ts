@@ -13,29 +13,27 @@ export class PostCommentsRepository extends Repository<PostCommentsEntity> {
   }
 
   public async getAllComments(creatorId: string, input: GetAllCommentsInput) {
-    const query = this.createQueryBuilder('post_comments')
-      .leftJoinAndSelect('post_comments.fanProfile', 'fanProfile')
+    return await this.createQueryBuilder('post_comments')
+      .leftJoin('post_comments.fanProfile', 'fanProfile')
       .innerJoin('post_comments.post', 'post')
-      .addSelect(['fanProfile.avatarUrl', 'fanProfile.fullName', 'fanProfile.username'])
+      .addSelect(['fanProfile.avatarUrl', 'fanProfile.fullName', 'fanProfile.username', 'fanProfile.fanId'])
       .where('post.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('post_comments.createdAt', 'DESC')
       .limit(30)
-      .offset(input.offset);
-
-    return await query.getMany();
+      .offset(input.offset)
+      .getMany();
   }
 
   public async getCommentsByPostId(creatorId: string, input: GetPostCommentsInput) {
-    const query = this.createQueryBuilder('post_comments')
+    return await this.createQueryBuilder('post_comments')
       .leftJoin('post_comments.fanProfile', 'fanProfile')
       .innerJoin('post_comments.post', 'post')
-      .addSelect(['fanProfile.avatarUrl', 'fanProfile.username', 'fanProfile.fullName'])
+      .addSelect(['fanProfile.avatarUrl', 'fanProfile.username', 'fanProfile.fullName', 'fanProfile.fanId'])
       .where('post_comments.postId = :postId', { postId: input.postId })
       .andWhere('post.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('post_comments.createdAt', 'DESC')
       .limit(30)
-      .offset(input.offset);
-
-    return await query.getMany();
+      .offset(input.offset)
+      .getMany();
   }
 }

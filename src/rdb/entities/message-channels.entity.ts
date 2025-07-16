@@ -72,7 +72,7 @@ export class MessageChannelsEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field()
+  @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 

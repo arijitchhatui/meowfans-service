@@ -5,15 +5,15 @@ export class UpdateChannelInput {
   @Field()
   channelId: string;
 
-  @Field()
+  @Field({ nullable: true })
   isMuted: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   isRestricted: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   isBlocked: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   isMessagingBlocked: boolean;
 }
