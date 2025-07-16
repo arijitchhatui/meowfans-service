@@ -6,5 +6,5 @@ export class CreateChannelInput {
   creatorId: string;
 
   @Field()
-  channelId: string;
+  fanId: string;
 }

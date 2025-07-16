@@ -33,40 +33,36 @@ export class MessagesService {
     private messagesRepository: MessagesRepository,
   ) {}
 
-  public async createChannel(fanId: string, input: CreateChannelInput) {
+  public async createChannel(input: CreateChannelInput) {
     const channel = await this.messageChannelsRepository.findOne({
-      where: { id: input.channelId },
+      where: { fanId: input.fanId, creatorId: input.creatorId },
     });
     if (channel) return channel;
 
-    const newChannel = this.messageChannelsRepository.create({
-      fanId: fanId,
+    return await this.messageChannelsRepository.save({
+      fanId: input.fanId,
       creatorId: input.creatorId,
       fanLastSeenAt: new Date(),
       fanLastSentAt: new Date(),
     });
-
-    return await this.messageChannelsRepository.save(newChannel);
   }
 
   public async updateChannel(creatorId: string, input: UpdateChannelInput) {
-    const { channelId, ...rest } = input;
-    const channel = await this.messageChannelsRepository.findOneOrFail({
-      where: { creatorId, id: channelId },
-    });
-    return await this.messageChannelsRepository.save(Object.assign(channel, shake(rest)));
+    const channel = await this.messageChannelsRepository.findOneOrFail({ where: { creatorId, id: input.channelId } });
+
+    return await this.messageChannelsRepository.save(Object.assign(channel, shake(input)));
   }
 
-  public async getChannels(fanId: string) {
-    return await this.messageChannelsRepository.getChannels(fanId);
+  public async getChannels(userId: string) {
+    return await this.messageChannelsRepository.getChannels(userId);
   }
 
-  public async getChannel(fanId: string, input: GetChannelInput) {
-    return await this.messageChannelsRepository.getChannel(fanId, input);
+  public async getChannel(userId: string, input: GetChannelInput) {
+    return await this.messageChannelsRepository.getChannel(userId, input);
   }
 
-  public async getChannelMessages(fanId: string, input: GetMessagesInput) {
-    const messages = await this.messagesRepository.getChannelMessages(fanId, input);
+  public async getChannelMessages(userId: string, input: GetMessagesInput) {
+    const messages = await this.messagesRepository.getChannelMessages(userId, input);
 
     return await Promise.all(
       messages.map(async (msg) => {

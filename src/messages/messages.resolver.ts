@@ -6,6 +6,8 @@ import {
   DeleteMessageInput,
   DeleteMessagesInput,
   GetChannelInput,
+  GetChannelOutput,
+  GetChannelsOutput,
   GetMessagesInput,
   SendReactionInput,
   SendReplyToCreatorInput,
@@ -23,11 +25,8 @@ export class MessagesResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
   @Mutation(() => MessageChannelsEntity)
-  public async createChannel(
-    @CurrentUser() fanId: string,
-    @Args('input') input: CreateChannelInput,
-  ): Promise<MessageChannelsEntity> {
-    return await this.messagesService.createChannel(fanId, input);
+  public async createChannel(@Args('input') input: CreateChannelInput): Promise<MessageChannelsEntity> {
+    return await this.messagesService.createChannel(input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
@@ -38,17 +37,17 @@ export class MessagesResolver {
   ): Promise<MessageChannelsEntity> {
     return this.messagesService.updateChannel(creatorId, input);
   }
-  //needs to be fixed // output- lastMessageField
+
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
-  @Query(() => [MessageChannelsEntity])
-  public async getChannels(@CurrentUser() fanId: string) {
-    return await this.messagesService.getChannels(fanId);
+  @Query(() => [GetChannelsOutput])
+  public async getChannels(@CurrentUser() userId: string): Promise<GetChannelsOutput[]> {
+    return await this.messagesService.getChannels(userId);
   }
   //
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
-  @Query(() => [MessageChannelsEntity])
-  public async getChannel(@CurrentUser() fanId: string, @Args('input') input: GetChannelInput) {
-    return this.messagesService.getChannel(fanId, input);
+  @Query(() => GetChannelOutput)
+  public async getChannel(@CurrentUser() userId: string, @Args('input') input: GetChannelInput) {
+    return await this.messagesService.getChannel(userId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])

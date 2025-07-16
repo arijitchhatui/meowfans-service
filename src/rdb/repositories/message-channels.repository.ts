@@ -1,5 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetChannelInput } from 'src/messages/dto';
+import { GetChannelInput, GetChannelsOutput } from 'src/messages/dto';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { MessageChannelsEntity, MessagesEntity } from '../entities';
 
@@ -12,47 +12,51 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
   }
 
   public async getChannel(userId: string, input: GetChannelInput) {
-    const subQuery = this.createQueryBuilder('messages')
-      .select('messages.id')
-      .where('messages.channelId = message_channels.id')
-      .orderBy('messages.createdAt', 'DESC')
-      .limit(1);
-    const query = this.createQueryBuilder('message_channels')
-      .leftJoinAndMapOne(
-        'message_channels.lastMessage',
-        MessagesEntity,
-        'lastMessage',
-        `lastMessage.id = ${subQuery.getQuery()}`,
-      )
-      .setParameters(subQuery.getParameters())
-      .leftJoinAndSelect('message_channels.creatorProfile', 'creatorProfile')
-      .leftJoinAndSelect('message_channels.fanProfile', 'fanProfile')
+    return await this.createQueryBuilder('message_channels')
+      .leftJoin('message_channels.creatorProfile', 'creator')
+      .leftJoin('message_channels.fanProfile', 'fan')
+      .addSelect(['creator.fullName', 'creator.username', 'creator.creatorId', 'creator.avatarUrl'])
+      .addSelect(['fan.fullName', 'fan.username', 'fan.fanId', 'fan.avatarUrl'])
       .where('message_channels.id = :channelId', { channelId: input.channelId })
-      .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId });
-
-    return await query.getOne();
+      .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
+      .getOne();
   }
 
   public async getChannels(userId: string) {
-    const messageSubQuery = this.createQueryBuilder('messages')
-      .select('messages.id')
-      .where('messages.channelId = message_channels.id')
-      .orderBy('messages.createdAt', 'DESC')
-      .limit(1);
+    const messageSubQuery = this.createQueryBuilder()
+      .select('DISTINCT ON (m."channel_id") m."channel_id"', 'channelId')
+      .addSelect('m."content"', 'lastMessage')
+      .addSelect('m."created_at"', 'messageSentAt')
+      .from(MessagesEntity, 'm')
+      .orderBy('m."channel_id"')
+      .addOrderBy('m."created_at"', 'DESC');
 
     const query = this.createQueryBuilder('message_channels')
-      .leftJoinAndMapOne(
-        'message_channels.lastMessage',
-        MessagesEntity,
-        'lastMessage',
-        `lastMessage.id = ${messageSubQuery.getQuery()}`,
-      )
+      .leftJoin(`(${messageSubQuery.getQuery()})`, 'lastMessage', '"lastMessage"."channelId" = message_channels.id')
       .setParameters(messageSubQuery.getParameters())
-      .leftJoinAndSelect('message_channels.creatorProfile', 'creatorProfile')
-      .leftJoinAndSelect('message_channels.fanProfile', 'fanProfile')
+      .addSelect('"lastMessage"."lastMessage"', 'lastMessage')
+      .leftJoin('message_channels.creatorProfile', 'creatorProfile')
+      .leftJoin('message_channels.fanProfile', 'fanProfile')
+      .addSelect('fanProfile.fullName', 'fanFullName')
+      .addSelect('message_channels.id', 'id')
+      .addSelect('message_channels.creatorId', 'creatorId')
+      .addSelect('message_channels.fanId', 'fanId')
+      .addSelect('message_channels.creatorLastSentAt', 'creatorLastSentAt')
+      .addSelect('message_channels.creatorLastSeenAt', 'creatorLastSeenAt')
+      .addSelect('message_channels.fanLastSentAt', 'fanLastSentAt')
+      .addSelect('message_channels.fanLastSeenAt', 'fanLastSeenAt')
+      .addSelect('message_channels.isPinned', 'isPinned')
+      .addSelect('message_channels.label', 'label')
+      .addSelect('message_channels.isMuted', 'isMuted')
+      .addSelect('message_channels.isRestricted', 'isRestricted')
+      .addSelect('message_channels.isMessagingBlocked', 'isMessagingBlocked')
+      .addSelect('message_channels.totalEarning', 'totalEarning')
+      .addSelect('message_channels.createdAt', 'createdAt')
+      .addSelect('message_channels.deletedAt', 'deletedAt')
+      .addSelect('creatorProfile.fullName', 'creatorFullName')
       .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
       .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', 'DESC');
 
-    return await query.getRawMany();
+    return await query.getRawMany<GetChannelsOutput>();
   }
 }
