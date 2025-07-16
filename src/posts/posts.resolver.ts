@@ -111,7 +111,7 @@ export class PostsResolver {
   public async deletePosts(@CurrentUser() creatorId: string, @Args('input') input: DeletePostsInput): Promise<boolean> {
     return await this.postsService.deletePosts(creatorId, input);
   }
-  //
+
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Query(() => [GetPostsInfoOutput])
   public async getPostsInfo(

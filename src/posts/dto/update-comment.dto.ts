@@ -7,4 +7,7 @@ export class UpdateCommentInput {
 
   @Field()
   comment: string;
+
+  @Field()
+  commentId: string;
 }

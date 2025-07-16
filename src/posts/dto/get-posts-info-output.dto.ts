@@ -1,5 +1,4 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { PostCommentsEntity } from 'src/rdb/entities';
 
 @ObjectType()
 export class GetPostsInfoOutput {
@@ -8,9 +7,6 @@ export class GetPostsInfoOutput {
 
   @Field()
   caption: string;
-
-  @Field()
-  creatorId: string;
 
   @Field()
   isExclusive: boolean;
@@ -27,6 +23,9 @@ export class GetPostsInfoOutput {
   @Field({ defaultValue: 0 })
   shareCount: number;
 
+  @Field({ defaultValue: 0 })
+  commentCount: number;
+
   @Field()
   createdAt: Date;
 
@@ -36,9 +35,9 @@ export class GetPostsInfoOutput {
   @Field({ nullable: true })
   deletedAt: Date;
 
-  @Field({ defaultValue: 0 })
-  earning: number;
+  @Field({ nullable: true })
+  totalEarning: number;
 
-  @Field(() => PostCommentsEntity)
-  latestComment: PostCommentsEntity;
+  @Field({ nullable: true })
+  latestComment: string;
 }

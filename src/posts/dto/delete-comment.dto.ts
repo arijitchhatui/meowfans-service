@@ -4,4 +4,7 @@ import { Field, InputType } from '@nestjs/graphql';
 export class DeleteCommentInput {
   @Field()
   postId: string;
+
+  @Field()
+  commentId: string;
 }
