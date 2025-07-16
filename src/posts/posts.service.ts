@@ -107,18 +107,20 @@ export class PostsService {
 
   public async updateComment(fanId: string, input: UpdateCommentInput) {
     const comment = await this.postCommentsRepository.findOneOrFail({
-      where: { postId: input.postId, fanId: fanId },
+      where: { postId: input.postId, fanId: fanId, id: input.commentId },
     });
 
     return await this.postCommentsRepository.save(Object.assign(comment, shake(input)));
   }
 
   public async deleteComment(fanId: string, input: DeleteCommentInput) {
-    const comment = await this.postCommentsRepository.findOneOrFail({
-      where: { postId: input.postId, fanId: fanId },
+    await this.postCommentsRepository.findOneOrFail({
+      where: { postId: input.postId, fanId: fanId, id: input.commentId },
     });
-    const result = await this.postCommentsRepository.delete(comment);
+
+    const result = await this.postCommentsRepository.delete({ id: input.commentId });
     await this.postsRepository.decrement({ id: input.postId }, 'commentCount', 1);
+
     return !!result.affected;
   }
 
@@ -177,7 +179,7 @@ export class PostsService {
         const message = await this.postsRepository.findOne({ where: { id: postId, creatorId: creatorId } });
         if (message) {
           await this.postsRepository.delete({ id: postId });
-          await this.creatorProfilesRepository.decrement({ creatorId }, 'postCount', 1);
+          await this.updatePostCount(creatorId, -1, message.isExclusive);
           return true;
         }
         return false;
