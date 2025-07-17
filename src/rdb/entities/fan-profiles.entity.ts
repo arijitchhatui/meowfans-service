@@ -126,10 +126,6 @@ export class FanProfilesEntity {
   @ManyToMany(() => GroupMessageRepliesEntity, (groupMessageReplies) => groupMessageReplies.repliers, { cascade: true })
   groupMessageReplies: GroupMessageRepliesEntity[];
 
-  @Field(() => [MessageRepliesEntity])
-  @OneToMany(() => MessageRepliesEntity, (messageReplies) => messageReplies.fanProfile, { cascade: true })
-  messageReplies: MessageRepliesEntity[];
-
   @Field(() => [PostSharesEntity])
   @OneToMany(() => PostSharesEntity, ({ fanProfile }) => fanProfile, { cascade: true })
   postShares: PostSharesEntity[];

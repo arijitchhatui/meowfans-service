@@ -57,7 +57,7 @@ export class MessagesEntity {
   @JoinColumn({ name: 'replied_to' })
   repliedTo?: MessagesEntity;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ default: null, type: 'timestamp' })
   unlockedAt: Date;
 

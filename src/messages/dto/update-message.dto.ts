@@ -8,5 +8,5 @@ export class UpdateMessageInput {
   messageId: string;
 
   @Field()
-  message: string;
+  content: string;
 }
