@@ -58,6 +58,10 @@ export class PostsEntity {
   @Column({ default: 0 })
   commentCount: number;
 
+  @Field({ defaultValue: 0 })
+  @Column({ default: 0 })
+  totalEarning: number;
+
   @Field()
   @CreateDateColumn()
   createdAt: Date;

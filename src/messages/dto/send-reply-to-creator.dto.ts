@@ -11,9 +11,5 @@ export class SendReplyToCreatorInput {
   creatorId: string;
 
   @Field()
-  @IsUUID()
-  channelId: string;
-
-  @Field()
   messageId: string;
 }

@@ -52,7 +52,10 @@ export class MessagesResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
   @Query(() => [MessagesEntity])
-  public async getChannelMessages(@CurrentUser() fanId: string, input: GetMessagesInput): Promise<MessagesEntity[]> {
+  public async getChannelMessages(
+    @CurrentUser() fanId: string,
+    @Args('input') input: GetMessagesInput,
+  ): Promise<MessagesEntity[]> {
     return await this.messagesService.getChannelMessages(fanId, input);
   }
 
@@ -77,34 +80,37 @@ export class MessagesResolver {
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
   @Mutation(() => MessagesEntity)
   public async updateMessage(
-    @CurrentUser() fanId: string,
+    @CurrentUser() userId: string,
     @Args('input') input: UpdateMessageInput,
   ): Promise<MessagesEntity> {
-    return await this.messagesService.updateMessage(fanId, input);
+    return await this.messagesService.updateMessage(userId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
   @Mutation(() => Boolean)
-  public async deleteMessage(@CurrentUser() fanId: string, @Args('input') input: DeleteMessageInput): Promise<boolean> {
-    return await this.messagesService.deleteMessage(fanId, input);
+  public async deleteMessage(
+    @CurrentUser() userId: string,
+    @Args('input') input: DeleteMessageInput,
+  ): Promise<boolean> {
+    return await this.messagesService.deleteMessage(userId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
   @Mutation(() => Boolean)
   public async deleteMessages(
-    @CurrentUser() fanId: string,
+    @CurrentUser() userId: string,
     @Args('input') input: DeleteMessagesInput,
   ): Promise<boolean> {
-    return await this.messagesService.deleteMessages(fanId, input);
+    return await this.messagesService.deleteMessages(userId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.CREATOR])
   @Mutation(() => MessageReactionsEntity)
   public async sendOrDeleteMessageReaction(
-    @CurrentUser() fanId: string,
+    @CurrentUser() userId: string,
     @Args('input') input: SendReactionInput,
   ): Promise<MessageReactionsEntity> {
-    return await this.messagesService.sendOrDeleteMessageReaction(fanId, input);
+    return await this.messagesService.sendOrDeleteMessageReaction(userId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])

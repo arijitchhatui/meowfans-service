@@ -1,4 +1,4 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsUUID } from 'class-validator';
 
 @InputType()
@@ -6,7 +6,7 @@ export class SendToFanMessageInput {
   @Field()
   message: string;
 
-  @Field()
+  @Field(() => Int)
   unlockPrice: number;
 
   @Field()

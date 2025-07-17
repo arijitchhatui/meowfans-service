@@ -9,11 +9,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FanProfilesEntity } from './fan-profiles.entity';
 import { MessagesEntity } from './messages.entity';
 
 @ObjectType()
-@Entity({ name: 'group_replies' })
+@Entity({ name: 'message_replies' })
 export class MessageRepliesEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')
@@ -24,7 +23,7 @@ export class MessageRepliesEntity {
   messageId: string;
 
   @Field()
-  @Column()
+  @Column('uuid')
   replierId: string;
 
   @Field()
@@ -38,11 +37,6 @@ export class MessageRepliesEntity {
   @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
-
-  @Field(() => FanProfilesEntity)
-  @ManyToOne(() => FanProfilesEntity, (fanProfile) => fanProfile.messageReplies, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'replier_id' })
-  fanProfile: FanProfilesEntity;
 
   @Field(() => MessagesEntity)
   @ManyToOne(() => MessagesEntity, (messages) => messages.replies, { onDelete: 'CASCADE' })

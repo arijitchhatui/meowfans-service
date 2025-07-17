@@ -13,7 +13,7 @@ export class MessagesRepository extends Repository<MessagesEntity> {
   public getChannelMessages(userId: string, input: GetMessagesInput) {
     return this.createQueryBuilder('messages')
       .where('messages.channelId = :channelId', { channelId: input.channelId })
-      .andWhere('messages.creatorId = :userId OR messages.fanId = :userId', { userId: userId })
+      .andWhere('messages.senderId = :userId OR messages.recipientUserId = :userId', { userId: userId })
       .orderBy('messages.createdAt', 'DESC')
       .limit(30)
       .offset(input.offset)
