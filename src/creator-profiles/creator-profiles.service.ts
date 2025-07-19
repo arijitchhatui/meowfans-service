@@ -1,8 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { shake } from 'radash';
-import { CreatorBlocksRepository, CreatorFollowsRepository, CreatorProfilesRepository } from 'src/rdb/repositories';
+import {
+  CreatorBlocksRepository,
+  CreatorFollowsRepository,
+  CreatorProfilesRepository,
+  SocialAccountsRepository,
+} from 'src/rdb/repositories';
 import { CreatorRestrictsRepository } from 'src/rdb/repositories/creator-restricts.repository';
 import {
+  CreateAndUpdateSocialAccountsInput,
   DeleteFollowerInput,
   GetBlockedUsersInput,
   GetFollowersInput,
@@ -18,6 +24,7 @@ export class CreatorProfilesService {
     private creatorRestrictsRepository: CreatorRestrictsRepository,
     private creatorProfilesRepository: CreatorProfilesRepository,
     private creatorFollowsRepository: CreatorFollowsRepository,
+    private socialAccountsRepository: SocialAccountsRepository,
     private creatorBlocksRepository: CreatorBlocksRepository,
   ) {}
 
@@ -97,5 +104,21 @@ export class CreatorProfilesService {
       fanId: input.fanId,
     });
     return !!restricted.affected;
+  }
+
+  public async updateSocialAccounts(creatorId: string, input: CreateAndUpdateSocialAccountsInput) {
+    const account = await this.socialAccountsRepository.findOneOrFail({ where: { creatorId } });
+    return await this.socialAccountsRepository.save(Object.assign(account, shake(input)));
+  }
+
+  public async createSocialAccounts(creatorId: string, input: CreateAndUpdateSocialAccountsInput) {
+    const account = this.socialAccountsRepository.create({
+      creatorId: creatorId,
+      faceBook: input.faceBook,
+      instagram: input.website,
+      twitter: input.twitter,
+    });
+
+    return await this.socialAccountsRepository.save(account);
   }
 }
