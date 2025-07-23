@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PostCommentsRepository } from 'src/rdb/repositories';
+import { PostCommentsRepository } from '../rdb/repositories';
 import { GetAllCommentsInput } from './dto/get-all-comments.dto';
 import { GetPostCommentsInput } from './dto/get-post-comments.dto';
 

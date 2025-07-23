@@ -1,8 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetFollowersInput } from 'src/creator-profiles';
-import { GetFollowingInput } from 'src/fan-profiles';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { CreatorFollowsEntity } from '../entities';
+import { GetFollowersInput } from '../../creator-profiles';
+import { GetFollowingInput } from '../../fan-profiles';
 
 @Injectable()
 export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {

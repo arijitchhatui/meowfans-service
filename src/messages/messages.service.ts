@@ -7,7 +7,7 @@ import {
   MessageReactionsRepository,
   MessageRepliesRepository,
   MessagesRepository,
-} from 'src/rdb/repositories';
+} from '../rdb/repositories';
 import {
   CreateChannelInput,
   DeleteMessageInput,

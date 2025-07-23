@@ -5,13 +5,14 @@ import { TokenType } from '../constants/auth.constants';
 import { UserRoles } from './roles.decorator';
 
 export interface JwtUser {
-  sub: string;
-  jti: string;
-  iat: number;
-  exp: number;
+  sub: string; // holds userId
+  jti: string; // JWT ID
+  iat: number; // issued at
+  exp: number; // expiration time
   version: string;
   type: TokenType;
   roles: UserRoles[];
+  associated_access_token_jti: string;
 }
 
 export const CurrentUser = createParamDecorator((_: unknown, context: ExecutionContext) => {

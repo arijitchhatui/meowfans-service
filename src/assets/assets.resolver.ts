@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
-import { AssetsEntity, CreatorAssetsEntity } from 'src/rdb/entities';
+import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from '../auth';
+import { AssetsEntity, CreatorAssetsEntity } from '../rdb/entities';
 import { AssetsService } from './assets.service';
 import { DeleteCreatorAsset, GetCreatorAssetsInput } from './dto';
 import { CreateAssetInput } from './dto/create-asset.dto';

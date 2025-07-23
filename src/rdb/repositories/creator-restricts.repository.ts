@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetRestrictedUsersInput } from 'src/creator-profiles';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { GetRestrictedUsersInput } from '../../creator-profiles';
 import { CreatorRestrictsEntity } from '../entities';
 
 @Injectable()

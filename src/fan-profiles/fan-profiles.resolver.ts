@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
-import { CreatorFollowsEntity, FanProfilesEntity } from 'src/rdb/entities';
+import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from '../auth';
+import { CreatorFollowsEntity, FanProfilesEntity } from '../rdb/entities';
 import { GetFollowingInput } from './dto';
 import { FollowCreatorInput } from './dto/follow-creator.dto';
 import { UnFollowCreatorInput } from './dto/unfollow-creator.dto';

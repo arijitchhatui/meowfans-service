@@ -8,7 +8,7 @@ import {
   PostSavesRepository,
   PostSharesRepository,
   PostsRepository,
-} from 'src/rdb/repositories';
+} from '../rdb/repositories';
 import {
   CreateCommentInput,
   DeleteCommentInput,

@@ -18,4 +18,7 @@ export class CreatorSignupInput {
 
   @IsNotEmpty()
   region: string;
+
+  @IsNotEmpty()
+  username: string;
 }

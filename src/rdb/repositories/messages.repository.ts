@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetMessagesInput } from 'src/messages/dto';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { GetMessagesInput } from '../../messages';
 import { MessagesEntity } from '../entities';
 
 @Injectable()

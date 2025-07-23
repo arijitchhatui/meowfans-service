@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
-import { MessageChannelsEntity, MessageReactionsEntity, MessagesEntity } from 'src/rdb/entities';
+import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from '../auth';
+import { MessageChannelsEntity, MessageReactionsEntity, MessagesEntity } from '../rdb/entities';
 import {
   CreateChannelInput,
   DeleteMessageInput,

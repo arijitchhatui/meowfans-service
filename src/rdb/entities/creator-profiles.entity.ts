@@ -35,33 +35,9 @@ export class CreatorProfilesEntity {
   @Field(() => String)
   creatorId: string;
 
-  @Field()
-  @Column()
-  fullName: string;
-
-  @Field()
-  @Column({ unique: true })
-  username: string;
-
-  @Field()
-  @Column()
-  gender: string;
-
-  @Field()
-  @Column()
-  region: string;
-
   @Field({ nullable: true })
   @Column({ nullable: true })
   bio: string;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  avatarUrl: string;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  bannerUrl: string;
 
   @Field({ defaultValue: false })
   @Column({ default: false })
@@ -102,6 +78,18 @@ export class CreatorProfilesEntity {
   @Field({ defaultValue: 'primary' })
   @Column({ default: 'primary' })
   themeColor: string;
+
+  @Field(() => Date, { nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
+  acceptedAt: Date;
+
+  @Field(() => Date, { nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
+  rejectedAt: Date;
+
+  @Field(() => Boolean, { defaultValue: false })
+  @Column({ default: false })
+  verified: boolean;
 
   @Field()
   @CreateDateColumn()

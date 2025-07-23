@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { shake } from 'radash';
-import { CreatorProfilesRepository, FanProfilesRepository } from 'src/rdb/repositories';
-import { CreatorFollowsRepository } from 'src/rdb/repositories/creator-follows.repository';
+import { CreatorFollowsRepository, FanProfilesRepository, UsersRepository } from '../rdb/repositories';
 import { GetFollowingInput } from './dto';
 import { FollowCreatorInput } from './dto/follow-creator.dto';
 import { UnFollowCreatorInput } from './dto/unfollow-creator.dto';
@@ -10,9 +9,9 @@ import { UpdateUserProfileInput } from './dto/update-fan-profile.dto';
 @Injectable()
 export class FanProfilesService {
   public constructor(
-    private fanProfilesRepository: FanProfilesRepository,
     private creatorFollowsRepository: CreatorFollowsRepository,
-    private creatorProfilesRepository: CreatorProfilesRepository,
+    private fanProfilesRepository: FanProfilesRepository,
+    private usersRepository: UsersRepository,
   ) {}
 
   public async getFanProfile(fanId: string) {
@@ -22,8 +21,8 @@ export class FanProfilesService {
   public async updateFanProfile(fanId: string, input: UpdateUserProfileInput) {
     const fanProfile = await this.fanProfilesRepository.findOneOrFail({ where: { fanId } });
 
-    if (input.username && input.username !== fanProfile.username) {
-      const exists = await this.fanProfilesRepository.findOne({ where: { username: input.username } });
+    if (input.username && input.username !== fanProfile.user.username) {
+      const exists = await this.usersRepository.findOne({ where: { username: input.username } });
       if (exists) throw new BadRequestException('Username already exists!');
     }
 
