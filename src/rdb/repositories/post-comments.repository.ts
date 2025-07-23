@@ -1,8 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetAllCommentsInput } from 'src/post-comments';
-import { GetPostCommentsInput } from 'src/post-comments/dto/get-post-comments.dto';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { PostCommentsEntity } from '../entities';
+import { GetAllCommentsInput, GetPostCommentsInput } from '../../post-comments';
 
 @Injectable()
 export class PostCommentsRepository extends Repository<PostCommentsEntity> {
@@ -15,8 +14,9 @@ export class PostCommentsRepository extends Repository<PostCommentsEntity> {
   public async getAllComments(creatorId: string, input: GetAllCommentsInput) {
     return await this.createQueryBuilder('post_comments')
       .leftJoin('post_comments.fanProfile', 'fanProfile')
+      .leftJoin('fanProfile.user', 'user')
       .innerJoin('post_comments.post', 'post')
-      .addSelect(['fanProfile.avatarUrl', 'fanProfile.fullName', 'fanProfile.username', 'fanProfile.fanId'])
+      .addSelect(['user.avatarUrl', 'user.fullName', 'user.username', 'fanProfile.fanId'])
       .where('post.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('post_comments.createdAt', 'DESC')
       .limit(30)
@@ -27,8 +27,9 @@ export class PostCommentsRepository extends Repository<PostCommentsEntity> {
   public async getCommentsByPostId(creatorId: string, input: GetPostCommentsInput) {
     return await this.createQueryBuilder('post_comments')
       .leftJoin('post_comments.fanProfile', 'fanProfile')
+      .leftJoin('fanProfile.user', 'user')
       .innerJoin('post_comments.post', 'post')
-      .addSelect(['fanProfile.avatarUrl', 'fanProfile.username', 'fanProfile.fullName', 'fanProfile.fanId'])
+      .addSelect(['user.avatarUrl', 'user.username', 'user.fullName', 'fanProfile.fanId'])
       .where('post_comments.postId = :postId', { postId: input.postId })
       .andWhere('post.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('post_comments.createdAt', 'DESC')

@@ -4,9 +4,10 @@ import {
   CreatorBlocksRepository,
   CreatorFollowsRepository,
   CreatorProfilesRepository,
+  CreatorRestrictsRepository,
   SocialAccountsRepository,
-} from 'src/rdb/repositories';
-import { CreatorRestrictsRepository } from 'src/rdb/repositories/creator-restricts.repository';
+  UsersRepository,
+} from '../rdb/repositories';
 import {
   CreateAndUpdateSocialAccountsInput,
   DeleteFollowerInput,
@@ -26,6 +27,7 @@ export class CreatorProfilesService {
     private creatorFollowsRepository: CreatorFollowsRepository,
     private socialAccountsRepository: SocialAccountsRepository,
     private creatorBlocksRepository: CreatorBlocksRepository,
+    private usersRepository: UsersRepository,
   ) {}
 
   public async getCreatorProfile(creatorId: string) {
@@ -38,8 +40,8 @@ export class CreatorProfilesService {
       relations: { user: true },
     });
 
-    if (input.username && input.username !== creatorProfile.username) {
-      const exists = await this.creatorProfilesRepository.findOne({ where: { username: input.username } });
+    if (input.username && input.username !== creatorProfile.user.username) {
+      const exists = await this.usersRepository.findOne({ where: { username: input.username } });
       if (exists) throw new BadRequestException('Username already exists');
     }
 

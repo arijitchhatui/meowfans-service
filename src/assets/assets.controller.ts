@@ -1,8 +1,8 @@
 import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
-import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
 import { AssetsService } from './assets.service';
+import { Auth, GqlAuthGuard, UserRoles, CurrentUser } from '../auth';
 
 @Controller('assets')
 export class AssetsController {

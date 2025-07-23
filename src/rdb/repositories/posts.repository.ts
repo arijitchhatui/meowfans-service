@@ -1,8 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetPostsInfoInput, GetPostsInfoOutput } from 'src/posts';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { PostCommentsEntity, PremiumPostUnlocksEntity } from '../entities';
 import { PostsEntity } from '../entities/posts.entity';
+import { GetPostsInfoInput, GetPostsInfoOutput } from '../../posts';
 
 @Injectable()
 export class PostsRepository extends Repository<PostsEntity> {

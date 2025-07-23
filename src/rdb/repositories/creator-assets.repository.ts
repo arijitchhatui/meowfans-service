@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetCreatorAssetsInput } from 'src/assets';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { CreatorAssetsEntity } from '../entities';
+import { GetCreatorAssetsInput } from '../../assets';
 
 @Injectable()
 export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {

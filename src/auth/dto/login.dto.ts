@@ -3,7 +3,7 @@ import { IsNotEmpty } from 'class-validator';
 
 export class LoginInput {
   @IsNotEmpty()
-  @Transform(({ value }) => value.toLowerCase())
+  @Transform(({ value }) => value.trim().toLowerCase())
   email: string;
 
   @IsNotEmpty()

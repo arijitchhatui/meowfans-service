@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GetBlockedUsersInput } from 'src/creator-profiles';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { CreatorBlocksEntity } from '../entities';
+import { GetBlockedUsersInput } from '../../creator-profiles';
 
 @Injectable()
 export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {

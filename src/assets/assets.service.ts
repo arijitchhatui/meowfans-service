@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import sharp from 'sharp';
-import { AssetsRepository, CreatorAssetsRepository, PostAssetsRepository } from 'src/rdb/repositories';
-import { UploadsService } from 'src/uploads/uploads.service';
 import { DeleteCreatorAsset, GetCreatorAssetsInput } from './dto';
 import { CreateAssetInput } from './dto/create-asset.dto';
+import { CreatorAssetsRepository, PostAssetsRepository, AssetsRepository } from '../rdb/repositories';
+import { UploadsService } from '../uploads';
 
 @Injectable()
 export class AssetsService {

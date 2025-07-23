@@ -41,24 +41,12 @@ export class FanProfilesEntity {
   fanId: string;
 
   @Field()
-  @Column()
-  fullName: string;
-
-  @Field()
-  @Column({ unique: true })
-  username: string;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  avatarUrl: string;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  bannerUrl: string;
-
-  @Field()
   @CreateDateColumn()
   createdAt: Date;
+
+  @Field({ defaultValue: false })
+  @Column({ type: 'bool', default: false })
+  isBanned: false;
 
   @Field()
   @UpdateDateColumn()
@@ -67,6 +55,10 @@ export class FanProfilesEntity {
   @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
+
+  @Field()
+  @Column({ type: 'timestamp', nullable: true })
+  appliedAt: Date;
 
   @Field(() => UsersEntity)
   @OneToOne(() => UsersEntity, { onDelete: 'CASCADE' })

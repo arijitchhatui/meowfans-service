@@ -1,3 +1,5 @@
+import { REMOVE_SPACE_REGEX } from '../auth';
+
 export const envs = {
   PORT: process.env.PORT || '',
   ENABLE_DEV_TOOLS: process.env.ENABLE_DEV_TOOLS || '',
@@ -40,3 +42,20 @@ export const BANNER_COLORS = [
   '#f05e23',
   '#cb5aff',
 ];
+
+export const splitFullName = (fullName: string): { firstName: string; lastName: string } => {
+  const nameParts = fullName.trim().split(REMOVE_SPACE_REGEX);
+  const hasLastName = nameParts.length > 1;
+
+  const firstName = hasLastName ? nameParts.slice(0, -1).join(' ') : fullName.trim();
+  const lastName = (hasLastName ? nameParts[nameParts.length - 1] : null) || '';
+
+  return { firstName, lastName };
+};
+
+export enum UserRoles {
+  FAN = 'fan',
+  ADMIN = 'admin',
+  SUPER_VIEWER = 'super_viewer',
+  CREATOR = 'creator',
+}

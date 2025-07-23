@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from 'src/auth';
-import { PostCommentsEntity, PostsEntity, PostSharesEntity } from 'src/rdb/entities';
+import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from '../auth';
+import { PostCommentsEntity, PostsEntity, PostSharesEntity } from '../rdb/entities';
 import {
   CreateCommentInput,
   CreatePostInput,
