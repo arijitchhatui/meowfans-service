@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { CreatorBlocksEntity } from '../entities';
 import { GetBlockedUsersInput } from '../../creator-profiles';
+import { CreatorBlocksEntity } from '../entities';
 
 @Injectable()
 export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
@@ -14,6 +14,7 @@ export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
   public async getBlockedUsers(creatorId: string, input: GetBlockedUsersInput) {
     const query = this.createQueryBuilder('creator_blocks')
       .leftJoin('creator_blocks.fanProfile', 'fanProfile')
+      .leftJoin('fanProfile.user', 'user')
       .addSelect(['fanProfile.username', 'fanProfile.fullName', 'fanProfile.avatarUrl', 'fanProfile.fanId'])
       .where('creator_blocks.creatorId = :creatorId', { creatorId: creatorId })
       .limit(30)

@@ -1,3 +1,5 @@
+import { Field, ID, InputType, Int } from '@nestjs/graphql';
+import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { REMOVE_SPACE_REGEX } from '../auth';
 
 export const envs = {
@@ -58,4 +60,29 @@ export enum UserRoles {
   ADMIN = 'admin',
   SUPER_VIEWER = 'super_viewer',
   CREATOR = 'creator',
+}
+
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
+@InputType()
+export class PaginationInput {
+  @IsNumber()
+  @IsOptional()
+  @Field(() => Int, { defaultValue: 0 })
+  offset: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Field(() => Int, { defaultValue: 30 })
+  limit: number;
+
+  @IsEnum(SortOrder)
+  @Field(() => String, { defaultValue: SortOrder.DESC })
+  orderBy: SortOrder;
+
+  @Field(() => [ID])
+  relatedEntityId: string;
 }

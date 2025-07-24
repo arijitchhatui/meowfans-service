@@ -1,7 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { PaginationInput } from '../../util';
 import { MessageChannelsEntity, MessagesEntity } from '../entities';
-import { GetChannelInput, GetChannelsOutput } from '../../messages';
+import { GetChannelInput, GetChannelsOutput } from '../../message-channels/dto';
 
 @Injectable()
 export class MessageChannelsRepository extends Repository<MessageChannelsEntity> {
@@ -22,7 +23,7 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       .getOne();
   }
 
-  public async getChannels(userId: string) {
+  public async getChannels(userId: string, input: PaginationInput) {
     const messageSubQuery = this.createQueryBuilder()
       .select('DISTINCT ON (m."channel_id") m."channel_id"', 'channelId')
       .addSelect('m."content"', 'lastMessage')
@@ -55,7 +56,7 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       .addSelect('message_channels.deletedAt', 'deletedAt')
       .addSelect('creatorProfile.fullName', 'creatorFullName')
       .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
-      .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', 'DESC');
+      .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', input.orderBy);
 
     return await query.getRawMany<GetChannelsOutput>();
   }

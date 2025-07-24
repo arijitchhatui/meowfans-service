@@ -1,91 +1,50 @@
-import { profanity } from '@2toad/profanity';
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
+import { MessageChannelsService } from '../message-channels';
+import { MessageChannelsEntity } from '../rdb/entities';
 import {
-  MessageAccessRepository,
-  MessageChannelsRepository,
+  MessageAssetsRepository,
   MessageReactionsRepository,
   MessageRepliesRepository,
   MessagesRepository,
 } from '../rdb/repositories';
+import { PaginationInput } from '../util';
 import {
-  CreateChannelInput,
   DeleteMessageInput,
   DeleteMessagesInput,
-  GetChannelInput,
-  GetMessagesInput,
+  SendMessageFromCreatorInput,
+  SendMessageFromFanInput,
+  SendMessageInput,
   SendReactionInput,
-  SendReplyToCreatorInput,
-  SendReplyToFanInput,
-  SendToCreatorMessageInput,
-  UpdateChannelInput,
   UpdateMessageInput,
 } from './dto';
-import { SendToFanMessageInput } from './dto/send-to-fan-message.dto';
 
 @Injectable()
 export class MessagesService {
   constructor(
     private messageReactionsRepository: MessageReactionsRepository,
-    private messageChannelsRepository: MessageChannelsRepository,
     private messageRepliesRepository: MessageRepliesRepository,
-    private messageAccessRepository: MessageAccessRepository,
+    private messageAssetsRepository: MessageAssetsRepository,
+    private messageChannelsService: MessageChannelsService,
     private messagesRepository: MessagesRepository,
   ) {}
 
-  public async createChannel(input: CreateChannelInput) {
-    const channel = await this.messageChannelsRepository.findOne({
-      where: { fanId: input.fanId, creatorId: input.creatorId },
-    });
-    if (channel) return channel;
-
-    return await this.messageChannelsRepository.save({
-      fanId: input.fanId,
-      creatorId: input.creatorId,
-      fanLastSeenAt: new Date(),
-      fanLastSentAt: new Date(),
-    });
-  }
-
-  public async updateChannel(creatorId: string, input: UpdateChannelInput) {
-    const channel = await this.messageChannelsRepository.findOneOrFail({ where: { creatorId, id: input.channelId } });
-
-    return await this.messageChannelsRepository.save(Object.assign(channel, shake(input)));
-  }
-
-  public async getChannels(userId: string) {
-    return await this.messageChannelsRepository.getChannels(userId);
-  }
-
-  public async getChannel(userId: string, input: GetChannelInput) {
-    return await this.messageChannelsRepository.getChannel(userId, input);
-  }
-
-  public async getChannelMessages(userId: string, input: GetMessagesInput) {
+  public async getChannelMessages(userId: string, input: PaginationInput) {
     return await this.messagesRepository.getChannelMessages(userId, input);
   }
 
-  public async sendMessageToFan(creatorId: string, input: SendToFanMessageInput) {
-    const newMessage = this.messagesRepository.create({
-      senderId: creatorId,
-      recipientUserId: input.fanId,
-      channelId: input.channelId,
-      content: input.message,
-      isExclusive: input.isExclusive,
-      unlockPrice: input.unlockPrice ?? null,
-    });
+  public async sendMessageFromCreator(creatorId: string, input: SendMessageFromCreatorInput) {
+    const channel = await this.messageChannelsService.getOrCreateChannel({ creatorId, fanId: input.recipientUserId });
+
+    const newMessage = await this.sendMessage({ channel, params: input });
 
     return await this.messagesRepository.save(newMessage);
   }
 
-  public async sendMessageToCreator(fanId: string, input: SendToCreatorMessageInput) {
-    const newMessage = this.messagesRepository.create({
-      senderId: fanId,
-      recipientUserId: input.creatorId,
-      channelId: input.channelId,
-      content: profanity.censor(input.message),
-      isExclusive: false,
-    });
+  public async sendMessageFromFan(fanId: string, input: SendMessageFromFanInput) {
+    const channel = await this.messageChannelsService.getOrCreateChannel({ fanId, creatorId: input.recipientUserId });
+
+    const newMessage = await this.sendMessage({ channel, params: input });
 
     return await this.messagesRepository.save(newMessage);
   }
@@ -132,31 +91,43 @@ export class MessagesService {
     return await this.messageReactionsRepository.save(reaction);
   }
 
-  public async sendReplyToCreator(fanId: string, input: SendReplyToCreatorInput) {
-    const repliedTo = await this.messagesRepository.findOneOrFail({ where: { id: input.messageId } });
-    const replyMessage = this.messagesRepository.create({
-      channelId: repliedTo.channelId,
-      content: input.message,
-      repliedTo,
-      senderId: fanId,
-      recipientUserId: input.creatorId,
-    });
+  public async sendReplyFromFan(fanId: string, input: SendMessageFromFanInput) {
+    if (input.messageId) await this.messagesRepository.findOneOrFail({ where: { id: input.messageId } });
+
     await this.messageRepliesRepository.save({ messageId: input.messageId, replierId: fanId });
-    return await this.messagesRepository.save(replyMessage);
+
+    return await this.sendMessageFromFan(fanId, input);
   }
 
-  public async sendReplyToFan(creatorId: string, input: SendReplyToFanInput) {
-    const repliedTo = await this.messagesRepository.findOneOrFail({ where: { id: input.messageId } });
-    const replyMessage = this.messagesRepository.create({
-      channelId: repliedTo.channelId,
-      content: input.message,
-      repliedTo,
-      senderId: creatorId,
-      recipientUserId: input.fanId,
-      isExclusive: input.isExclusive,
-      unlockPrice: input.unlockPrice ?? null,
-    });
+  public async sendReplyFromCreator(creatorId: string, input: SendMessageFromCreatorInput) {
+    if (input.messageId) await this.messagesRepository.findOneOrFail({ where: { id: input.messageId } });
+
     await this.messageRepliesRepository.save({ messageId: input.messageId, replierId: creatorId });
-    return await this.messagesRepository.save(replyMessage);
+
+    return await this.sendMessageFromCreator(creatorId, input);
+  }
+
+  private async sendMessage(input: { channel: MessageChannelsEntity; params: SendMessageInput }) {
+    const { channel, params } = input;
+    const repliedTo = await this.messagesRepository.findOne({ where: { id: params.messageId } });
+
+    const newMessage = this.messagesRepository.create({
+      senderId: params.senderId,
+      recipientUserId: params.recipientUserId,
+      channel: channel,
+      content: params.content,
+      repliedTo: repliedTo ?? null,
+      isExclusive: params.isExclusive ?? false,
+      unlockPrice: params.unlockAmount ?? null,
+    });
+
+    if (params.assetIds) {
+      newMessage.messageAssets = this.messageAssetsRepository.create(
+        params.assetIds.map((assetId) => ({
+          creatorAssetId: assetId,
+        })),
+      );
+    }
+    return await this.messagesRepository.save(newMessage);
   }
 }

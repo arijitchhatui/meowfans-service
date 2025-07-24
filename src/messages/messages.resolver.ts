@@ -1,20 +1,13 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from '../auth';
-import { MessageChannelsEntity, MessageReactionsEntity, MessagesEntity } from '../rdb/entities';
+import { MessageReactionsEntity, MessagesEntity } from '../rdb/entities';
+import { PaginationInput } from '../util';
 import {
-  CreateChannelInput,
   DeleteMessageInput,
   DeleteMessagesInput,
-  GetChannelInput,
-  GetChannelOutput,
-  GetChannelsOutput,
-  GetMessagesInput,
+  SendMessageFromCreatorInput,
+  SendMessageFromFanInput,
   SendReactionInput,
-  SendReplyToCreatorInput,
-  SendReplyToFanInput,
-  SendToCreatorMessageInput,
-  SendToFanMessageInput,
-  UpdateChannelInput,
   UpdateMessageInput,
 } from './dto';
 import { MessagesService } from './messages.service';
@@ -24,57 +17,30 @@ export class MessagesResolver {
   public constructor(private messagesService: MessagesService) {}
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
-  @Mutation(() => MessageChannelsEntity)
-  public async createChannel(@Args('input') input: CreateChannelInput): Promise<MessageChannelsEntity> {
-    return await this.messagesService.createChannel(input);
-  }
-
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Mutation(() => MessageChannelsEntity)
-  public async updateChannel(
-    @CurrentUser() creatorId: string,
-    @Args('input') input: UpdateChannelInput,
-  ): Promise<MessageChannelsEntity> {
-    return this.messagesService.updateChannel(creatorId, input);
-  }
-
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
-  @Query(() => [GetChannelsOutput])
-  public async getChannels(@CurrentUser() userId: string): Promise<GetChannelsOutput[]> {
-    return await this.messagesService.getChannels(userId);
-  }
-  //
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
-  @Query(() => GetChannelOutput)
-  public async getChannel(@CurrentUser() userId: string, @Args('input') input: GetChannelInput) {
-    return await this.messagesService.getChannel(userId, input);
-  }
-
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
   @Query(() => [MessagesEntity])
   public async getChannelMessages(
     @CurrentUser() fanId: string,
-    @Args('input') input: GetMessagesInput,
+    @Args('input') input: PaginationInput,
   ): Promise<MessagesEntity[]> {
     return await this.messagesService.getChannelMessages(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Mutation(() => MessagesEntity)
-  public async sendMessageToFan(
+  public async sendMessageFromCreator(
     @CurrentUser() creatorId: string,
-    @Args('input') input: SendToFanMessageInput,
+    @Args('input') input: SendMessageFromCreatorInput,
   ): Promise<MessagesEntity> {
-    return await this.messagesService.sendMessageToFan(creatorId, input);
+    return await this.messagesService.sendMessageFromCreator(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Mutation(() => MessagesEntity)
-  public async sendMessageToCreator(
+  public async sendMessageFromFan(
     @CurrentUser() fanId: string,
-    @Args('input') input: SendToCreatorMessageInput,
+    @Args('input') input: SendMessageFromFanInput,
   ): Promise<MessagesEntity> {
-    return await this.messagesService.sendMessageToCreator(fanId, input);
+    return await this.messagesService.sendMessageFromFan(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
@@ -115,19 +81,19 @@ export class MessagesResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Mutation(() => MessagesEntity)
-  public async sendReplyToCreator(
+  public async sendReplyFromFan(
     @CurrentUser() fanId: string,
-    @Args('input') input: SendReplyToCreatorInput,
+    @Args('input') input: SendMessageFromFanInput,
   ): Promise<MessagesEntity> {
-    return await this.messagesService.sendReplyToCreator(fanId, input);
+    return await this.messagesService.sendReplyFromFan(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Mutation(() => MessagesEntity)
-  public async sendReplyToFan(
+  public async sendReplyFromCreator(
     @CurrentUser() creatorId: string,
-    @Args('input') input: SendReplyToFanInput,
+    @Args('input') input: SendMessageFromCreatorInput,
   ): Promise<MessagesEntity> {
-    return await this.messagesService.sendReplyToFan(creatorId, input);
+    return await this.messagesService.sendReplyFromCreator(creatorId, input);
   }
 }

@@ -16,6 +16,8 @@ import { PostsModule } from './posts/posts.module';
 import { RdbModule } from './rdb/rdb.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { UsersModule } from './users/users.module';
+import { MessageChannelsService } from './message-channels/message-channels.service';
+import { MessageChannelsModule } from './message-channels/message-channels.module';
 
 @Module({
   imports: [
@@ -43,8 +45,9 @@ import { UsersModule } from './users/users.module';
     AssetsModule,
     MessagesModule,
     PostCommentsModule,
+    MessageChannelsModule,
   ],
   controllers: [AppController],
-  providers: [AssetsService, PostCommentsService],
+  providers: [AssetsService, PostCommentsService, MessageChannelsService],
 })
 export class AppModule {}
