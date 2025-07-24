@@ -6,6 +6,7 @@ export * from './creator-profiles.repository';
 export * from './creator-restricts.repository';
 export * from './fan-profiles.repository';
 export * from './message-access.repository';
+export * from './message-assets.repository';
 export * from './message-channels.repository';
 export * from './message-reactions.repository';
 export * from './message-replies.repository';

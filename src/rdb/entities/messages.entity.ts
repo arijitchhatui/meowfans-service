@@ -11,6 +11,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { JwtUser } from '../../auth';
+import { UserRoles } from '../../util';
 import { MessageAssetsEntity } from './message-assets.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
 import { MessagePurchasesEntity } from './message-purchases.entity';
@@ -52,10 +54,18 @@ export class MessagesEntity {
   @Column({ default: false })
   hasAccess: boolean;
 
+  static isFan(sender: JwtUser): boolean {
+    return sender.roles.includes(UserRoles.FAN) ?? false;
+  }
+
+  static isCreator(sender: JwtUser): boolean {
+    return sender.roles.includes(UserRoles.CREATOR) ?? false;
+  }
+
   @Field(() => MessagesEntity, { nullable: true })
   @ManyToOne(() => MessagesEntity, { nullable: true })
   @JoinColumn({ name: 'replied_to' })
-  repliedTo?: MessagesEntity;
+  repliedTo?: MessagesEntity | null;
 
   @Field({ nullable: true })
   @Column({ default: null, type: 'timestamp' })
