@@ -86,19 +86,19 @@ export class UsersEntity {
   @OneToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.user, { cascade: true })
   creatorProfile: CreatorProfilesEntity;
 
-  static isFan(user: UsersEntity | JwtUser): boolean {
+  public isFan(user: UsersEntity | JwtUser): boolean {
     return user.roles.includes(UserRoles.FAN) ?? false;
   }
 
-  static isCreator(user: UsersEntity | JwtUser): boolean {
+  public isCreator(user: UsersEntity | JwtUser): boolean {
     return user.roles.includes(UserRoles.CREATOR) ?? false;
   }
 
-  static isAdmin(user: UsersEntity | JwtUser): boolean {
+  public isAdmin(user: UsersEntity | JwtUser): boolean {
     return user.roles.includes(UserRoles.ADMIN) ?? false;
   }
 
-  static isSuperViewer(user: UsersEntity | JwtUser): boolean {
+  public isSuperViewer(user: UsersEntity | JwtUser): boolean {
     return user.roles.includes(UserRoles.SUPER_VIEWER) ?? false;
   }
 }

@@ -75,7 +75,7 @@ export class MessagesResolver {
   public async sendOrDeleteMessageReaction(
     @CurrentUser() userId: string,
     @Args('input') input: SendReactionInput,
-  ): Promise<MessageReactionsEntity> {
+  ): Promise<MessageReactionsEntity | boolean> {
     return await this.messagesService.sendOrDeleteMessageReaction(userId, input);
   }
 

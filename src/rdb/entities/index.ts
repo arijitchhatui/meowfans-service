@@ -14,6 +14,7 @@ export * from './group-messages.entity';
 export * from './groups.entity';
 export * from './message-access.entity';
 export * from './message-assets.entity';
+export * from './message-channel-participants.entity';
 export * from './message-channels.entity';
 export * from './message-purchases.entity';
 export * from './message-reactions.entity';

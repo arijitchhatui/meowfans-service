@@ -8,7 +8,7 @@ const makeIndex = async (directory: string) => {
   console.log(`Making index file in ${directory}`);
 
   const files = fs.readdirSync(dirPath).filter((file) => file !== INDEX_FILE_NAME);
-  console.log(`Found ${files.length} files`);
+  console.log(`Found ${files.length} ${files.length > 1 ? 'files' : 'file'}`);
 
   if (!files.length) return;
 
@@ -43,6 +43,8 @@ const paths = [
   'src/messages',
   'src/post-comments',
   'src/post-comments/dto',
+  'src/message-channel-participants',
+  'src/message-channel-participants/dto',
 ];
 
 (async () => {

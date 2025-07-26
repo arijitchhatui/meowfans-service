@@ -1,8 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { GetChannelInput, GetChannelsOutput } from '../../message-channels/dto';
 import { PaginationInput } from '../../util';
 import { MessageChannelsEntity, MessagesEntity } from '../entities';
-import { GetChannelInput, GetChannelsOutput } from '../../message-channels/dto';
 
 @Injectable()
 export class MessageChannelsRepository extends Repository<MessageChannelsEntity> {
@@ -20,6 +20,28 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       .addSelect(['fan.fullName', 'fan.username', 'fan.fanId', 'fan.avatarUrl'])
       .where('message_channels.id = :channelId', { channelId: input.channelId })
       .andWhere('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
+      .getOne();
+  }
+
+  public async getChannelByParticipants(input: { creatorId: string; fanId: string }) {
+    return await this.createQueryBuilder('mc')
+      .leftJoinAndSelect('mc.participants', 'participants')
+      .where(
+        `EXISTS(
+      SELECT 1 FROM message_channel_participants mcp1
+      WHERE mcp1.message_channel_id = mc.id
+      AND mcp1.user_id = :creatorId
+      )`,
+        { creatorId: input.creatorId },
+      )
+      .andWhere(
+        `EXISTS(
+        SELECT 1 FROM message_channel_participants mcp2
+        WHERE mcp2.message_channel_id = mc.id
+        AND mcp2.user_id = :fanId
+        )`,
+        { fanId: input.fanId },
+      )
       .getOne();
   }
 

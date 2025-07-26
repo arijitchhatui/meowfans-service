@@ -7,10 +7,12 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanProfilesEntity } from './fan-profiles.entity';
+import { MessageChannelParticipantsEntity } from './message-channel-participants.entity';
 import { MessagesEntity } from './messages.entity';
 
 @ObjectType()
@@ -20,29 +22,9 @@ export class MessageChannelsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
-  @Column()
-  creatorId: string;
-
-  @Field()
-  @Column()
-  fanId: string;
-
   @Field({ nullable: true })
-  @Column({ nullable: true })
-  creatorLastSeenAt: Date;
-
-  @Field()
-  @Column()
-  fanLastSeenAt: Date;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  creatorLastSentAt: Date;
-
-  @Field()
-  @Column()
-  fanLastSentAt: Date;
+  @Column({ type: 'uuid', nullable: true })
+  lastMessageId: string;
 
   @Field({ defaultValue: false })
   @Column({ default: false })
@@ -76,6 +58,11 @@ export class MessageChannelsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
+  @Field(() => MessagesEntity)
+  @OneToOne(() => MessagesEntity, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'last_message_id' })
+  lastMessage: MessagesEntity | null;
+
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, ({ channels }) => channels, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
@@ -87,6 +74,9 @@ export class MessageChannelsEntity {
   fanProfile: FanProfilesEntity;
 
   @Field(() => [MessagesEntity])
-  @OneToMany(() => MessagesEntity, (message) => message.channel, { cascade: true })
+  @OneToMany(() => MessagesEntity, (message) => message.channel, { cascade: true, eager: false })
   messages: MessagesEntity[];
+
+  @OneToMany(() => MessageChannelParticipantsEntity, ({ messageChannel }) => messageChannel)
+  participants: MessageChannelParticipantsEntity[];
 }

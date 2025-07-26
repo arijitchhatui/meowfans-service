@@ -5,19 +5,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AppController } from './app.controller';
 import { AssetsModule } from './assets/assets.module';
-import { AssetsService } from './assets/assets.service';
 import { AuthModule } from './auth/auth.module';
 import { CreatorProfilesModule } from './creator-profiles/creator-profiles.module';
 import { FanProfilesModule } from './fan-profiles/fan-profiles.module';
+import { MessageChannelParticipantsModule } from './message-channel-participants/message-channel-participants.module';
+import { MessageChannelsModule } from './message-channels/message-channels.module';
 import { MessagesModule } from './messages/messages.module';
 import { PostCommentsModule } from './post-comments/post-comments.module';
-import { PostCommentsService } from './post-comments/post-comments.service';
 import { PostsModule } from './posts/posts.module';
 import { RdbModule } from './rdb/rdb.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { UsersModule } from './users/users.module';
-import { MessageChannelsService } from './message-channels/message-channels.service';
-import { MessageChannelsModule } from './message-channels/message-channels.module';
 
 @Module({
   imports: [
@@ -46,8 +44,9 @@ import { MessageChannelsModule } from './message-channels/message-channels.modul
     MessagesModule,
     PostCommentsModule,
     MessageChannelsModule,
+    MessageChannelParticipantsModule,
   ],
   controllers: [AppController],
-  providers: [AssetsService, PostCommentsService, MessageChannelsService],
+  providers: [],
 })
 export class AppModule {}
