@@ -54,11 +54,11 @@ export class MessagesEntity {
   @Column({ default: false })
   hasAccess: boolean;
 
-  static isFan(sender: JwtUser): boolean {
+  public isFan(sender: JwtUser): boolean {
     return sender.roles.includes(UserRoles.FAN) ?? false;
   }
 
-  static isCreator(sender: JwtUser): boolean {
+  public isCreator(sender: JwtUser): boolean {
     return sender.roles.includes(UserRoles.CREATOR) ?? false;
   }
 

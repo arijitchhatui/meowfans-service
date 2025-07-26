@@ -1,29 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { MessageChannelsRepository } from '../rdb/repositories';
-import { PaginationInput } from '../util';
-import { CreateChannelInput, UpdateChannelInput, GetChannelInput } from './dto';
+import { PaginationInput, UserRoles } from '../util';
+import { CreateChannelInput, GetChannelInput, UpdateChannelInput } from './dto';
 
 @Injectable()
 export class MessageChannelsService {
   public constructor(private readonly messageChannelsRepository: MessageChannelsRepository) {}
 
   public async getOrCreateChannel(input: CreateChannelInput) {
-    const existingChannel = await this.messageChannelsRepository.findOne({
-      where: { fanId: input.fanId, creatorId: input.creatorId },
-    });
+    const existingChannel = await this.messageChannelsRepository.getChannelByParticipants(input);
     if (existingChannel) return existingChannel;
 
     return await this.messageChannelsRepository.save({
-      fanId: input.fanId,
-      creatorId: input.creatorId,
-      fanLastSeenAt: new Date(),
-      fanLastSentAt: new Date(),
+      participants: [
+        { userId: input.creatorId, role: UserRoles.CREATOR },
+        { userId: input.fanId, role: UserRoles.FAN },
+      ],
     });
   }
 
+  //needs to be implemented
   public async updateChannel(creatorId: string, input: UpdateChannelInput) {
-    const channel = await this.messageChannelsRepository.findOneOrFail({ where: { creatorId, id: input.channelId } });
+    const channel = await this.messageChannelsRepository.findOneOrFail({ where: { id: input.channelId } });
 
     return await this.messageChannelsRepository.save(Object.assign(channel, shake(input)));
   }
@@ -31,7 +30,7 @@ export class MessageChannelsService {
   public async getChannels(userId: string, input: PaginationInput) {
     return await this.messageChannelsRepository.getChannels(userId, input);
   }
-
+  //
   public async getChannel(userId: string, input: GetChannelInput) {
     return await this.messageChannelsRepository.getChannel(userId, input);
   }

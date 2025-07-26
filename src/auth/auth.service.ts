@@ -120,7 +120,7 @@ export class AuthService {
     const newUsername = username
       .toLowerCase()
       .replace(USER_NAME_CASE_REGEX, ' ')
-      .replace(REMOVE_SPACE_REGEX, '')
+      .replace(REMOVE_SPACE_REGEX, ' ')
       .concat(randomBytes(3).toString('hex'));
     const user = await this.usersRepository.findOne({ where: { username } });
     if (!user) return username;

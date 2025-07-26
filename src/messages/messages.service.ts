@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
+import { In } from 'typeorm';
+import { MessageChannelParticipantsService } from '../message-channel-participants';
 import { MessageChannelsService } from '../message-channels';
-import { MessageChannelsEntity } from '../rdb/entities';
+import { MessageChannelsEntity, MessageReactionsEntity, MessagesEntity } from '../rdb/entities';
 import {
   MessageAssetsRepository,
+  MessageChannelsRepository,
   MessageReactionsRepository,
   MessageRepliesRepository,
   MessagesRepository,
@@ -22,7 +25,9 @@ import {
 @Injectable()
 export class MessagesService {
   constructor(
+    private messageChannelParticipantsService: MessageChannelParticipantsService,
     private messageReactionsRepository: MessageReactionsRepository,
+    private messageChannelsRepository: MessageChannelsRepository,
     private messageRepliesRepository: MessageRepliesRepository,
     private messageAssetsRepository: MessageAssetsRepository,
     private messageChannelsService: MessageChannelsService,
@@ -33,54 +38,70 @@ export class MessagesService {
     return await this.messagesRepository.getChannelMessages(userId, input);
   }
 
-  public async sendMessageFromCreator(creatorId: string, input: SendMessageFromCreatorInput) {
+  public async sendMessageFromCreator(creatorId: string, input: SendMessageFromCreatorInput): Promise<MessagesEntity> {
     const channel = await this.messageChannelsService.getOrCreateChannel({ creatorId, fanId: input.recipientUserId });
 
     const newMessage = await this.sendMessage({ channel, params: input });
 
+    await this.messageChannelParticipantsService.update({
+      messageChannelId: channel.id,
+      userId: creatorId,
+      lastSentAt: newMessage.createdAt,
+    });
+
+    await this.messageChannelsRepository.update({ id: channel.id }, { lastMessage: newMessage });
+
     return await this.messagesRepository.save(newMessage);
   }
 
-  public async sendMessageFromFan(fanId: string, input: SendMessageFromFanInput) {
+  public async sendMessageFromFan(fanId: string, input: SendMessageFromFanInput): Promise<MessagesEntity> {
     const channel = await this.messageChannelsService.getOrCreateChannel({ fanId, creatorId: input.recipientUserId });
 
     const newMessage = await this.sendMessage({ channel, params: input });
 
+    await this.messageChannelParticipantsService.update({
+      messageChannelId: channel.id,
+      userId: fanId,
+      lastSentAt: newMessage.createdAt,
+    });
+
+    await this.messageChannelsRepository.update({ id: channel.id }, { lastMessage: newMessage });
+
     return await this.messagesRepository.save(newMessage);
   }
 
-  public async updateMessage(userId: string, input: UpdateMessageInput) {
+  public async updateMessage(userId: string, input: UpdateMessageInput): Promise<MessagesEntity> {
     const message = await this.messagesRepository.findOneOrFail({ where: { id: input.messageId, senderId: userId } });
     return await this.messagesRepository.save(Object.assign(message, shake(input)));
   }
 
-  public async deleteMessages(userId: string, input: DeleteMessagesInput) {
-    const deleteResult = await Promise.all(
-      input.messageIds.map(async (messageId) => {
-        const message = await this.messagesRepository.findOne({ where: { id: messageId, senderId: userId } });
-        if (message) {
-          await this.messagesRepository.delete({ id: messageId });
-          return true;
-        }
-        return false;
-      }),
-    );
-    return deleteResult.some((deleted) => deleted);
+  public async deleteMessages(userId: string, input: DeleteMessagesInput): Promise<boolean> {
+    const messages = await this.messagesRepository.find({ where: { id: In(input.messageIds), senderId: userId } });
+
+    if (messages.length) {
+      const deletableIds = messages.map((m) => m.id);
+      return !!(await this.messagesRepository.delete({ id: In(deletableIds) })).affected;
+    }
+    return false;
   }
 
-  public async deleteMessage(userId: string, input: DeleteMessageInput) {
+  public async deleteMessage(userId: string, input: DeleteMessageInput): Promise<boolean> {
     await this.messagesRepository.findOneOrFail({ where: { id: input.messageId, senderId: userId } });
     const { affected } = await this.messagesRepository.delete({ id: input.messageId, senderId: userId });
     return !!affected;
   }
 
-  public async sendOrDeleteMessageReaction(userId: string, input: SendReactionInput) {
+  public async sendOrDeleteMessageReaction(
+    userId: string,
+    input: SendReactionInput,
+  ): Promise<MessageReactionsEntity | boolean> {
     await this.messagesRepository.findOneOrFail({ where: { id: input.messageId } });
 
     const hasReacted = await this.messageReactionsRepository.findOne({
       where: { messageId: input.messageId, userId: userId },
     });
-    if (hasReacted) await this.messageReactionsRepository.delete({ messageId: input.messageId, userId: userId });
+    if (hasReacted)
+      return !!(await this.messageReactionsRepository.delete({ messageId: input.messageId, userId: userId })).affected;
 
     const reaction = this.messageReactionsRepository.create({
       messageId: input.messageId,
@@ -91,7 +112,7 @@ export class MessagesService {
     return await this.messageReactionsRepository.save(reaction);
   }
 
-  public async sendReplyFromFan(fanId: string, input: SendMessageFromFanInput) {
+  public async sendReplyFromFan(fanId: string, input: SendMessageFromFanInput): Promise<MessagesEntity> {
     if (input.messageId) await this.messagesRepository.findOneOrFail({ where: { id: input.messageId } });
 
     await this.messageRepliesRepository.save({ messageId: input.messageId, replierId: fanId });
@@ -99,7 +120,7 @@ export class MessagesService {
     return await this.sendMessageFromFan(fanId, input);
   }
 
-  public async sendReplyFromCreator(creatorId: string, input: SendMessageFromCreatorInput) {
+  public async sendReplyFromCreator(creatorId: string, input: SendMessageFromCreatorInput): Promise<MessagesEntity> {
     if (input.messageId) await this.messagesRepository.findOneOrFail({ where: { id: input.messageId } });
 
     await this.messageRepliesRepository.save({ messageId: input.messageId, replierId: creatorId });
