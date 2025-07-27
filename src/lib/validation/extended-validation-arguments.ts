@@ -1,7 +1,6 @@
 import { ValidationArguments } from 'class-validator';
-import { JwtUser } from '../auth';
-
-export const VALIDATION_CONTEXT = '_validation_context';
+import { JwtUser } from '../../auth';
+import { VALIDATION_CONTEXT } from '../interceptors/inject-user.interceptor';
 
 export interface ExtendedValidationArguments extends ValidationArguments {
   object: ValidationArguments['object'] & {

@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { useContainer } from 'class-validator';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -10,7 +11,11 @@ async function bootstrap() {
   app.enableCors();
   const logger = new Logger(AppModule.name);
 
+  // whitelist: true, forbidNonWhitelisted: true
+
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
   const configService = app.get(ConfigService);
   const port: number = configService.get<number>('PORT')!;
   const builder = new DocumentBuilder().addTag('auth').build();

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { Not } from 'typeorm';
-import { USER_NAME_CASE_REGEX, REMOVE_SPACE_REGEX } from '../auth';
-import { ExtendedValidationArguments, ValidationErrorCodes } from '../lib';
-import { VALIDATION_CONTEXT } from '../lib/interceptors/inject-user.interceptor';
-import { UsersRepository } from '../rdb/repositories';
+import { REMOVE_SPACE_REGEX, USER_NAME_CASE_REGEX } from '../../auth';
+import { UsersRepository } from '../../rdb/repositories';
+import { VALIDATION_CONTEXT } from '../interceptors/inject-user.interceptor';
+import { ValidationErrorCodes } from '../validation';
+import { ExtendedValidationArguments } from '../validation/extended-validation-arguments';
 
 @Injectable()
 @ValidatorConstraint({ name: 'username', async: true })

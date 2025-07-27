@@ -1,5 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard, UserRoles } from '../auth';
+import { InjectUserToArg } from '../lib';
 import {
   CreatorBlocksEntity,
   CreatorFollowsEntity,
@@ -27,6 +28,7 @@ export class CreatorProfilesResolver {
     return await this.creatorProfilesService.getCreatorProfile(creatorId);
   }
 
+  @InjectUserToArg('input')
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Mutation(() => CreatorProfilesEntity)
   public async updateCreatorProfile(

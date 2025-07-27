@@ -1,5 +1,6 @@
 import { Field, ID, InputType, Int } from '@nestjs/graphql';
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsUUID, Validate } from 'class-validator';
+import { HasAssetsForExclusivePropValidator } from '../../lib/validators/has-assets-for-exclusive.validator';
 
 @InputType()
 export class SendMessageFromCreatorInput {
@@ -18,6 +19,7 @@ export class SendMessageFromCreatorInput {
   recipientUserId: string;
 
   @Field({ defaultValue: true })
+  @Validate(HasAssetsForExclusivePropValidator)
   isExclusive: boolean;
 
   @Field(() => [ID])

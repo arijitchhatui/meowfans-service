@@ -35,6 +35,8 @@ export class CreatorProfilesService {
   }
 
   public async updateCreatorProfile(creatorId: string, input: UpdateCreatorProfileInput) {
+    const { username, avatarUrl, bannerUrl, ...rest } = input;
+
     const creatorProfile = await this.creatorProfilesRepository.findOneOrFail({
       where: { creatorId },
       relations: { user: true },
@@ -45,7 +47,13 @@ export class CreatorProfilesService {
       if (exists) throw new BadRequestException('Username already exists');
     }
 
-    return this.creatorProfilesRepository.save(Object.assign(creatorProfile, shake(input)));
+    const updatedUser = await this.usersRepository.save(
+      Object.assign(creatorProfile.user, shake({ username, bannerUrl, avatarUrl })),
+    );
+
+    return await this.creatorProfilesRepository.save(
+      Object.assign({ ...creatorProfile, user: updatedUser }, shake(rest)),
+    );
   }
 
   public async getFollowers(creatorId: string, input: GetFollowersInput) {
