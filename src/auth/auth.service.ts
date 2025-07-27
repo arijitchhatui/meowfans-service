@@ -2,6 +2,10 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
+import { UsersEntity } from '../rdb/entities';
+import { CreatorProfilesRepository, FanProfilesRepository, UsersRepository } from '../rdb/repositories';
+import { UploadsService } from '../uploads';
+import { splitFullName } from '../util';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';
 import { UserRoles } from './decorators/roles.decorator';
@@ -9,10 +13,6 @@ import { AuthOk } from './dto/auth.dto';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { FanSignupInput } from './dto/fan-signup.dto';
 import { LoginInput } from './dto/login.dto';
-import { UsersEntity } from '../rdb/entities';
-import { UsersRepository, FanProfilesRepository, CreatorProfilesRepository } from '../rdb/repositories';
-import { UploadsService } from '../uploads';
-import { splitFullName } from '../util';
 
 @Injectable()
 export class AuthService {
@@ -24,16 +24,18 @@ export class AuthService {
     private creatorProfilesRepository: CreatorProfilesRepository,
   ) {}
 
-  private async validateUser(input: LoginInput): Promise<UsersEntity> {
+  public async validateUser(input: LoginInput): Promise<{ sub: string }> {
     const user = await this.usersRepository.findOne({ where: { email: input.email } });
     if (!user) throw new UnauthorizedException();
+
     const isCorrect = await bcryptjs.compare(input.password, user.password);
     if (!isCorrect) throw new UnauthorizedException({ message: 'Invalid credentials!' });
-    return user;
+
+    return { sub: user.id };
   }
 
-  public async login(input: LoginInput): Promise<AuthOk> {
-    const user = await this.validateUser(input);
+  public async login(userId: string): Promise<AuthOk> {
+    const user = await this.usersRepository.findOneOrFail({ where: { id: userId } });
 
     await this.usersRepository.update({ id: user.id }, { lastLoginAt: new Date() });
 
@@ -71,7 +73,7 @@ export class AuthService {
     });
     const user = await this.usersRepository.save(userProfileEntity);
 
-    return this.login(user);
+    return this.login(user.id);
   }
 
   public async creatorSignup(input: CreatorSignupInput): Promise<AuthOk> {
@@ -93,7 +95,7 @@ export class AuthService {
     });
 
     const creator = await this.usersRepository.save(creatorProfileEntity);
-    return this.login(creator);
+    return this.login(creator.id);
   }
 
   public async getStatus(jwtUser: JwtUser): Promise<UsersEntity> {
@@ -122,8 +124,10 @@ export class AuthService {
       .replace(USER_NAME_CASE_REGEX, ' ')
       .replace(REMOVE_SPACE_REGEX, ' ')
       .concat(randomBytes(3).toString('hex'));
+
     const user = await this.usersRepository.findOne({ where: { username } });
     if (!user) return username;
+
     return newUsername;
   }
 

@@ -1,8 +1,13 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { Validate, ValidateIf } from 'class-validator';
+import { ProfanityValidator, UniqueUsernameValidator } from '../../lib/validators';
 
 @InputType()
 export class UpdateCreatorProfileInput {
   @Field({ nullable: true })
+  @ValidateIf(({ username }) => username !== undefined)
+  @Validate(UniqueUsernameValidator)
+  @Validate(ProfanityValidator)
   username: string;
 
   @Field({ nullable: true })
@@ -12,6 +17,8 @@ export class UpdateCreatorProfileInput {
   bannerUrl: string;
 
   @Field({ nullable: true })
+  @ValidateIf(({ bio }) => bio !== undefined)
+  @Validate(ProfanityValidator)
   bio: string;
 
   @Field({ nullable: true })

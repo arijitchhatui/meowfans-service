@@ -14,7 +14,8 @@ export class AuthController {
 
   @Post('/login')
   public async login(@Body() body: LoginInput): Promise<AuthOk> {
-    return await this.authService.login(body);
+    const { sub: userId } = await this.authService.validateUser(body);
+    return await this.authService.login(userId);
   }
 
   @Post('/fan-signup')
