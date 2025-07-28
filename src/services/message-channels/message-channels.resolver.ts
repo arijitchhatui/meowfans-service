@@ -1,9 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { MessageChannelsEntity } from '../rdb/entities';
-import { PaginationInput, UserRoles } from '../service.constants';
+import { UserRoles } from '../service.constants';
 import { CreateChannelInput, GetChannelInput, GetChannelOutput, GetChannelsOutput, UpdateChannelInput } from './dto';
 import { MessageChannelsService } from './message-channels.service';
+import { PaginationInput } from '../../lib/helpers';
 
 @Resolver()
 export class MessageChannelsResolver {

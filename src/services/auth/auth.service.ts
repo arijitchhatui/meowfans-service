@@ -2,9 +2,10 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
+import { splitFullName } from '../../lib/helpers/split-full-name';
 import { UsersEntity } from '../rdb/entities';
 import { CreatorProfilesRepository, FanProfilesRepository, UsersRepository } from '../rdb/repositories';
-import { splitFullName, UserRoles } from '../service.constants';
+import { UserRoles } from '../service.constants';
 import { UploadsService } from '../uploads';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';

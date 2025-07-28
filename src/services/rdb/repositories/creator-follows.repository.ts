@@ -1,8 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { convertRawToEntityType, PaginationInput } from '../../../lib/helpers';
+import { GetFollowedUsersOutput, GetFollowingUsersOutput } from '../../creator-profiles';
 import { CreatorFollowsEntity } from '../entities';
-import { GetFollowersInput } from '../../creator-profiles';
-import { GetFollowingInput } from '../../fan-profiles';
 
 @Injectable()
 export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
@@ -12,30 +12,37 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
     super(CreatorFollowsEntity, entityManager);
   }
 
-  public async getFollowers(creatorId: string, input: GetFollowersInput) {
-    const query = this.createQueryBuilder('creator_follows')
-      .leftJoin('creator_follows.fanProfile', 'fanProfile')
-      .addSelect(['fanProfile.username', 'fanProfile.fanId', 'fanProfile.fullName', 'fanProfile.avatarUrl'])
-      .where('creator_follows.creatorId = :creatorId', { creatorId: creatorId })
-      .limit(40)
-      .offset(input.offset);
+  public async getFollowers(creatorId: string, input: PaginationInput) {
+    const query = this.createQueryBuilder('cfs')
+      .leftJoin('users', 'user', 'user.id = cfs.fanId')
+      .select('cfs.*')
+      .addSelect('user.firstName')
+      .addSelect('user.lastName')
+      .addSelect('user.username')
+      .addSelect('user.avatarUrl')
+      .where('cfs.creatorId = :creatorId', { creatorId: creatorId })
+      .orderBy('cfs.followedAt', input.orderBy)
+      .limit(input.limit)
+      .offset(input.offset)
+      .getRawMany<GetFollowedUsersOutput>();
 
-    return await query.getMany();
+    return await convertRawToEntityType<GetFollowedUsersOutput>(query, { prefixes: ['user'] });
   }
 
-  public async getFollowing(fanId: string, input: GetFollowingInput) {
-    const query = this.createQueryBuilder('creator_follows')
-      .leftJoin('creator_follows.creatorProfile', 'creatorProfile')
-      .addSelect([
-        'creatorProfile.username',
-        'creatorProfile.fullName',
-        'creatorProfile.avatarUrl',
-        'creatorProfile.creatorId',
-      ])
-      .where('creator_follows.fanId = :fanId', { fanId: fanId })
-      .limit(40)
-      .offset(input.offset);
+  public async getFollowing(fanId: string, input: PaginationInput) {
+    const query = this.createQueryBuilder('cfs')
+      .leftJoin('users', 'user', 'user.id = cfs.fanId')
+      .select('cfs.*')
+      .addSelect('user.firstName')
+      .addSelect('user.lastName')
+      .addSelect('user.username')
+      .addSelect('user.avatarUrl')
+      .where('cfs.fanId = :fanId', { fanId: fanId })
+      .orderBy('cfs.followedAt', input.orderBy)
+      .limit(input.limit)
+      .offset(input.offset)
+      .getRawMany<GetFollowingUsersOutput>();
 
-    return await query.getMany();
+    return await convertRawToEntityType<GetFollowingUsersOutput>(query, { prefixes: ['user'] });
   }
 }

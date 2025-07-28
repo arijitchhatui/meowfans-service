@@ -1,8 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { GetChannelInput, GetChannelsOutput } from '../../message-channels/dto';
-import { PaginationInput } from '../../service.constants';
 import { MessageChannelsEntity, MessagesEntity } from '../entities';
+import { PaginationInput } from '../../../lib/helpers';
 
 @Injectable()
 export class MessageChannelsRepository extends Repository<MessageChannelsEntity> {

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { In } from 'typeorm';
+import { PaginationInput } from '../../lib/helpers';
 import { MessageChannelParticipantsService } from '../message-channel-participants';
 import { MessageChannelsService } from '../message-channels';
 import { MessageChannelsEntity, MessageReactionsEntity, MessagesEntity } from '../rdb/entities';
@@ -11,7 +12,6 @@ import {
   MessageRepliesRepository,
   MessagesRepository,
 } from '../rdb/repositories';
-import { PaginationInput } from '../service.constants';
 import {
   DeleteMessageInput,
   DeleteMessagesInput,

@@ -6,8 +6,8 @@ import { ProfanityValidator, UniqueUsernameValidator } from '../../../lib';
 export class UpdateCreatorProfileInput {
   @Field({ nullable: true })
   @ValidateIf(({ username }) => username !== undefined)
-  @Validate(UniqueUsernameValidator)
   @Validate(ProfanityValidator)
+  @Validate(UniqueUsernameValidator)
   username: string;
 
   @Field({ nullable: true })

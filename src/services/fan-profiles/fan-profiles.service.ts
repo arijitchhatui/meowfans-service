@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { shake } from 'radash';
+import { PaginationInput } from '../../lib/helpers';
 import { CreatorFollowsRepository, FanProfilesRepository, UsersRepository } from '../rdb/repositories';
-import { GetFollowingInput } from './dto';
 import { FollowCreatorInput } from './dto/follow-creator.dto';
 import { UnFollowCreatorInput } from './dto/unfollow-creator.dto';
 import { UpdateUserProfileInput } from './dto/update-fan-profile.dto';
@@ -45,7 +45,7 @@ export class FanProfilesService {
     return !!unFollowed.affected;
   }
 
-  public async getFollowing(fanId: string, input: GetFollowingInput) {
+  public async getFollowing(fanId: string, input: PaginationInput) {
     return await this.creatorFollowsRepository.getFollowing(fanId, input);
   }
 }
