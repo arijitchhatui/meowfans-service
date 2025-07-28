@@ -1,8 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
+import { GetFollowingUsersOutput } from '../creator-profiles';
 import { CreatorFollowsEntity, FanProfilesEntity } from '../rdb/entities';
 import { UserRoles } from '../service.constants';
-import { FollowCreatorInput, GetFollowingInput, UnFollowCreatorInput, UpdateUserProfileInput } from './dto';
+import { FollowCreatorInput, UnFollowCreatorInput, UpdateUserProfileInput } from './dto';
 import { FanProfilesService } from './fan-profiles.service';
 
 @Resolver()
@@ -43,11 +45,11 @@ export class FanProfilesResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
-  @Query(() => [CreatorFollowsEntity])
+  @Query(() => [GetFollowingUsersOutput])
   public async getFollowing(
     @CurrentUser() fanId: string,
-    @Args('input') input: GetFollowingInput,
-  ): Promise<CreatorFollowsEntity[]> {
+    @Args('input') input: PaginationInput,
+  ): Promise<GetFollowingUsersOutput[]> {
     return await this.userProfilesService.getFollowing(fanId, input);
   }
 }

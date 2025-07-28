@@ -1,23 +1,19 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { InjectUserToArg } from '../../lib';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import {
-  CreatorBlocksEntity,
-  CreatorFollowsEntity,
-  CreatorProfilesEntity,
-  CreatorRestrictsEntity,
-} from '../rdb/entities';
+import { CreatorProfilesEntity } from '../rdb/entities';
 import { UserRoles } from '../service.constants';
 import { CreatorProfilesService } from './creator-profiles.service';
 import {
   BlockFanInput,
   DeleteFollowerInput,
-  GetBlockedUsersInput,
-  GetFollowersInput,
-  GetRestrictedUsersInput,
+  GetBlockedUsersOutput,
+  GetFollowedUsersOutput,
+  GetRestrictedUsersOutput,
   UpdateCreatorProfileInput,
 } from './dto';
 import { RestrictFanInput } from './dto/restrict-fan.dto';
+import { PaginationInput } from '../../lib/helpers';
 
 @Resolver()
 export class CreatorProfilesResolver {
@@ -49,20 +45,20 @@ export class CreatorProfilesResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Query(() => [CreatorFollowsEntity])
+  @Query(() => [GetFollowedUsersOutput])
   public async getFollowers(
     @CurrentUser() creatorId: string,
-    @Args('input') input: GetFollowersInput,
-  ): Promise<CreatorFollowsEntity[]> {
+    @Args('input') input: PaginationInput,
+  ): Promise<GetFollowedUsersOutput[]> {
     return await this.creatorProfilesService.getFollowers(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Query(() => [CreatorBlocksEntity])
+  @Query(() => [GetBlockedUsersOutput])
   public async getBlockedUsers(
     @CurrentUser() creatorId: string,
-    @Args('input') input: GetBlockedUsersInput,
-  ): Promise<CreatorBlocksEntity[]> {
+    @Args('input') input: PaginationInput,
+  ): Promise<GetBlockedUsersOutput[]> {
     return await this.creatorProfilesService.getBlockedUsers(creatorId, input);
   }
 
@@ -79,11 +75,11 @@ export class CreatorProfilesResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Query(() => [CreatorRestrictsEntity])
+  @Query(() => [GetRestrictedUsersOutput])
   public async getRestrictedUsers(
     @CurrentUser() creatorId: string,
-    @Args('input') input: GetRestrictedUsersInput,
-  ): Promise<CreatorRestrictsEntity[]> {
+    @Args('input') input: PaginationInput,
+  ): Promise<GetRestrictedUsersOutput[]> {
     return await this.creatorProfilesService.getRestrictedUsers(creatorId, input);
   }
 

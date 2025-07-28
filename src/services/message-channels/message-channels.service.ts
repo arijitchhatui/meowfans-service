@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
+import { PaginationInput } from '../../lib/helpers';
 import { MessageChannelsRepository } from '../rdb/repositories';
-import { PaginationInput, UserRoles } from '../service.constants';
+import { UserRoles } from '../service.constants';
 import { CreateChannelInput, GetChannelInput, UpdateChannelInput } from './dto';
 
 @Injectable()

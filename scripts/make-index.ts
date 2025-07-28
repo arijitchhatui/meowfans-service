@@ -23,6 +23,7 @@ const paths = [
   'src/lib/decorators',
   'src/lib/interceptors',
   'src/lib/pipes',
+  'src/lib/helpers',
   'src/lib/validation',
   'src/lib/validators',
   'src/services/rdb/entities',

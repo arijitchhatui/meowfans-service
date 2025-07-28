@@ -1,7 +1,8 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { MessageReactionsEntity, MessagesEntity } from '../rdb/entities';
-import { PaginationInput, UserRoles } from '../service.constants';
+import { UserRoles } from '../service.constants';
 import {
   DeleteMessageInput,
   DeleteMessagesInput,

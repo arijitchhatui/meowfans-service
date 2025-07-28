@@ -1,6 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { GetBlockedUsersInput } from '../../creator-profiles';
+import { PaginationInput } from '../../../lib/helpers';
+import { convertRawToEntityType } from '../../../lib/helpers/convert-raw-to-entity-type';
+import { GetBlockedUsersOutput } from '../../creator-profiles';
 import { CreatorBlocksEntity } from '../entities';
 
 @Injectable()
@@ -11,15 +13,19 @@ export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
     super(CreatorBlocksEntity, entityManager);
   }
 
-  public async getBlockedUsers(creatorId: string, input: GetBlockedUsersInput) {
-    const query = this.createQueryBuilder('creator_blocks')
-      .leftJoin('creator_blocks.fanProfile', 'fanProfile')
-      .leftJoin('fanProfile.user', 'user')
-      .addSelect(['fanProfile.username', 'fanProfile.fullName', 'fanProfile.avatarUrl', 'fanProfile.fanId'])
-      .where('creator_blocks.creatorId = :creatorId', { creatorId: creatorId })
+  public async getBlockedUsers(creatorId: string, input: PaginationInput) {
+    const query = this.createQueryBuilder('cbs')
+      .leftJoin('users', 'user', 'user.id = cbs.fanId')
+      .select('cbs.*')
+      .addSelect('user.firstName')
+      .addSelect('user.lastName')
+      .addSelect('user.username')
+      .addSelect('user.avatarUrl')
+      .where('cbs.creatorId = :creatorId', { creatorId: creatorId })
       .limit(30)
-      .offset(input.offset);
+      .offset(input.offset)
+      .getRawMany<GetBlockedUsersOutput>();
 
-    return await query.getMany();
+    return await convertRawToEntityType<GetBlockedUsersOutput>(query, { prefixes: ['user'] });
   }
 }

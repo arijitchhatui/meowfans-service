@@ -6,7 +6,7 @@ import { ProfanityWarningTypes } from '../validation';
 @Injectable()
 @ValidatorConstraint({ name: 'credential', async: true })
 export class ProfanityValidator implements ValidatorConstraintInterface {
-  public validate(value: string) {
+  public async validate(value: string) {
     const safe = profanity.exists(value);
 
     return !safe;

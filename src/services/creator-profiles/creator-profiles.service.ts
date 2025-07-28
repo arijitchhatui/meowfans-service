@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { shake } from 'radash';
+import { PaginationInput } from '../../lib/helpers';
 import {
   CreatorBlocksRepository,
   CreatorFollowsRepository,
@@ -8,14 +9,7 @@ import {
   SocialAccountsRepository,
   UsersRepository,
 } from '../rdb/repositories';
-import {
-  CreateAndUpdateSocialAccountsInput,
-  DeleteFollowerInput,
-  GetBlockedUsersInput,
-  GetFollowersInput,
-  GetRestrictedUsersInput,
-  UpdateCreatorProfileInput,
-} from './dto';
+import { CreateAndUpdateSocialAccountsInput, DeleteFollowerInput, UpdateCreatorProfileInput } from './dto';
 import { BlockFanInput } from './dto/block-fan.dto';
 import { RestrictFanInput } from './dto/restrict-fan.dto';
 
@@ -56,7 +50,7 @@ export class CreatorProfilesService {
     );
   }
 
-  public async getFollowers(creatorId: string, input: GetFollowersInput) {
+  public async getFollowers(creatorId: string, input: PaginationInput) {
     return await this.creatorFollowsRepository.getFollowers(creatorId, input);
   }
 
@@ -65,6 +59,7 @@ export class CreatorProfilesService {
       creatorId: creatorId,
       fanId: input.fanId,
     });
+
     return !!result;
   }
 
@@ -73,6 +68,7 @@ export class CreatorProfilesService {
       where: { creatorId: creatorId, fanId: input.fanId },
     });
     if (wasBlocked) return true;
+
     const result = await this.creatorBlocksRepository.save({
       creatorId: creatorId,
       fanId: input.fanId,
@@ -80,31 +76,26 @@ export class CreatorProfilesService {
     return !!result;
   }
 
-  public async getBlockedUsers(creatorId: string, input: GetBlockedUsersInput) {
+  public async getBlockedUsers(creatorId: string, input: PaginationInput) {
     return await this.creatorBlocksRepository.getBlockedUsers(creatorId, input);
   }
 
   public async unBlockFan(creatorId: string, input: BlockFanInput): Promise<boolean> {
-    const blocked = await this.creatorBlocksRepository.delete({
-      fanId: input.fanId,
-      creatorId: creatorId,
-    });
+    const blocked = await this.creatorBlocksRepository.delete({ fanId: input.fanId, creatorId: creatorId });
+
     return !!blocked.affected;
   }
 
-  public async getRestrictedUsers(creatorId: string, input: GetRestrictedUsersInput) {
+  public async getRestrictedUsers(creatorId: string, input: PaginationInput) {
     return await this.creatorRestrictsRepository.getRestrictedUsers(creatorId, input);
   }
 
   public async restrictFan(creatorId: string, input: RestrictFanInput): Promise<boolean> {
-    const wasRestricted = await this.creatorRestrictsRepository.findOne({
-      where: { creatorId, fanId: input.fanId },
-    });
+    const wasRestricted = await this.creatorRestrictsRepository.findOne({ where: { creatorId, fanId: input.fanId } });
     if (wasRestricted) return true;
-    const result = await this.creatorRestrictsRepository.save({
-      creatorId: creatorId,
-      fanId: input.fanId,
-    });
+
+    const result = await this.creatorRestrictsRepository.save({ creatorId: creatorId, fanId: input.fanId });
+
     return !!result;
   }
 
