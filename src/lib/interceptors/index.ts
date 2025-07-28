@@ -1,2 +1,2 @@
-export * from '../decorators/inject-user-to-arg.decorator';
+export * from './inject-user.interceptor';
 export * from './shake-input.interceptor';

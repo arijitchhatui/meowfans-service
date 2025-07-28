@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { Not } from 'typeorm';
-import { REMOVE_SPACE_REGEX, USER_NAME_CASE_REGEX } from '../../auth';
-import { UsersRepository } from '../../rdb/repositories';
+import { REMOVE_SPACE_REGEX, USER_NAME_CASE_REGEX } from '../../services/auth';
+import { UsersRepository } from '../../services/rdb/repositories';
 import { VALIDATION_CONTEXT } from '../interceptors/inject-user.interceptor';
 import { ValidationErrorCodes } from '../validation';
 import { ExtendedValidationArguments } from '../validation/extended-validation-arguments';
