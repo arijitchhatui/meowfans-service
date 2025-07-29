@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { PaginationInput } from '../../../lib/helpers';
-import { convertRawToEntityType } from '../../../lib/helpers/convert-raw-to-entity-type';
+import { EntityBuilder } from '../../../lib/methods/to-entity-type.method';
 import { GetBlockedUsersOutput } from '../../creator-profiles';
 import { CreatorBlocksEntity } from '../entities';
 
@@ -9,7 +9,11 @@ import { CreatorBlocksEntity } from '../entities';
 export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
   private logger = new Logger(CreatorBlocksEntity.name);
 
-  constructor(@Optional() _target: EntityTarget<CreatorBlocksEntity>, entityManager: EntityManager) {
+  constructor(
+    @Optional() _target: EntityTarget<CreatorBlocksEntity>,
+    entityManager: EntityManager,
+    private entityBuilder: EntityBuilder,
+  ) {
     super(CreatorBlocksEntity, entityManager);
   }
 
@@ -25,7 +29,6 @@ export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
       .limit(30)
       .offset(input.offset)
       .getRawMany<GetBlockedUsersOutput>();
-
-    return await convertRawToEntityType<GetBlockedUsersOutput>(query, { prefixes: ['user'] });
+    return await this.entityBuilder.toEntityType<GetBlockedUsersOutput>(query, { aliases: ['user'] });
   }
 }

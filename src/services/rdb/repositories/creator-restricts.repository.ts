@@ -27,6 +27,6 @@ export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntit
       .offset(input.offset)
       .getRawMany<GetRestrictedUsersOutput>();
 
-    return await convertRawToEntityType<GetRestrictedUsersOutput>(query, { prefixes: ['user'] });
+    return await convertRawToEntityType<GetRestrictedUsersOutput>(query, { aliases: ['user'] });
   }
 }

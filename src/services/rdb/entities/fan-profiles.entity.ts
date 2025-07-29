@@ -56,7 +56,7 @@ export class FanProfilesEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'timestamp', nullable: true })
   appliedAt: Date;
 

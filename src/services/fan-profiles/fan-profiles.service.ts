@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { PaginationInput } from '../../lib/helpers';
 import { CreatorFollowsRepository, FanProfilesRepository, UsersRepository } from '../rdb/repositories';
@@ -19,29 +19,26 @@ export class FanProfilesService {
   }
 
   public async updateFanProfile(fanId: string, input: UpdateUserProfileInput) {
-    const fanProfile = await this.fanProfilesRepository.findOneOrFail({ where: { fanId } });
+    const fanProfile = await this.fanProfilesRepository.findOneOrFail({ where: { fanId }, relations: { user: true } });
 
-    if (input.username && input.username !== fanProfile.user.username) {
-      const exists = await this.usersRepository.findOne({ where: { username: input.username } });
-      if (exists) throw new BadRequestException('Username already exists!');
-    }
+    await this.usersRepository.save(Object.assign(fanProfile.user, shake(input)));
 
-    return this.fanProfilesRepository.save(Object.assign(fanProfile, shake(input)));
+    return this.fanProfilesRepository.save(fanProfile);
   }
 
   public async followCreator(fanId: string, input: FollowCreatorInput) {
-    const followedCreator = this.creatorFollowsRepository.create({
-      fanId: fanId,
-      creatorId: input.creatorId,
+    const hasFollowed = await this.creatorFollowsRepository.findOne({
+      where: { fanId: fanId, creatorId: input.creatorId },
     });
-    return await this.creatorFollowsRepository.save(followedCreator);
+
+    if (hasFollowed) return true;
+
+    const followed = await this.creatorFollowsRepository.save({ fanId: fanId, creatorId: input.creatorId });
+    return !!followed;
   }
 
   public async unFollowCreator(fanId: string, input: UnFollowCreatorInput) {
-    const unFollowed = await this.creatorFollowsRepository.delete({
-      creatorId: input.creatorId,
-      fanId: fanId,
-    });
+    const unFollowed = await this.creatorFollowsRepository.delete({ creatorId: input.creatorId, fanId: fanId });
     return !!unFollowed.affected;
   }
 
