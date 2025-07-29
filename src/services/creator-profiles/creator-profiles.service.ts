@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { PaginationInput } from '../../lib/helpers';
 import {
@@ -36,18 +36,9 @@ export class CreatorProfilesService {
       relations: { user: true },
     });
 
-    if (input.username && input.username !== creatorProfile.user.username) {
-      const exists = await this.usersRepository.findOne({ where: { username: input.username } });
-      if (exists) throw new BadRequestException('Username already exists');
-    }
+    await this.usersRepository.save(Object.assign(creatorProfile.user, shake({ username, bannerUrl, avatarUrl })));
 
-    const updatedUser = await this.usersRepository.save(
-      Object.assign(creatorProfile.user, shake({ username, bannerUrl, avatarUrl })),
-    );
-
-    return await this.creatorProfilesRepository.save(
-      Object.assign({ ...creatorProfile, user: updatedUser }, shake(rest)),
-    );
+    return await this.creatorProfilesRepository.save(Object.assign(creatorProfile, shake(rest)));
   }
 
   public async getFollowers(creatorId: string, input: PaginationInput) {

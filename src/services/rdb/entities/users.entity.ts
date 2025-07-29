@@ -29,7 +29,6 @@ export class UsersEntity {
   @Field()
   id: string;
 
-  @Field()
   @Index()
   @IsEmail()
   @Column({ unique: true })

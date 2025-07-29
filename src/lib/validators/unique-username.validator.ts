@@ -16,11 +16,11 @@ export class UniqueUsernameValidator implements ValidatorConstraintInterface {
     const newUsername = value.toLowerCase().replace(USER_NAME_CASE_REGEX, ' ').replace(REMOVE_SPACE_REGEX, ' ');
     const currentUserId = args.object[VALIDATION_CONTEXT].user.sub;
 
-    const username = await this.userProfilesRepository.exists({
+    const exists = await this.userProfilesRepository.exists({
       where: { username: newUsername, id: Not(currentUserId) },
     });
 
-    return !username;
+    return !exists;
   }
 
   public defaultMessage(): string {

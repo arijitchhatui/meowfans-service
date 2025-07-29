@@ -26,7 +26,9 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
       .offset(input.offset)
       .getRawMany<GetFollowedUsersOutput>();
 
-    return await convertRawToEntityType<GetFollowedUsersOutput>(query, { prefixes: ['user'] });
+    return await convertRawToEntityType<GetFollowedUsersOutput>(query, { aliases: ['user'] }, [
+      { name: 'userProfile', prefix: 'user' },
+    ]);
   }
 
   public async getFollowing(fanId: string, input: PaginationInput) {
@@ -43,6 +45,6 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
       .offset(input.offset)
       .getRawMany<GetFollowingUsersOutput>();
 
-    return await convertRawToEntityType<GetFollowingUsersOutput>(query, { prefixes: ['user'] });
+    return await convertRawToEntityType<GetFollowingUsersOutput>(query, { aliases: ['user'] });
   }
 }

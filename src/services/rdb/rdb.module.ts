@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { EntityBuilder } from '../../lib/methods/to-entity-type.method';
 import * as repositories from './repositories';
 
 @Global()
@@ -32,7 +33,7 @@ import * as repositories from './repositories';
       },
     }),
   ],
-  providers: [...Object.values(repositories)],
+  providers: [...Object.values(repositories), EntityBuilder],
   exports: Object.values(repositories),
 })
 export class RdbModule {}

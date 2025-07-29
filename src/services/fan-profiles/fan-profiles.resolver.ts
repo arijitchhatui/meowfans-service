@@ -1,8 +1,9 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { InjectUserToArg } from '../../lib';
 import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { GetFollowingUsersOutput } from '../creator-profiles';
-import { CreatorFollowsEntity, FanProfilesEntity } from '../rdb/entities';
+import { FanProfilesEntity } from '../rdb/entities';
 import { UserRoles } from '../service.constants';
 import { FollowCreatorInput, UnFollowCreatorInput, UpdateUserProfileInput } from './dto';
 import { FanProfilesService } from './fan-profiles.service';
@@ -17,6 +18,7 @@ export class FanProfilesResolver {
     return await this.userProfilesService.getFanProfile(fanId);
   }
 
+  @InjectUserToArg('input')
   @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Mutation(() => FanProfilesEntity)
   public async updateFanProfile(
@@ -27,11 +29,8 @@ export class FanProfilesResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
-  @Mutation(() => CreatorFollowsEntity)
-  public async followCreator(
-    @CurrentUser() fanId: string,
-    @Args('input') input: FollowCreatorInput,
-  ): Promise<CreatorFollowsEntity> {
+  @Mutation(() => Boolean)
+  public async followCreator(@CurrentUser() fanId: string, @Args('input') input: FollowCreatorInput): Promise<boolean> {
     return await this.userProfilesService.followCreator(fanId, input);
   }
 
