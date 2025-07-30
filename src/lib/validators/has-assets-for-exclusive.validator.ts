@@ -5,17 +5,16 @@ import { PostCreationErrorTypes } from '../validation';
 @Injectable()
 @ValidatorConstraint({ name: 'HasAssetsForExclusiveProp', async: true })
 export class HasAssetsForExclusivePropValidator implements ValidatorConstraintInterface {
-  private postCreationError: PostCreationErrorTypes = PostCreationErrorTypes.GENERIC_POST_CREATION_ERROR;
+  private postCreationError = PostCreationErrorTypes.GENERIC_POST_CREATION_ERROR;
 
   public validate(isExclusive: boolean, args: ValidationArguments): boolean {
     const { creatorAssetIds, unlockPrice } = args.object as {
-      creatorAssetIds: Array<string>;
+      creatorAssetIds?: Array<string>;
       unlockPrice: number;
     };
-    console.log(creatorAssetIds, unlockPrice, isExclusive);
 
     if (isExclusive) {
-      if (!creatorAssetIds) {
+      if (!creatorAssetIds?.length) {
         this.postCreationError = PostCreationErrorTypes.EMPTY_ASSET_IDS_ERROR;
         return false;
       } else if (unlockPrice == null || unlockPrice < 500) {

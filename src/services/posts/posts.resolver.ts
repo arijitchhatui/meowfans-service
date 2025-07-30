@@ -26,13 +26,13 @@ export class PostsResolver {
   @Auth(GqlAuthGuard, [])
   @Query(() => [PostsEntity])
   public async getPosts(@CurrentUser() creatorId: string): Promise<PostsEntity[]> {
-    return this.postsService.getPosts(creatorId);
+    return await this.postsService.getPosts(creatorId);
   }
 
   @Auth(GqlAuthGuard, [])
   @Query(() => PostsEntity)
   public async getPost(@Args('input') creatorId: string, @Args('input') input: GetPostInput): Promise<PostsEntity> {
-    return this.postsService.getPost(creatorId, input);
+    return await this.postsService.getPost(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
@@ -41,7 +41,7 @@ export class PostsResolver {
     @CurrentUser() creatorId: string,
     @Args('input') input: CreatePostInput,
   ): Promise<PostsEntity> {
-    return this.postsService.createPost(creatorId, input);
+    return await this.postsService.createPost(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
@@ -50,13 +50,13 @@ export class PostsResolver {
     @CurrentUser() creatorId: string,
     @Args('input') input: UpdatePostInput,
   ): Promise<PostsEntity> {
-    return this.postsService.updatePost(creatorId, input);
+    return await this.postsService.updatePost(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Mutation(() => Boolean)
   public async deletePost(@CurrentUser() creatorId: string, @Args('input') input: DeletePostInput): Promise<boolean> {
-    return this.postsService.deletePost(creatorId, input);
+    return await this.postsService.deletePost(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
@@ -65,7 +65,7 @@ export class PostsResolver {
     @CurrentUser() fanId: string,
     @Args('input') input: CreateCommentInput,
   ): Promise<PostCommentsEntity> {
-    return this.postsService.createComment(fanId, input);
+    return await this.postsService.createComment(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
@@ -74,13 +74,13 @@ export class PostsResolver {
     @CurrentUser() fanId: string,
     @Args('input') input: UpdateCommentInput,
   ): Promise<PostCommentsEntity> {
-    return this.postsService.updateComment(fanId, input);
+    return await this.postsService.updateComment(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Mutation(() => Boolean)
   public async deleteComment(@CurrentUser() fanId: string, @Args('input') input: DeleteCommentInput): Promise<boolean> {
-    return this.postsService.deleteComment(fanId, input);
+    return await this.postsService.deleteComment(fanId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
