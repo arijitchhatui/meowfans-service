@@ -1,4 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { Validate } from 'class-validator';
+import { HasAssetsForExclusivePropValidator } from '../../../lib';
 
 @InputType()
 export class UpdatePostInput {
@@ -9,8 +11,9 @@ export class UpdatePostInput {
   caption: string;
 
   @Field({ nullable: true })
-  price: number;
+  unlockPrice: number;
 
   @Field({ nullable: true })
+  @Validate(HasAssetsForExclusivePropValidator)
   isExclusive: boolean;
 }

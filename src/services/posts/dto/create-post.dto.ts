@@ -9,13 +9,12 @@ export class CreatePostInput {
 
   @Field(() => Boolean)
   @IsBoolean()
+  @Validate(HasAssetsForExclusivePropValidator)
   isExclusive: boolean;
 
   @Field(() => Int, { nullable: true })
-  @Validate(HasAssetsForExclusivePropValidator)
   unlockPrice: number;
 
   @Field(() => [String])
-  @Validate(HasAssetsForExclusivePropValidator)
   creatorAssetIds: string[];
 }
