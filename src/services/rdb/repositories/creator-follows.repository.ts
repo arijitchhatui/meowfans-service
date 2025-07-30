@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { convertRawToEntityType, PaginationInput } from '../../../lib/helpers';
+import { PaginationInput } from '../../../lib/helpers';
+import { EntityBuilder } from '../../../lib/methods';
 import { GetFollowedUsersOutput, GetFollowingUsersOutput } from '../../creator-profiles';
 import { CreatorFollowsEntity } from '../entities';
 
@@ -8,7 +9,11 @@ import { CreatorFollowsEntity } from '../entities';
 export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
   private logger = new Logger(CreatorFollowsEntity.name);
 
-  constructor(@Optional() _target: EntityTarget<CreatorFollowsEntity>, entityManager: EntityManager) {
+  constructor(
+    @Optional() _target: EntityTarget<CreatorFollowsEntity>,
+    entityManager: EntityManager,
+    private entityBuilder: EntityBuilder,
+  ) {
     super(CreatorFollowsEntity, entityManager);
   }
 
@@ -26,9 +31,11 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
       .offset(input.offset)
       .getRawMany<GetFollowedUsersOutput>();
 
-    return await convertRawToEntityType<GetFollowedUsersOutput>(query, { aliases: ['user'] }, [
-      { name: 'userProfile', prefix: 'user' },
-    ]);
+    return await this.entityBuilder.toEntityType<GetFollowedUsersOutput>({
+      rawQuery: query,
+      stripper: { aliases: ['user'] },
+      parameters: [{ name: 'userProfile', alias: 'user' }],
+    });
   }
 
   public async getFollowing(fanId: string, input: PaginationInput) {
@@ -45,6 +52,10 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
       .offset(input.offset)
       .getRawMany<GetFollowingUsersOutput>();
 
-    return await convertRawToEntityType<GetFollowingUsersOutput>(query, { aliases: ['user'] });
+    return await this.entityBuilder.toEntityType<GetFollowingUsersOutput>({
+      rawQuery: query,
+      stripper: { aliases: ['user'] },
+      parameters: [{ name: 'creatorProfile', alias: 'user' }],
+    });
   }
 }

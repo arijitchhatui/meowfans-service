@@ -1,9 +1,10 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, Validate } from 'class-validator';
+import { HasAssetsForExclusivePropValidator } from '../../../lib';
 
 @InputType()
 export class CreatePostInput {
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   caption: string;
 
   @Field(() => Boolean)
@@ -11,8 +12,10 @@ export class CreatePostInput {
   isExclusive: boolean;
 
   @Field(() => Int, { nullable: true })
+  @Validate(HasAssetsForExclusivePropValidator)
   unlockPrice: number;
 
   @Field(() => [String])
+  @Validate(HasAssetsForExclusivePropValidator)
   creatorAssetIds: string[];
 }

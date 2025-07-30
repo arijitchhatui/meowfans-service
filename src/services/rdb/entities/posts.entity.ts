@@ -26,16 +26,16 @@ export class PostsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
-  @Column()
+  @Field({ nullable: true })
+  @Column({ nullable: true })
   caption: string;
 
   @Field()
-  @Column()
+  @Column({ type: 'uuid' })
   creatorId: string;
 
   @Field()
-  @Column()
+  @Column({ type: 'boolean' })
   isExclusive: boolean;
 
   @Field(() => Int, { nullable: true })

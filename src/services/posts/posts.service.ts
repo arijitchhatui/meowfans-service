@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import {
   CreatorProfilesRepository,
@@ -61,20 +61,22 @@ export class PostsService {
   }
 
   public async createPost(creatorId: string, input: CreatePostInput) {
-    if (input.isExclusive && !input.unlockPrice) throw new BadRequestException({ message: 'Invalid Query' });
+    const { caption, creatorAssetIds, isExclusive, unlockPrice } = input;
 
     const post = await this.postsRepository.save({
-      creatorId: creatorId,
-      caption: input.caption,
-      isExclusive: input.isExclusive,
-      unlockPrice: input.isExclusive ? input.unlockPrice : null,
+      creatorId,
+      caption,
+      isExclusive,
+      unlockPrice: isExclusive ? unlockPrice : null,
     });
+
     await Promise.all(
-      input.creatorAssetIds.map(async (assetId) => {
+      creatorAssetIds.map(async (assetId) => {
         await this.postAssetsRepository.save({ creatorAssetId: assetId, postId: post.id });
       }),
     );
-    await this.updatePostCount(creatorId, 1, input.isExclusive);
+
+    await this.updatePostCount(creatorId, 1, isExclusive);
     return post;
   }
 
@@ -88,12 +90,12 @@ export class PostsService {
   }
 
   public async deletePost(creatorId: string, input: DeletePostInput) {
-    const post = await this.postsRepository.findOneOrFail({ where: { id: input.postId, creatorId: creatorId } });
+    const post = await this.postsRepository.findOneOrFail({ where: { id: input.postId, creatorId } });
 
     await this.updatePostCount(creatorId, -1, post.isExclusive);
 
-    const result = await this.postsRepository.delete({ id: input.postId });
-    return !!result.affected;
+    const { affected } = await this.postsRepository.delete({ id: input.postId });
+    return !!affected;
   }
 
   public async createComment(fanId: string, input: CreateCommentInput) {
@@ -118,10 +120,10 @@ export class PostsService {
       where: { postId: input.postId, fanId: fanId, id: input.commentId },
     });
 
-    const result = await this.postCommentsRepository.delete({ id: input.commentId });
+    const { affected } = await this.postCommentsRepository.delete({ id: input.commentId });
     await this.postsRepository.decrement({ id: input.postId }, 'commentCount', 1);
 
-    return !!result.affected;
+    return !!affected;
   }
 
   public async likePost(fanId: string, input: LikePostInput) {
@@ -155,8 +157,8 @@ export class PostsService {
       where: { id: input.shareId, fanId: fanId, postId: input.postId },
     });
 
-    const result = await this.postSharesRepository.delete({ id: input.shareId, postId: input.postId });
-    return !!result.affected;
+    const { affected } = await this.postSharesRepository.delete({ id: input.shareId, postId: input.postId });
+    return !!affected;
   }
 
   public async savePost(fanId: string, input: SavePostInput) {
