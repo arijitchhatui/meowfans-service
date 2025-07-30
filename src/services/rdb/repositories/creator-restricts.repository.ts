@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { convertRawToEntityType, PaginationInput } from '../../../lib/helpers';
+import { PaginationInput } from '../../../lib/helpers';
+import { EntityBuilder } from '../../../lib/methods';
 import { GetRestrictedUsersOutput } from '../../creator-profiles';
 import { CreatorRestrictsEntity } from '../entities';
 
@@ -8,7 +9,11 @@ import { CreatorRestrictsEntity } from '../entities';
 export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntity> {
   private logger = new Logger(CreatorRestrictsEntity.name);
 
-  constructor(@Optional() _target: EntityTarget<CreatorRestrictsEntity>, entityManager: EntityManager) {
+  constructor(
+    @Optional() _target: EntityTarget<CreatorRestrictsEntity>,
+    entityManager: EntityManager,
+    private entityBuilder: EntityBuilder,
+  ) {
     super(CreatorRestrictsEntity, entityManager);
   }
 
@@ -27,6 +32,10 @@ export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntit
       .offset(input.offset)
       .getRawMany<GetRestrictedUsersOutput>();
 
-    return await convertRawToEntityType<GetRestrictedUsersOutput>(query, { aliases: ['user'] });
+    return await this.entityBuilder.toEntityType<GetRestrictedUsersOutput>({
+      rawQuery: query,
+      stripper: { aliases: ['user'] },
+      parameters: [{ name: 'userProfile', alias: 'user' }],
+    });
   }
 }

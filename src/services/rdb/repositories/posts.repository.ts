@@ -1,14 +1,19 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { EntityBuilder } from '../../../lib/methods';
+import { GetPostsInfoInput, GetPostsInfoOutput } from '../../posts';
 import { PostCommentsEntity, PremiumPostUnlocksEntity } from '../entities';
 import { PostsEntity } from '../entities/posts.entity';
-import { GetPostsInfoInput, GetPostsInfoOutput } from '../../posts';
 
 @Injectable()
 export class PostsRepository extends Repository<PostsEntity> {
   private logger = new Logger(PostsRepository.name);
 
-  constructor(@Optional() _target: EntityTarget<PostsEntity>, entityManager: EntityManager) {
+  constructor(
+    @Optional() _target: EntityTarget<PostsEntity>,
+    entityManager: EntityManager,
+    private entityBuilder: EntityBuilder,
+  ) {
     super(PostsEntity, entityManager);
   }
   public async getPostsInfo(creatorId: string, input: GetPostsInfoInput) {
@@ -29,22 +34,17 @@ export class PostsRepository extends Repository<PostsEntity> {
       .leftJoin(`(${commentSubQuery.getQuery()})`, 'latestComment', '"latestComment"."postId" = posts.id')
       .setParameters(commentSubQuery.getParameters())
       .addSelect('"latestComment"."latestComment"', 'latestComment')
-      .addSelect('posts.id', 'id')
-      .addSelect('posts.caption', 'caption')
-      .addSelect('posts.unlockPrice', 'unlockPrice')
-      .addSelect('posts.likeCount', 'likeCount')
-      .addSelect('posts.shareCount', 'shareCount')
-      .addSelect('posts.saveCount', 'saveCount')
-      .addSelect('posts.commentCount', 'commentCount')
-      .addSelect('posts.isExclusive', 'isExclusive')
-      .addSelect('posts.createdAt', 'createdAt')
-      .addSelect('posts.updatedAt', 'updatedAt')
-      .addSelect('posts.deletedAt', 'deletedAt')
+      .addSelect('posts.*')
       .addSelect(`(${earningSubQuery.getQuery()})`, 'totalEarning')
       .where('posts.creatorId = :creatorId', { creatorId })
       .orderBy('posts.createdAt', 'DESC')
       .limit(30)
-      .offset(input.offset);
-    return await query.getRawMany<GetPostsInfoOutput>();
+      .offset(input.offset)
+      .getRawMany<GetPostsInfoOutput>();
+
+    return await this.entityBuilder.toEntityType<GetPostsInfoOutput>({
+      rawQuery: query,
+      stripper: { aliases: ['posts'] },
+    });
   }
 }

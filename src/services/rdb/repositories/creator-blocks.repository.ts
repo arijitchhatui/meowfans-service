@@ -29,6 +29,10 @@ export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
       .limit(30)
       .offset(input.offset)
       .getRawMany<GetBlockedUsersOutput>();
-    return await this.entityBuilder.toEntityType<GetBlockedUsersOutput>(query, { aliases: ['user'] });
+    return await this.entityBuilder.toEntityType<GetBlockedUsersOutput>({
+      rawQuery: query,
+      stripper: { aliases: ['user'] },
+      parameters: [{ name: 'userProfile', alias: 'user' }],
+    });
   }
 }
