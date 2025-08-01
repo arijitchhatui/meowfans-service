@@ -1,1 +1,1 @@
-export * from './to-entity-type.method';
+export * from './from-raw-to-entity-type.method';
