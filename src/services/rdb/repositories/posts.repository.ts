@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { EntityBuilder } from '../../../lib/methods';
+import { EntityMaker } from '../../../lib/methods';
 import { GetPostsInfoInput, GetPostsInfoOutput } from '../../posts';
 import { PostCommentsEntity, PremiumPostUnlocksEntity } from '../entities';
 import { PostsEntity } from '../entities/posts.entity';
@@ -12,7 +12,7 @@ export class PostsRepository extends Repository<PostsEntity> {
   constructor(
     @Optional() _target: EntityTarget<PostsEntity>,
     entityManager: EntityManager,
-    private entityBuilder: EntityBuilder,
+    private entityBuilder: EntityMaker,
   ) {
     super(PostsEntity, entityManager);
   }
@@ -42,9 +42,9 @@ export class PostsRepository extends Repository<PostsEntity> {
       .offset(input.offset)
       .getRawMany<GetPostsInfoOutput>();
 
-    return await this.entityBuilder.toEntityType<GetPostsInfoOutput>({
-      rawQuery: query,
-      stripper: { aliases: ['posts'] },
+    return await this.entityBuilder.fromRawToEntityType<GetPostsInfoOutput>({
+      rawQueryMap: query,
+      mappers: [{ aliasName: 'posts' }],
     });
   }
 }

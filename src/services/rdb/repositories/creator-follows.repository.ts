@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { PaginationInput } from '../../../lib/helpers';
-import { EntityBuilder } from '../../../lib/methods';
+import { EntityMaker } from '../../../lib/methods';
 import { GetFollowedUsersOutput, GetFollowingUsersOutput } from '../../creator-profiles';
 import { CreatorFollowsEntity } from '../entities';
 
@@ -12,7 +12,7 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
   constructor(
     @Optional() _target: EntityTarget<CreatorFollowsEntity>,
     entityManager: EntityManager,
-    private entityBuilder: EntityBuilder,
+    private entityMaker: EntityMaker,
   ) {
     super(CreatorFollowsEntity, entityManager);
   }
@@ -31,31 +31,29 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
       .offset(input.offset)
       .getRawMany<GetFollowedUsersOutput>();
 
-    return await this.entityBuilder.toEntityType<GetFollowedUsersOutput>({
-      rawQuery: query,
-      stripper: { aliases: ['user'] },
-      parameters: [{ name: 'userProfile', alias: 'user' }],
+    return await this.entityMaker.fromRawToEntityType<GetFollowedUsersOutput>({
+      rawQueryMap: query,
+      mappers: [{ aliasName: 'user', entityFieldOutputName: 'userProfile' }],
     });
   }
 
   public async getFollowing(fanId: string, input: PaginationInput) {
     const query = this.createQueryBuilder('cfs')
-      .leftJoin('users', 'user', 'user.id = cfs.fanId')
+      .leftJoin('users', 'creatorProfile', 'creatorProfile.id = cfs.fanId')
       .select('cfs.*')
-      .addSelect('user.firstName')
-      .addSelect('user.lastName')
-      .addSelect('user.username')
-      .addSelect('user.avatarUrl')
+      .addSelect('creatorProfile.firstName')
+      .addSelect('creatorProfile.lastName')
+      .addSelect('creatorProfile.username')
+      .addSelect('creatorProfile.avatarUrl')
       .where('cfs.fanId = :fanId', { fanId: fanId })
       .orderBy('cfs.followedAt', input.orderBy)
       .limit(input.limit)
       .offset(input.offset)
       .getRawMany<GetFollowingUsersOutput>();
 
-    return await this.entityBuilder.toEntityType<GetFollowingUsersOutput>({
-      rawQuery: query,
-      stripper: { aliases: ['user'] },
-      parameters: [{ name: 'creatorProfile', alias: 'user' }],
+    return await this.entityMaker.fromRawToEntityType<GetFollowingUsersOutput>({
+      rawQueryMap: query,
+      mappers: [{ aliasName: 'creatorProfile', entityFieldOutputName: 'creatorProfile' }],
     });
   }
 }
