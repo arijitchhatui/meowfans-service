@@ -9,11 +9,7 @@ import { CreatorRestrictsEntity } from '../entities';
 export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntity> {
   private logger = new Logger(CreatorRestrictsEntity.name);
 
-  constructor(
-    @Optional() _target: EntityTarget<CreatorRestrictsEntity>,
-    entityManager: EntityManager,
-    private entityBuilder: EntityMaker,
-  ) {
+  constructor(@Optional() _target: EntityTarget<CreatorRestrictsEntity>, entityManager: EntityManager) {
     super(CreatorRestrictsEntity, entityManager);
   }
 
@@ -32,7 +28,7 @@ export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntit
       .offset(input.offset)
       .getRawMany<GetRestrictedUsersOutput>();
 
-    return await this.entityBuilder.fromRawToEntityType<GetRestrictedUsersOutput>({
+    return await EntityMaker.fromRawToEntityType<GetRestrictedUsersOutput>({
       rawQueryMap: query,
       mappers: [{ entityFieldOutputName: 'userProfile', aliasName: 'user' }],
     });

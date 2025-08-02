@@ -1,20 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { PostCreationErrorTypes } from '../validation';
+import { PostTypes } from '../../services/service.constants';
 
 @Injectable()
 @ValidatorConstraint({ name: 'HasAssetsForExclusiveProp', async: true })
 export class HasAssetsForExclusivePropValidator implements ValidatorConstraintInterface {
   private postCreationError = PostCreationErrorTypes.GENERIC_POST_CREATION_ERROR;
 
-  public validate(isExclusive: boolean, args: ValidationArguments): boolean {
+  public validate(postTypes: PostTypes[], args: ValidationArguments): boolean {
     const { creatorAssetIds, unlockPrice } = args.object as {
-      creatorAssetIds?: Array<string>;
+      creatorAssetIds: Array<string>;
       unlockPrice: number;
     };
 
-    if (isExclusive) {
-      if (!creatorAssetIds?.length) {
+    if (postTypes.includes(PostTypes.EXCLUSIVE)) {
+      if (!creatorAssetIds.length) {
         this.postCreationError = PostCreationErrorTypes.EMPTY_ASSET_IDS_ERROR;
         return false;
       } else if (unlockPrice == null || unlockPrice < 500) {

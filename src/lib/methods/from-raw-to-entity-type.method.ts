@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class EntityMaker {
-  public async fromRawToEntityType<T>({
+  public static async fromRawToEntityType<T>({
     rawQueryMap,
     mappers,
   }: {

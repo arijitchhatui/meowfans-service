@@ -1,19 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-
-@ObjectType()
-export class UserProfileOutput {
-  @Field()
-  firstName: string;
-
-  @Field()
-  lastName: string;
-
-  @Field()
-  username: string;
-
-  @Field()
-  avatarUrl: string;
-}
+import { FanProfileOutput } from '../../../lib/helpers';
 
 @ObjectType()
 export class GetFollowedUsersOutput {
@@ -32,6 +18,6 @@ export class GetFollowedUsersOutput {
   @Field({ nullable: true })
   unFollowedAt: Date;
 
-  @Field(() => UserProfileOutput)
-  userProfile: UserProfileOutput;
+  @Field(() => FanProfileOutput)
+  fanProfile: FanProfileOutput;
 }

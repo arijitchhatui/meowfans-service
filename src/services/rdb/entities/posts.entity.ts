@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PostTypes } from '../../service.constants';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { PostAssetsEntity } from './post-assets.entity';
 import { PostCommentsEntity } from './post-comments.entity';
@@ -18,6 +19,8 @@ import { PostPurchasesEntity } from './post-purchases.entity';
 import { PostSavesEntity } from './post-saves.entity';
 import { PostSharesEntity } from './post-shares.entity';
 import { PremiumPostUnlocksEntity } from './premium-post-unlocks.entity';
+
+registerEnumType(PostTypes, { name: 'PostTypes' });
 
 @ObjectType()
 @Entity({ name: 'posts' })
@@ -33,10 +36,6 @@ export class PostsEntity {
   @Field()
   @Column({ type: 'uuid' })
   creatorId: string;
-
-  @Field()
-  @Column({ type: 'boolean' })
-  isExclusive: boolean;
 
   @Field(() => Int, { nullable: true })
   @Column({ type: 'int', nullable: true })
@@ -61,6 +60,10 @@ export class PostsEntity {
   @Field({ defaultValue: 0 })
   @Column({ default: 0 })
   totalEarning: number;
+
+  @Field(() => [PostTypes])
+  @Column('text', { array: true, default: [PostTypes.EXCLUSIVE] })
+  types: PostTypes[];
 
   @Field()
   @CreateDateColumn()

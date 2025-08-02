@@ -1,4 +1,5 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { PostCommentsEntity, PostsEntity, PostSharesEntity } from '../rdb/entities';
 import { UserRoles } from '../service.constants';
@@ -9,8 +10,6 @@ import {
   DeletePostInput,
   DeletePostsInput,
   DeleteSharePostInput,
-  GetPostInput,
-  GetPostsInfoInput,
   GetPostsInfoOutput,
   LikePostInput,
   SavePostInput,
@@ -23,15 +22,18 @@ import { PostsService } from './posts.service';
 export class PostsResolver {
   public constructor(private postsService: PostsService) {}
 
-  @Auth(GqlAuthGuard, [])
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Query(() => [PostsEntity])
-  public async getPosts(@CurrentUser() creatorId: string): Promise<PostsEntity[]> {
-    return await this.postsService.getPosts(creatorId);
+  public async getPosts(
+    @CurrentUser() creatorId: string,
+    @Args('input') input: PaginationInput,
+  ): Promise<PostsEntity[]> {
+    return await this.postsService.getPosts(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [])
   @Query(() => PostsEntity)
-  public async getPost(@Args('input') creatorId: string, @Args('input') input: GetPostInput): Promise<PostsEntity> {
+  public async getPost(@CurrentUser() creatorId: string, @Args('input') input: PaginationInput): Promise<PostsEntity> {
     return await this.postsService.getPost(creatorId, input);
   }
 
@@ -117,7 +119,7 @@ export class PostsResolver {
   @Query(() => [GetPostsInfoOutput])
   public async getPostsInfo(
     @CurrentUser() creatorId: string,
-    @Args('input') input: GetPostsInfoInput,
+    @Args('input') input: PaginationInput,
   ): Promise<GetPostsInfoOutput[]> {
     return await this.postsService.getPostsInfo(creatorId, input);
   }

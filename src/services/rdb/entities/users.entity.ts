@@ -13,13 +13,8 @@ import {
 import type { JwtUser } from '../../auth';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanProfilesEntity } from './fan-profiles.entity';
+import { UserRoles } from '../../service.constants';
 
-enum UserRoles {
-  FAN = 'fan',
-  ADMIN = 'admin',
-  SUPER_VIEWER = 'super_viewer',
-  CREATOR = 'creator',
-}
 registerEnumType(UserRoles, { name: 'UserRoles' });
 
 @ObjectType()

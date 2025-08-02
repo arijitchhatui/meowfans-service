@@ -1,19 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-
-@ObjectType()
-export class FanProfileOutput {
-  @Field()
-  fullName: string;
-
-  @Field()
-  username: string;
-
-  @Field()
-  avatarUrl: string;
-
-  @Field()
-  fanId: string;
-}
+import { FanProfileOutput } from '../../../lib/helpers';
 
 @ObjectType()
 export class GetCommentsOutput {
