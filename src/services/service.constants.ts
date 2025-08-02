@@ -35,3 +35,14 @@ export enum SortOrder {
   ASC = 'ASC',
   DESC = 'DESC',
 }
+
+export enum PostTypes {
+  PUBLIC = 'PUBLIC',
+  EXCLUSIVE = 'EXCLUSIVE',
+  PRIVATE = 'PRIVATE',
+  ARCHIVED = 'ARCHIVED',
+  HIDDEN = 'HIDDEN',
+  BANNED = 'BANNED',
+}
+
+export const DEFAULT_POST_PRICE = 500;

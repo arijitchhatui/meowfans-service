@@ -21,7 +21,7 @@ import * as repositories from './repositories';
           database: configService.getOrThrow('POSTGRES_DB'),
           logging: configService.get('NODE_ENV') === 'development',
           entities: [__dirname + '/../**/entities/**/*.entity.js'],
-          migrations: [__dirname + '/../**/migrations/**/*.js'],
+          migrations: [__dirname + '/../**/migrations/**/*[!index].js'],
           migrationsRun: !!configService.get('RUN_DB_MIGRATIONS_ON_START'),
           migrationsTableName: 'migrations',
           migrationsTransactionMode: 'each',

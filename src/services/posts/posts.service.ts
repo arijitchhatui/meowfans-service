@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
+import { In } from 'typeorm';
+import { PaginationInput } from '../../lib/helpers';
+import { PostsEntity } from '../rdb/entities';
 import {
+  CreatorAssetsRepository,
   CreatorProfilesRepository,
   PostAssetsRepository,
   PostCommentsRepository,
@@ -8,15 +12,15 @@ import {
   PostSavesRepository,
   PostSharesRepository,
   PostsRepository,
+  UsersRepository,
 } from '../rdb/repositories';
+import { DEFAULT_POST_PRICE, PostTypes } from '../service.constants';
 import {
   CreateCommentInput,
   DeleteCommentInput,
   DeletePostInput,
   DeletePostsInput,
   DeleteSharePostInput,
-  GetPostInput,
-  GetPostsInfoInput,
   LikePostInput,
   SavePostInput,
   SharePostInput,
@@ -29,54 +33,45 @@ import { CreatePostInput } from './dto/create-post.dto';
 export class PostsService {
   public constructor(
     private creatorProfilesRepository: CreatorProfilesRepository,
+    private creatorAssetsRepository: CreatorAssetsRepository,
     private postCommentsRepository: PostCommentsRepository,
     private postAssetsRepository: PostAssetsRepository,
     private postSharesRepository: PostSharesRepository,
     private postsSavesRepository: PostSavesRepository,
     private postLikesRepository: PostLikesRepository,
     private postsRepository: PostsRepository,
+    private usersRepository: UsersRepository,
   ) {}
 
-  public async updatePostCount(creatorId: string, count: 1 | -1, isExclusive: boolean) {
-    if (count === 1) {
-      await this.creatorProfilesRepository.increment({ creatorId }, 'totalPost', 1);
-      if (isExclusive) await this.creatorProfilesRepository.increment({ creatorId }, 'totalExclusivePost', 1);
-      else await this.creatorProfilesRepository.increment({ creatorId }, 'totalPublicPost', 1);
-    } else {
-      await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPost', 1);
-      if (isExclusive) await this.creatorProfilesRepository.decrement({ creatorId }, 'totalExclusivePost', 1);
-      else await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPublicPost', 1);
-    }
+  public async getPosts(creatorId: string, input: PaginationInput): Promise<PostsEntity[]> {
+    return await this.postsRepository.getPosts(creatorId, input);
   }
 
-  public async getPosts(creatorId: string) {
-    return await this.postsRepository.find({ where: { creatorId }, relations: { creatorProfile: true } });
-  }
-
-  public async getPost(creatorId: string, input: GetPostInput) {
+  public async getPost(creatorId: string, input: PaginationInput): Promise<PostsEntity> {
     return await this.postsRepository.findOneOrFail({
-      where: { creatorId, id: input.postId },
+      where: { creatorId, id: input.relatedEntityId },
       relations: { creatorProfile: true },
     });
   }
 
   public async createPost(creatorId: string, input: CreatePostInput) {
-    const { caption, creatorAssetIds, isExclusive, unlockPrice } = input;
+    const { caption, creatorAssetIds, unlockPrice, types } = input;
 
     const post = await this.postsRepository.save({
       creatorId,
       caption,
-      isExclusive,
-      unlockPrice: isExclusive ? unlockPrice : null,
+      types,
+      unlockPrice: await this.evaluatePostPrice(types, unlockPrice),
     });
 
+    await this.creatorAssetsRepository.findOneOrFail({ where: { id: In(creatorAssetIds), creatorId: creatorId } });
     await Promise.all(
       creatorAssetIds.map(async (assetId) => {
         await this.postAssetsRepository.save({ creatorAssetId: assetId, postId: post.id });
       }),
     );
 
-    await this.updatePostCount(creatorId, 1, isExclusive);
+    await this.updatePostCount(creatorId, 1, post.types);
     return post;
   }
 
@@ -92,7 +87,7 @@ export class PostsService {
   public async deletePost(creatorId: string, input: DeletePostInput) {
     const post = await this.postsRepository.findOneOrFail({ where: { id: input.postId, creatorId } });
 
-    await this.updatePostCount(creatorId, -1, post.isExclusive);
+    await this.updatePostCount(creatorId, -1, post.types);
 
     const { affected } = await this.postsRepository.delete({ id: input.postId });
     return !!affected;
@@ -178,10 +173,10 @@ export class PostsService {
   public async deletePosts(creatorId: string, input: DeletePostsInput) {
     const deleteResult = await Promise.all(
       input.postIds.map(async (postId) => {
-        const message = await this.postsRepository.findOne({ where: { id: postId, creatorId: creatorId } });
-        if (message) {
+        const post = await this.postsRepository.findOne({ where: { id: postId, creatorId: creatorId } });
+        if (post) {
           await this.postsRepository.delete({ id: postId });
-          await this.updatePostCount(creatorId, -1, message.isExclusive);
+          await this.updatePostCount(creatorId, -1, post.types);
           return true;
         }
         return false;
@@ -190,7 +185,38 @@ export class PostsService {
     return deleteResult.some((deleted) => deleted);
   }
 
-  public async getPostsInfo(creatorId: string, input: GetPostsInfoInput) {
+  public async getPostsInfo(creatorId: string, input: PaginationInput) {
     return await this.postsRepository.getPostsInfo(creatorId, input);
+  }
+
+  private async evaluatePostPrice(types: PostTypes[], unlockPrice: number): Promise<number | null> {
+    switch (types) {
+      case [PostTypes.PUBLIC]:
+        return null;
+      case [PostTypes.EXCLUSIVE]:
+        return unlockPrice;
+      case [PostTypes.PRIVATE]:
+        return DEFAULT_POST_PRICE;
+      case [PostTypes.ARCHIVED]:
+        return DEFAULT_POST_PRICE;
+      case [PostTypes.HIDDEN]:
+        return DEFAULT_POST_PRICE;
+      default:
+        return unlockPrice;
+    }
+  }
+
+  private async updatePostCount(creatorId: string, count: 1 | -1, postTypes: PostTypes[]) {
+    if (count === 1) {
+      await this.creatorProfilesRepository.increment({ creatorId }, 'totalPost', 1);
+      if (postTypes.includes(PostTypes.EXCLUSIVE))
+        await this.creatorProfilesRepository.increment({ creatorId }, 'totalExclusivePost', 1);
+      else await this.creatorProfilesRepository.increment({ creatorId }, 'totalPublicPost', 1);
+    } else {
+      await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPost', 1);
+      if (postTypes.includes(PostTypes.PUBLIC))
+        await this.creatorProfilesRepository.decrement({ creatorId }, 'totalExclusivePost', 1);
+      else await this.creatorProfilesRepository.decrement({ creatorId }, 'totalPublicPost', 1);
+    }
   }
 }

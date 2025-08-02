@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm-cli": "ts-node scripts/make-index.ts && dotenv -- typeorm-ts-node-commonjs",
     "make-index": "ts-node scripts/make-index.ts",
-    "migration:generate": "npm run typeorm-cli -- migration:generate ./src/rdb/migrations/rdb_$NAME -d ./typeorm.config.ts",
+    "migration:generate": "npm run typeorm-cli -- migration:generate ./src/services/rdb/migrations/rdb_$NAME -d ./typeorm.config.ts",
     "migration:run": "npm run typeorm-cli -- migration:run -d ./typeorm.config.ts",
     "migration:revert": "npm run typeorm-cli -- migration:revert -d ./typeorm.config.ts"
   },

@@ -1,5 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import * as entities from './src/services/rdb/entities';
+import * as migrations from './src/services/rdb/migrations';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -10,8 +12,8 @@ export const dataSourceOptions: DataSourceOptions = {
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
   logging: false,
-  entities: ['./src/rdb/entities/**/*.entity.ts'],
-  migrations: ['./src/rdb/migrations/**/*.ts'],
+  entities,
+  migrations,
   uuidExtension: 'pgcrypto',
   synchronize: false,
 };

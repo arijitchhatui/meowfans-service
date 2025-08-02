@@ -1,7 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { PaginationInput } from '../../../lib/helpers';
 import { EntityMaker } from '../../../lib/methods';
-import { GetPostsInfoInput, GetPostsInfoOutput } from '../../posts';
+import { GetPostsInfoOutput } from '../../posts';
 import { PostCommentsEntity, PremiumPostUnlocksEntity } from '../entities';
 import { PostsEntity } from '../entities/posts.entity';
 
@@ -9,14 +10,11 @@ import { PostsEntity } from '../entities/posts.entity';
 export class PostsRepository extends Repository<PostsEntity> {
   private logger = new Logger(PostsRepository.name);
 
-  constructor(
-    @Optional() _target: EntityTarget<PostsEntity>,
-    entityManager: EntityManager,
-    private entityBuilder: EntityMaker,
-  ) {
+  constructor(@Optional() _target: EntityTarget<PostsEntity>, entityManager: EntityManager) {
     super(PostsEntity, entityManager);
   }
-  public async getPostsInfo(creatorId: string, input: GetPostsInfoInput) {
+
+  public async getPostsInfo(creatorId: string, input: PaginationInput) {
     const commentSubQuery = this.createQueryBuilder()
       .select('DISTINCT ON (c."post_id") c."post_id"', 'postId')
       .addSelect('c."id"', 'commentId')
@@ -38,13 +36,23 @@ export class PostsRepository extends Repository<PostsEntity> {
       .addSelect(`(${earningSubQuery.getQuery()})`, 'totalEarning')
       .where('posts.creatorId = :creatorId', { creatorId })
       .orderBy('posts.createdAt', 'DESC')
-      .limit(30)
+      .limit(input.limit)
       .offset(input.offset)
       .getRawMany<GetPostsInfoOutput>();
 
-    return await this.entityBuilder.fromRawToEntityType<GetPostsInfoOutput>({
+    return await EntityMaker.fromRawToEntityType<GetPostsInfoOutput>({
       rawQueryMap: query,
       mappers: [{ aliasName: 'posts' }],
     });
+  }
+
+  public async getPosts(creatorId: string, input: PaginationInput): Promise<PostsEntity[]> {
+    return await this.createQueryBuilder('posts')
+      .where('posts.creatorId = :creatorId', { creatorId: creatorId })
+      .limit(input.limit)
+      .offset(input.offset)
+      .andWhere(':postTypes = ANY (posts.types)', { postTypes: input.postTypes })
+      .orderBy('posts.createdAt', input.orderBy)
+      .getMany();
   }
 }

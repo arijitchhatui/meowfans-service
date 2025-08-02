@@ -9,37 +9,33 @@ import { CreatorFollowsEntity } from '../entities';
 export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
   private logger = new Logger(CreatorFollowsEntity.name);
 
-  constructor(
-    @Optional() _target: EntityTarget<CreatorFollowsEntity>,
-    entityManager: EntityManager,
-    private entityMaker: EntityMaker,
-  ) {
+  constructor(@Optional() _target: EntityTarget<CreatorFollowsEntity>, entityManager: EntityManager) {
     super(CreatorFollowsEntity, entityManager);
   }
 
   public async getFollowers(creatorId: string, input: PaginationInput) {
     const query = this.createQueryBuilder('cfs')
-      .leftJoin('users', 'user', 'user.id = cfs.fanId')
+      .leftJoin('users', 'fanProfile', 'fanProfile.id = cfs.fanId')
       .select('cfs.*')
-      .addSelect('user.firstName')
-      .addSelect('user.lastName')
-      .addSelect('user.username')
-      .addSelect('user.avatarUrl')
+      .addSelect('fanProfile.firstName')
+      .addSelect('fanProfile.lastName')
+      .addSelect('fanProfile.username')
+      .addSelect('fanProfile.avatarUrl')
       .where('cfs.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('cfs.followedAt', input.orderBy)
       .limit(input.limit)
       .offset(input.offset)
       .getRawMany<GetFollowedUsersOutput>();
 
-    return await this.entityMaker.fromRawToEntityType<GetFollowedUsersOutput>({
+    return await EntityMaker.fromRawToEntityType<GetFollowedUsersOutput>({
       rawQueryMap: query,
-      mappers: [{ aliasName: 'user', entityFieldOutputName: 'userProfile' }],
+      mappers: [{ aliasName: 'fanProfile', entityFieldOutputName: 'fanProfile' }],
     });
   }
 
   public async getFollowing(fanId: string, input: PaginationInput) {
     const query = this.createQueryBuilder('cfs')
-      .leftJoin('users', 'creatorProfile', 'creatorProfile.id = cfs.fanId')
+      .leftJoin('users', 'creatorProfile', 'creatorProfile.id = cfs.creatorId')
       .select('cfs.*')
       .addSelect('creatorProfile.firstName')
       .addSelect('creatorProfile.lastName')
@@ -51,7 +47,7 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
       .offset(input.offset)
       .getRawMany<GetFollowingUsersOutput>();
 
-    return await this.entityMaker.fromRawToEntityType<GetFollowingUsersOutput>({
+    return await EntityMaker.fromRawToEntityType<GetFollowingUsersOutput>({
       rawQueryMap: query,
       mappers: [{ aliasName: 'creatorProfile', entityFieldOutputName: 'creatorProfile' }],
     });

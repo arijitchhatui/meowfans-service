@@ -29,6 +29,7 @@ const paths = [
   'src/lib/validators',
   'src/services/rdb/entities',
   'src/services/rdb/repositories',
+  'src/services/rdb/migrations',
   'src/services/users/dto',
   'src/services/auth',
   'src/services/auth/constants',
