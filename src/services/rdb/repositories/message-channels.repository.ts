@@ -1,8 +1,9 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { PaginationInput } from '../../../lib/helpers';
+import { EntityMaker } from '../../../lib/methods';
 import { GetChannelInput, GetChannelsOutput } from '../../message-channels/dto';
 import { MessageChannelsEntity, MessagesEntity } from '../entities';
-import { PaginationInput } from '../../../lib/helpers';
 
 @Injectable()
 export class MessageChannelsRepository extends Repository<MessageChannelsEntity> {
@@ -61,25 +62,14 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       .leftJoin('message_channels.creatorProfile', 'creatorProfile')
       .leftJoin('message_channels.fanProfile', 'fanProfile')
       .addSelect('fanProfile.fullName', 'fanFullName')
-      .addSelect('message_channels.id', 'id')
-      .addSelect('message_channels.creatorId', 'creatorId')
-      .addSelect('message_channels.fanId', 'fanId')
-      .addSelect('message_channels.creatorLastSentAt', 'creatorLastSentAt')
-      .addSelect('message_channels.creatorLastSeenAt', 'creatorLastSeenAt')
-      .addSelect('message_channels.fanLastSentAt', 'fanLastSentAt')
-      .addSelect('message_channels.fanLastSeenAt', 'fanLastSeenAt')
-      .addSelect('message_channels.isPinned', 'isPinned')
-      .addSelect('message_channels.label', 'label')
-      .addSelect('message_channels.isMuted', 'isMuted')
-      .addSelect('message_channels.isRestricted', 'isRestricted')
-      .addSelect('message_channels.isMessagingBlocked', 'isMessagingBlocked')
-      .addSelect('message_channels.totalEarning', 'totalEarning')
-      .addSelect('message_channels.createdAt', 'createdAt')
-      .addSelect('message_channels.deletedAt', 'deletedAt')
+      .addSelect('message_channels.*')
       .addSelect('creatorProfile.fullName', 'creatorFullName')
       .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
       .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', input.orderBy);
 
-    return await query.getRawMany<GetChannelsOutput>();
+    return EntityMaker.fromRawToEntityType<GetChannelsOutput>({
+      rawQueryMap: query.getRawMany<GetChannelsOutput>(),
+      mappers: [{ aliasName: 'message_channels' }],
+    });
   }
 }

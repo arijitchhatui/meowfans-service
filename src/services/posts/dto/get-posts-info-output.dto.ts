@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { PostTypes } from '../../service.constants';
 
 @ObjectType()
 export class GetPostsInfoOutput {
@@ -8,11 +9,11 @@ export class GetPostsInfoOutput {
   @Field()
   caption: string;
 
-  @Field()
-  isExclusive: boolean;
-
-  @Field()
+  @Field({ nullable: true })
   unlockPrice: number;
+
+  @Field(() => [PostTypes])
+  types: PostTypes[];
 
   @Field({ defaultValue: 0 })
   likeCount: number;
