@@ -24,6 +24,6 @@ export class PaginationInput {
   @Field(() => ID, { nullable: true })
   relatedUserId?: string;
 
-  @Field(() => PostTypes, { defaultValue: PostTypes.PUBLIC, nullable: true })
+  @Field(() => [PostTypes], { nullable: true })
   postTypes: PostTypes[];
 }
