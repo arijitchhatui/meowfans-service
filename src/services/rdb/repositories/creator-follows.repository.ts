@@ -13,7 +13,7 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
     super(CreatorFollowsEntity, entityManager);
   }
 
-  public async getFollowers(creatorId: string, input: PaginationInput) {
+  public async getFollowers(creatorId: string, input: PaginationInput): Promise<GetFollowedUsersOutput[]> {
     const query = this.createQueryBuilder('cfs')
       .leftJoin('users', 'fanProfile', 'fanProfile.id = cfs.fanId')
       .select('cfs.*')

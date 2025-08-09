@@ -1,4 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { Validate } from 'class-validator';
+import { ProfanityValidator } from '../../../lib';
 
 @InputType()
 export class UpdateCommentInput {
@@ -6,6 +8,7 @@ export class UpdateCommentInput {
   postId: string;
 
   @Field()
+  @Validate(ProfanityValidator)
   comment: string;
 
   @Field()

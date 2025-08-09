@@ -7,15 +7,15 @@ export class EntityMaker {
     mappers,
   }: {
     rawQueryMap: Promise<any[]>;
-    mappers: [{ aliasName: string; entityFieldOutputName?: string }];
+    mappers: { aliasName: string; entityFieldOutputName?: string }[];
   }): Promise<T[]> {
     return (await rawQueryMap).map((rawQuery: Record<string, unknown>) => {
       const newObj = {};
 
       for (const { aliasName, entityFieldOutputName } of mappers) {
         for (const [prefixedKey, value] of Object.entries(rawQuery)) {
-          const hasPrefix = mappers.some((mapper) => {
-            return mapper.aliasName.startsWith(prefixedKey);
+          const hasPrefix = mappers.some(({ aliasName }) => {
+            return prefixedKey.startsWith(aliasName);
           });
 
           let strippedKey = prefixedKey;
@@ -34,7 +34,6 @@ export class EntityMaker {
             }
           } else if (!hasPrefix) {
             strippedKey = prefixedKey.replace(/_([a-z])/g, (_, character) => character.toUpperCase());
-
             newObj[strippedKey] = value;
           }
         }

@@ -28,6 +28,7 @@ import {
   UpdatePostInput,
 } from './dto';
 import { CreatePostInput } from './dto/create-post.dto';
+import { GetPostsOutput } from './dto/get-posts.out.dto';
 
 @Injectable()
 export class PostsService {
@@ -43,7 +44,7 @@ export class PostsService {
     private usersRepository: UsersRepository,
   ) {}
 
-  public async getPosts(creatorId: string, input: PaginationInput): Promise<PostsEntity[]> {
+  public async getPosts(creatorId: string, input: PaginationInput): Promise<GetPostsOutput[]> {
     return await this.postsRepository.getPosts(creatorId, input);
   }
 
@@ -76,12 +77,14 @@ export class PostsService {
   }
 
   public async updatePost(creatorId: string, input: UpdatePostInput) {
-    const { postId, ...rest } = input;
+    const { postId, caption, types, unlockPrice } = input;
+
     const post = await this.postsRepository.findOneOrFail({
       where: { creatorId, id: postId },
       relations: { creatorProfile: true },
     });
-    return this.postsRepository.save(Object.assign(post, shake(rest)));
+
+    return this.postsRepository.save(Object.assign(post, shake({ caption, types, unlockPrice })));
   }
 
   public async deletePost(creatorId: string, input: DeletePostInput) {
@@ -159,6 +162,7 @@ export class PostsService {
   public async savePost(fanId: string, input: SavePostInput) {
     await this.postsRepository.findOneOrFail({ where: { id: input.postId } });
     const isSaved = await this.postsSavesRepository.findOne({ where: { postId: input.postId, fanId: fanId } });
+
     if (isSaved) {
       await this.postsSavesRepository.delete({ fanId: fanId, postId: input.postId });
       await this.postsRepository.decrement({ id: input.postId }, 'saveCount', 1);

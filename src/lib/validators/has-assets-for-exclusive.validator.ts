@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { PostCreationErrorTypes } from '../validation';
 import { PostTypes } from '../../services/service.constants';
+import { PostCreationErrorTypes } from '../validation';
 
 @Injectable()
 @ValidatorConstraint({ name: 'HasAssetsForExclusiveProp', async: true })

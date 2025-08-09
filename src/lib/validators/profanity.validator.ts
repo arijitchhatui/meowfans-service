@@ -19,6 +19,8 @@ export class ProfanityValidator implements ValidatorConstraintInterface {
         return ProfanityWarningTypes.INAPPROPRIATE_BIO;
       case 'caption':
         return ProfanityWarningTypes.INAPPROPRIATE_CAPTION;
+      case 'comment':
+        return ProfanityWarningTypes.INAPPROPRIATE_COMMENT;
       default:
         return 'VALIDATION_ERROR';
     }

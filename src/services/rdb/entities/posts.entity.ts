@@ -1,16 +1,6 @@
-import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { PostTypes } from '../../service.constants';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { PostsRawEntity } from '../raw/posts.raw.entities';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { PostAssetsEntity } from './post-assets.entity';
 import { PostCommentsEntity } from './post-comments.entity';
@@ -20,63 +10,9 @@ import { PostSavesEntity } from './post-saves.entity';
 import { PostSharesEntity } from './post-shares.entity';
 import { PremiumPostUnlocksEntity } from './premium-post-unlocks.entity';
 
-registerEnumType(PostTypes, { name: 'PostTypes' });
-
 @ObjectType()
 @Entity({ name: 'posts' })
-export class PostsEntity {
-  @Field()
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  caption: string;
-
-  @Field()
-  @Column({ type: 'uuid' })
-  creatorId: string;
-
-  @Field(() => Int, { nullable: true })
-  @Column({ type: 'int', nullable: true })
-  unlockPrice: number | null;
-
-  @Field({ defaultValue: 0 })
-  @Column({ default: 0 })
-  likeCount: number;
-
-  @Field({ defaultValue: 0 })
-  @Column({ default: 0 })
-  saveCount: number;
-
-  @Field({ defaultValue: 0 })
-  @Column({ default: 0 })
-  shareCount: number;
-
-  @Field({ defaultValue: 0 })
-  @Column({ default: 0 })
-  commentCount: number;
-
-  @Field({ defaultValue: 0 })
-  @Column({ default: 0 })
-  totalEarning: number;
-
-  @Field(() => [PostTypes])
-  @Column('text', { array: true, default: [PostTypes.EXCLUSIVE] })
-  types: PostTypes[];
-
-  @Field()
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @Field()
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @Field({ nullable: true })
-  @DeleteDateColumn({ nullable: true })
-  deletedAt: Date;
-
+export class PostsEntity extends PostsRawEntity {
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.posts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })

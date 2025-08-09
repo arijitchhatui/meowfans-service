@@ -3,9 +3,27 @@ import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { PaginationInput } from '../../../lib/helpers';
 import { EntityMaker } from '../../../lib/methods';
 import { GetPostsInfoOutput } from '../../posts';
+import { GetPostsOutput } from '../../posts/dto/get-posts.out.dto';
 import { PostTypes } from '../../service.constants';
-import { PostCommentsEntity, PremiumPostUnlocksEntity } from '../entities';
+import { AssetsEntity, PostCommentsEntity, PremiumPostUnlocksEntity } from '../entities';
 import { PostsEntity } from '../entities/posts.entity';
+
+type GetPostsOutputType = {
+  id: string;
+  caption: string;
+  creatorId: string;
+  unlockPrice: number | null;
+  likeCount: number;
+  saveCount: number;
+  shareCount: number;
+  commentCount: number;
+  totalEarning: number;
+  types: PostTypes[];
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date;
+  assets: AssetsEntity;
+};
 
 @Injectable()
 export class PostsRepository extends Repository<PostsEntity> {
@@ -38,34 +56,46 @@ export class PostsRepository extends Repository<PostsEntity> {
       .addSelect('posts.*')
       .addSelect(`(${earningSubQuery.getQuery()})`, 'totalEarning')
       .where('posts.creatorId = :creatorId', { creatorId })
+      .andWhere('posts.types && :postTypes', { postTypes: await this.insertPostType(postTypes) })
       .orderBy('posts.createdAt', 'DESC')
       .limit(limit)
-      .offset(offset);
-
-    query.andWhere('posts.types && :postTypes', { postTypes: await this.insertPostType(postTypes) });
+      .offset(offset)
+      .getRawMany<GetPostsInfoOutput>();
 
     return await EntityMaker.fromRawToEntityType<GetPostsInfoOutput>({
-      rawQueryMap: query.getRawMany<GetPostsInfoOutput>(),
+      rawQueryMap: query,
       mappers: [{ aliasName: 'posts' }],
     });
   }
 
-  public async getPosts(creatorId: string, input: PaginationInput): Promise<PostsEntity[]> {
+  public async getPosts(creatorId: string, input: PaginationInput): Promise<GetPostsOutput[]> {
     const { limit, offset, postTypes, orderBy } = input;
 
-    return await this.createQueryBuilder('posts')
+    const query = this.createQueryBuilder('posts')
       .where('posts.creatorId = :creatorId', { creatorId: creatorId })
+      .leftJoin('posts.postAssets', 'postAssets')
+      .leftJoin('postAssets.creatorAsset', 'creatorAsset')
+      .leftJoinAndMapMany('creatorAsset.asset', AssetsEntity, 'assets', 'assets.id = creatorAsset.assetId')
       .limit(limit)
       .offset(offset)
-      .andWhere('posts.types && :postTypes', { postTypes: this.insertPostType(postTypes) })
+      .andWhere('posts.types && :postTypes', { postTypes: await this.insertPostType(postTypes) })
       .orderBy('posts.createdAt', orderBy)
-      .getMany();
+      .getRawMany<GetPostsOutput>();
+
+    const rawPosts = await EntityMaker.fromRawToEntityType<GetPostsOutputType>({
+      rawQueryMap: query,
+      mappers: [{ aliasName: 'assets', entityFieldOutputName: 'assets' }, { aliasName: 'posts' }],
+    });
+
+    const postsMap: Record<string, GetPostsOutput> = {};
+    for (const rawPost of rawPosts) {
+      postsMap[rawPost.id] ??= { ...rawPost, assets: [] };
+      postsMap[rawPost.id].assets.push(rawPost.assets);
+    }
+    return Object.values(postsMap);
   }
 
   private async insertPostType(postTypes?: PostTypes[] | null): Promise<PostTypes[]> {
-    const postTypesToArray = Object.values(PostTypes);
-
-    if (!postTypes || !postTypes.length) return postTypesToArray;
-    return postTypes;
+    return !postTypes || !postTypes.length ? Object.values(PostTypes) : postTypes;
   }
 }

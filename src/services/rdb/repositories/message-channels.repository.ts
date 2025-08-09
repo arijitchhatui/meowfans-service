@@ -65,10 +65,11 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
       .addSelect('message_channels.*')
       .addSelect('creatorProfile.fullName', 'creatorFullName')
       .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
-      .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', input.orderBy);
+      .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', input.orderBy)
+      .getRawMany<GetChannelsOutput>();
 
     return EntityMaker.fromRawToEntityType<GetChannelsOutput>({
-      rawQueryMap: query.getRawMany<GetChannelsOutput>(),
+      rawQueryMap: query,
       mappers: [{ aliasName: 'message_channels' }],
     });
   }
