@@ -16,6 +16,7 @@ import {
   UpdateCommentInput,
   UpdatePostInput,
 } from './dto';
+import { GetPostsOutput } from './dto/get-posts.out.dto';
 import { PostsService } from './posts.service';
 
 @Resolver()
@@ -23,11 +24,11 @@ export class PostsResolver {
   public constructor(private postsService: PostsService) {}
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Query(() => [PostsEntity])
+  @Query(() => [GetPostsOutput])
   public async getPosts(
     @CurrentUser() creatorId: string,
     @Args('input') input: PaginationInput,
-  ): Promise<PostsEntity[]> {
+  ): Promise<GetPostsOutput[]> {
     return await this.postsService.getPosts(creatorId, input);
   }
 
@@ -61,7 +62,7 @@ export class PostsResolver {
     return await this.postsService.deletePost(creatorId, input);
   }
 
-  @Auth(GqlAuthGuard, [UserRoles.FAN])
+  @Auth(GqlAuthGuard, [UserRoles.FAN, UserRoles.CREATOR])
   @Mutation(() => PostCommentsEntity)
   public async createComment(
     @CurrentUser() fanId: string,

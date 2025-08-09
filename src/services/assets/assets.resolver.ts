@@ -1,9 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { AssetsEntity, CreatorAssetsEntity } from '../rdb/entities';
 import { UserRoles } from '../service.constants';
 import { AssetsService } from './assets.service';
-import { DeleteCreatorAsset, GetCreatorAssetsInput } from './dto';
+import { DeleteCreatorAsset } from './dto';
 import { CreateAssetInput } from './dto/create-asset.dto';
 
 @Resolver()
@@ -32,7 +33,7 @@ export class AssetsResolver {
   @Query(() => [CreatorAssetsEntity])
   public async getCreatorAssets(
     @CurrentUser() creatorId: string,
-    @Args('input') input: GetCreatorAssetsInput,
+    @Args('input') input: PaginationInput,
   ): Promise<CreatorAssetsEntity[]> {
     return await this.assetsService.getCreatorAssets(creatorId, input);
   }

@@ -25,7 +25,7 @@ export class CreatorProfilesService {
   ) {}
 
   public async getCreatorProfile(creatorId: string) {
-    return this.creatorProfilesRepository.findOneOrFail({ where: { creatorId }, relations: { user: true } });
+    return await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId }, relations: { user: true } });
   }
 
   public async updateCreatorProfile(creatorId: string, input: UpdateCreatorProfileInput) {

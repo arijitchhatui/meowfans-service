@@ -1,12 +1,13 @@
 import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsUUID, Validate } from 'class-validator';
-import { HasAssetsForExclusivePropValidator } from '../../../lib';
+import { HasAssetsForExclusivePropValidator, ProfanityValidator } from '../../../lib';
 import { PostTypes } from '../../service.constants';
 
 registerEnumType(PostTypes, { name: 'PostTypes' });
 @InputType()
 export class CreatePostInput {
   @Field(() => String, { nullable: true })
+  @Validate(ProfanityValidator)
   caption: string;
 
   @Field(() => Int, { nullable: true })

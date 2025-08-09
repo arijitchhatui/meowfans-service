@@ -1,6 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { Validate } from 'class-validator';
-import { HasAssetsForExclusivePropValidator } from '../../../lib';
+import { PostTypes } from '../../service.constants';
 
 @InputType()
 export class UpdatePostInput {
@@ -11,9 +10,8 @@ export class UpdatePostInput {
   caption: string;
 
   @Field({ nullable: true })
-  unlockPrice: number;
+  unlockPrice?: number;
 
-  @Field({ nullable: true })
-  @Validate(HasAssetsForExclusivePropValidator)
-  isExclusive: boolean;
+  @Field(() => [PostTypes], { defaultValue: [PostTypes.EXCLUSIVE] })
+  types: PostTypes[];
 }

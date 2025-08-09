@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import sharp from 'sharp';
+import { PaginationInput } from '../../lib/helpers';
 import { AssetsRepository, CreatorAssetsRepository, PostAssetsRepository } from '../rdb/repositories';
 import { UploadsService } from '../uploads';
-import { DeleteCreatorAsset, GetCreatorAssetsInput } from './dto';
+import { DeleteCreatorAsset } from './dto';
 import { CreateAssetInput } from './dto/create-asset.dto';
 
 @Injectable()
@@ -75,7 +76,7 @@ export class AssetsService {
     return await this.assetsRepository.save(asset);
   }
 
-  public async getCreatorAssets(creatorId: string, input: GetCreatorAssetsInput) {
+  public async getCreatorAssets(creatorId: string, input: PaginationInput) {
     return await this.creatorAssetsRepository.getCreatorAssets(creatorId, input);
   }
 
