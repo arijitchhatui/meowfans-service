@@ -22,6 +22,7 @@ type GetPostsOutputType = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;
+  lastCommentId: string;
   assets: AssetsEntity;
 };
 
@@ -45,7 +46,7 @@ export class PostsRepository extends Repository<PostsEntity> {
       .addOrderBy('c."created_at"', 'DESC');
 
     const earningSubQuery = this.createQueryBuilder()
-      .select('SUM(u.amount)')
+      .select('COALESCE(SUM(u.amount), 0)')
       .from(PremiumPostUnlocksEntity, 'u')
       .where('u."post_id" = posts.id');
 

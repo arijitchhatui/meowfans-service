@@ -15,7 +15,7 @@ export class CreatePostInput {
 
   @IsUUID('all', { each: true })
   @Field(() => [String])
-  creatorAssetIds: string[];
+  assetIds: string[];
 
   @Validate(HasAssetsForExclusivePropValidator)
   @Field(() => [PostTypes])

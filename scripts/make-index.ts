@@ -53,6 +53,10 @@ const paths = [
   'src/services/messages',
   'src/services/message-channel-participants',
   'src/services/message-channel-participants/dto',
+  'src/services/creator-follows',
+  'src/services/creator-restricts',
+  'src/services/creator-blocks',
+  'src/services/social-accounts',
 ];
 
 (async () => {

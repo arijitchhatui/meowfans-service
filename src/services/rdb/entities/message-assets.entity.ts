@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CreatorAssetsEntity } from './creator-assets.entity';
 import { MessagesEntity } from './messages.entity';
+import { AssetsEntity } from './assets.entity';
 
 @ObjectType()
 @Entity({ name: 'message_assets' })
@@ -25,7 +25,7 @@ export class MessageAssetsEntity {
 
   @Field()
   @Column()
-  creatorAssetId: string;
+  assetId: string;
 
   @Field()
   @CreateDateColumn()
@@ -39,10 +39,10 @@ export class MessageAssetsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field(() => CreatorAssetsEntity)
-  @ManyToOne(() => CreatorAssetsEntity, (creatorAsset) => creatorAsset.messageAssets, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'creator_asset_id' })
-  creatorAsset: CreatorAssetsEntity;
+  @Field(() => AssetsEntity)
+  @ManyToOne(() => AssetsEntity, (asset) => asset.messageAssets, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'asset_id' })
+  asset: AssetsEntity;
 
   @Field(() => MessagesEntity)
   @ManyToOne(() => MessagesEntity, (message) => message.messageAssets, { onDelete: 'CASCADE' })

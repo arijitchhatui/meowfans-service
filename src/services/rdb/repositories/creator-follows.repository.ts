@@ -1,8 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { PaginationInput } from '../../../lib/helpers';
-import { EntityMaker } from '../../../lib/methods';
-import { GetFollowedUsersOutput, GetFollowingUsersOutput } from '../../creator-profiles';
 import { CreatorFollowsEntity } from '../entities';
 
 @Injectable()
@@ -13,43 +11,40 @@ export class CreatorFollowsRepository extends Repository<CreatorFollowsEntity> {
     super(CreatorFollowsEntity, entityManager);
   }
 
-  public async getFollowers(creatorId: string, input: PaginationInput): Promise<GetFollowedUsersOutput[]> {
-    const query = this.createQueryBuilder('cfs')
-      .leftJoin('users', 'fanProfile', 'fanProfile.id = cfs.fanId')
-      .select('cfs.*')
-      .addSelect('fanProfile.firstName')
-      .addSelect('fanProfile.lastName')
-      .addSelect('fanProfile.username')
-      .addSelect('fanProfile.avatarUrl')
+  public async restoreOrCreateFollow(input: { fanId: string; creatorId: string }): Promise<CreatorFollowsEntity> {
+    const { fanId, creatorId } = input;
+
+    const { generatedMaps } = await this.upsert(
+      { creatorId: creatorId, fanId: fanId },
+      { conflictPaths: ['fanId', 'creatorId'], skipUpdateIfNoValuesChanged: true },
+    );
+
+    return this.create(generatedMaps[0]);
+  }
+
+  public async getFollowers(creatorId: string, input: PaginationInput): Promise<CreatorFollowsEntity[]> {
+    return await this.createQueryBuilder('cfs')
+      .leftJoin('cfs.fanProfile', 'fan')
+      .leftJoin('fan.user', 'user')
+      .addSelect('fan.fanId')
+      .addSelect(['user.username', 'user.firstName', 'user.lastName', 'user.avatarUrl'])
       .where('cfs.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('cfs.followedAt', input.orderBy)
       .limit(input.limit)
       .offset(input.offset)
-      .getRawMany<GetFollowedUsersOutput>();
-
-    return await EntityMaker.fromRawToEntityType<GetFollowedUsersOutput>({
-      rawQueryMap: query,
-      mappers: [{ aliasName: 'fanProfile', entityFieldOutputName: 'fanProfile' }],
-    });
+      .getMany();
   }
 
-  public async getFollowing(fanId: string, input: PaginationInput) {
-    const query = this.createQueryBuilder('cfs')
-      .leftJoin('users', 'creatorProfile', 'creatorProfile.id = cfs.creatorId')
-      .select('cfs.*')
-      .addSelect('creatorProfile.firstName')
-      .addSelect('creatorProfile.lastName')
-      .addSelect('creatorProfile.username')
-      .addSelect('creatorProfile.avatarUrl')
+  public async getFollowing(fanId: string, input: PaginationInput): Promise<CreatorFollowsEntity[]> {
+    return await this.createQueryBuilder('cfs')
+      .leftJoin('cfs.creatorProfile', 'creator')
+      .leftJoin('creator.user', 'user')
+      .addSelect('creator.creatorId')
+      .addSelect(['user.username', 'user.firstName', 'user.lastName', 'user.avatarUrl', 'user.bannerUrl'])
       .where('cfs.fanId = :fanId', { fanId: fanId })
       .orderBy('cfs.followedAt', input.orderBy)
       .limit(input.limit)
       .offset(input.offset)
-      .getRawMany<GetFollowingUsersOutput>();
-
-    return await EntityMaker.fromRawToEntityType<GetFollowingUsersOutput>({
-      rawQueryMap: query,
-      mappers: [{ aliasName: 'creatorProfile', entityFieldOutputName: 'creatorProfile' }],
-    });
+      .getMany();
   }
 }

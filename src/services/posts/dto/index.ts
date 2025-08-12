@@ -7,6 +7,7 @@ export * from './delete-share-post.dto';
 export * from './get-post.dto';
 export * from './get-posts-info-output.dto';
 export * from './get-posts-info.dto';
+export * from './get-posts.out.dto';
 export * from './like-post.dto';
 export * from './save-post.dto';
 export * from './share-post.dto';

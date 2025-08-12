@@ -47,11 +47,11 @@ export class CreatorAssetsEntity {
   @JoinColumn({ name: 'asset_id' })
   asset: AssetsEntity;
 
-  @Field(() => [MessageAssetsEntity])
-  @OneToMany(() => MessageAssetsEntity, (messageAssets) => messageAssets.creatorAsset, { cascade: true })
-  messageAssets: MessageAssetsEntity[];
+  // @Field(() => [MessageAssetsEntity])
+  // @OneToMany(() => MessageAssetsEntity, (messageAssets) => messageAssets.creatorAsset, { cascade: true })
+  // messageAssets: MessageAssetsEntity[];
 
-  @Field(() => [PostAssetsEntity])
-  @OneToMany(() => PostAssetsEntity, (postAssets) => postAssets.creatorAsset, { cascade: true })
-  postAssets: PostAssetsEntity[];
+  // @Field(() => [PostAssetsEntity])
+  // @OneToMany(() => PostAssetsEntity, (postAssets) => postAssets.creatorAsset, { cascade: true })
+  // postAssets: PostAssetsEntity[];
 }

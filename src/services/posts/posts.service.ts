@@ -56,7 +56,7 @@ export class PostsService {
   }
 
   public async createPost(creatorId: string, input: CreatePostInput) {
-    const { caption, creatorAssetIds, unlockPrice, types } = input;
+    const { caption, assetIds, unlockPrice, types } = input;
 
     const post = await this.postsRepository.save({
       creatorId,
@@ -65,10 +65,10 @@ export class PostsService {
       unlockPrice: await this.evaluatePostPrice(types, unlockPrice),
     });
 
-    await this.creatorAssetsRepository.findOneOrFail({ where: { id: In(creatorAssetIds), creatorId: creatorId } });
+    await this.creatorAssetsRepository.findOneOrFail({ where: { assetId: In(assetIds), creatorId: creatorId } });
     await Promise.all(
-      creatorAssetIds.map(async (assetId) => {
-        await this.postAssetsRepository.save({ creatorAssetId: assetId, postId: post.id });
+      assetIds.map(async (assetId) => {
+        await this.postAssetsRepository.save({ assetId: assetId, postId: post.id });
       }),
     );
 

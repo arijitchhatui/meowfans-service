@@ -145,7 +145,7 @@ export class MessagesService {
     if (params.assetIds) {
       newMessage.messageAssets = this.messageAssetsRepository.create(
         params.assetIds.map((assetId) => ({
-          creatorAssetId: assetId,
+          assetId: assetId,
         })),
       );
     }
