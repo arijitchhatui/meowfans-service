@@ -16,7 +16,7 @@ export class AssetsService {
     private uploadsService: UploadsService,
   ) {}
 
-  public async insertAsset(creatorId: string, file: { buffer: Buffer; originalname: string; mimetype: string }) {
+  public async insertAsset(creatorId: string, file: Express.Multer.File) {
     const path = `assets/${creatorId}/${randomUUID()}/${file.originalname}`;
 
     const blurredBuffer = await sharp(file.buffer)
@@ -83,5 +83,12 @@ export class AssetsService {
   public async deleteCreatorAsset(creatorId: string, input: DeleteCreatorAsset) {
     const result = await this.creatorAssetsRepository.delete({ creatorId, assetId: input.assetId });
     return !!result.affected;
+  }
+
+  public async migrate() {
+    const creatorAssets = await this.creatorAssetsRepository.find();
+    creatorAssets.map(async (ca) => {
+      await this.postAssetsRepository.update({ assetId: ca.id }, { assetId: ca.assetId });
+    });
   }
 }

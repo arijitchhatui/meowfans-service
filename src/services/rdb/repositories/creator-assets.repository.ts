@@ -22,12 +22,4 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
 
     return await query.getMany();
   }
-
-  public async getAssetsByPostId(creatorId: string, postId: string): Promise<CreatorAssetsEntity[]> {
-    return await this.createQueryBuilder('ca')
-      .leftJoin('post_assets', 'postAssets')
-      .where('postAssets.postId = :postId', { postId: postId })
-      .andWhere('ca.creatorId = :creatorId', { creatorId: creatorId })
-      .getMany();
-  }
 }

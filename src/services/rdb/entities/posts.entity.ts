@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { PostsRawEntity } from '../raw/posts.raw.entities';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { PostAssetsEntity } from './post-assets.entity';
@@ -13,6 +13,11 @@ import { PremiumPostUnlocksEntity } from './premium-post-unlocks.entity';
 @ObjectType()
 @Entity({ name: 'posts' })
 export class PostsEntity extends PostsRawEntity {
+  @Field(() => PostCommentsEntity, { nullable: true })
+  @OneToOne(() => PostCommentsEntity, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'last_comment_id' })
+  latestComment: PostCommentsEntity | null;
+
   @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.posts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })

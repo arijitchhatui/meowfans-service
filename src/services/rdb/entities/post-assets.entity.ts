@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CreatorAssetsEntity } from './creator-assets.entity';
 import { PostsEntity } from './posts.entity';
+import { AssetsEntity } from './assets.entity';
 
 @ObjectType()
 @Entity({ name: 'post_assets' })
@@ -25,7 +25,7 @@ export class PostAssetsEntity {
 
   @Field()
   @Column()
-  creatorAssetId: string;
+  assetId: string;
 
   @Field()
   @CreateDateColumn()
@@ -44,8 +44,8 @@ export class PostAssetsEntity {
   @JoinColumn({ name: 'post_id' })
   post: PostsEntity;
 
-  @Field(() => CreatorAssetsEntity)
-  @ManyToOne(() => CreatorAssetsEntity, (creatorAsset) => creatorAsset.postAssets, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'creator_asset_id' })
-  creatorAsset: CreatorAssetsEntity;
+  @Field(() => AssetsEntity)
+  @ManyToOne(() => AssetsEntity, (asset) => asset.postAssets, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'asset_id' })
+  asset: AssetsEntity;
 }

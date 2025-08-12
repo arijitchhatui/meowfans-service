@@ -57,4 +57,8 @@ export class PostsRawEntity {
   @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
+
+  @Field({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
+  lastCommentId: string;
 }

@@ -1,9 +1,11 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import {
+  Check,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -13,6 +15,8 @@ import { FanProfilesEntity } from './fan-profiles.entity';
 
 @ObjectType()
 @Entity({ name: 'creator_follows' })
+@Index('UQ_creator_follows_fanId_creator_id', ['fanId', 'creatorId'], { unique: true })
+@Check('CHK_creator_follows_fan_id_is_not_equal_to_creator_id', `"fan_id" <> "creator_id"`)
 export class CreatorFollowsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

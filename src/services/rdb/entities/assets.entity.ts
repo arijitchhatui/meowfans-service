@@ -12,6 +12,8 @@ import {
 import { CreatorAssetsEntity } from './creator-assets.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanAssetsEntity } from './fan-assets.entity';
+import { MessageAssetsEntity } from './message-assets.entity';
+import { PostAssetsEntity } from './post-assets.entity';
 
 @ObjectType()
 @Entity({ name: 'assets' })
@@ -64,4 +66,12 @@ export class AssetsEntity {
   @Field(() => [CreatorAssetsEntity])
   @OneToMany(() => CreatorAssetsEntity, (creatorAssets) => creatorAssets.asset, { cascade: true })
   creatorAssets: CreatorAssetsEntity[];
+
+  @Field(() => [MessageAssetsEntity])
+  @OneToMany(() => MessageAssetsEntity, (messageAssets) => messageAssets.asset, { cascade: true })
+  messageAssets: MessageAssetsEntity[];
+
+  @Field(() => [PostAssetsEntity])
+  @OneToMany(() => PostAssetsEntity, (postAssets) => postAssets.asset, { cascade: true })
+  postAssets: PostAssetsEntity[];
 }
