@@ -28,7 +28,6 @@ import {
   UpdatePostInput,
 } from './dto';
 import { CreatePostInput } from './dto/create-post.dto';
-import { GetPostsOutput } from './dto/get-posts.out.dto';
 
 @Injectable()
 export class PostsService {
@@ -44,7 +43,7 @@ export class PostsService {
     private usersRepository: UsersRepository,
   ) {}
 
-  public async getPosts(creatorId: string, input: PaginationInput): Promise<GetPostsOutput[]> {
+  public async getPosts(creatorId: string, input: PaginationInput): Promise<PostsEntity[]> {
     return await this.postsRepository.getPosts(creatorId, input);
   }
 

@@ -12,14 +12,12 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
   }
 
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {
-    const query = this.createQueryBuilder('creator_assets')
-      .leftJoinAndSelect('creator_assets.asset', 'asset')
-      .where('creator_assets.assetId = asset.id')
-      .andWhere('creator_assets.creatorId = :creatorId', { creatorId: creatorId })
-      .orderBy('creator_assets.createdAt', input.orderBy)
+    return await this.createQueryBuilder('ca')
+      .leftJoinAndSelect('ca.asset', 'asset')
+      .where('ca.creatorId = :creatorId', { creatorId: creatorId })
+      .orderBy('ca.createdAt', input.orderBy)
       .limit(input.limit)
-      .offset(input.offset);
-
-    return await query.getMany();
+      .offset(input.offset)
+      .getMany();
   }
 }

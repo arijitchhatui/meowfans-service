@@ -16,7 +16,6 @@ import {
   UpdateCommentInput,
   UpdatePostInput,
 } from './dto';
-import { GetPostsOutput } from './dto/get-posts.out.dto';
 import { PostsService } from './posts.service';
 
 @Resolver()
@@ -24,11 +23,11 @@ export class PostsResolver {
   public constructor(private postsService: PostsService) {}
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Query(() => [GetPostsOutput])
+  @Query(() => [PostsEntity])
   public async getPosts(
     @CurrentUser() creatorId: string,
     @Args('input') input: PaginationInput,
-  ): Promise<GetPostsOutput[]> {
+  ): Promise<PostsEntity[]> {
     return await this.postsService.getPosts(creatorId, input);
   }
 
