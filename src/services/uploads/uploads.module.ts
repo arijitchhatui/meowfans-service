@@ -3,7 +3,6 @@ import { UploadsService } from './uploads.service';
 
 @Global()
 @Module({
-  imports: [],
   providers: [UploadsService],
   exports: [UploadsService],
 })

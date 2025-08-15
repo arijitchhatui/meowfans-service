@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -9,11 +9,15 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { FileType, MediaType } from '../../service.constants';
 import { CreatorAssetsEntity } from './creator-assets.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanAssetsEntity } from './fan-assets.entity';
 import { MessageAssetsEntity } from './message-assets.entity';
 import { PostAssetsEntity } from './post-assets.entity';
+
+registerEnumType(MediaType, { name: 'MediaType' });
+registerEnumType(FileType, { name: 'FileType' });
 
 @ObjectType()
 @Entity({ name: 'assets' })
@@ -31,20 +35,20 @@ export class AssetsEntity {
   blurredUrl: string;
 
   @Field()
-  @Column()
+  @Column({ type: 'uuid' })
   creatorId: string;
 
   @Field()
   @Column()
   mimeType: string;
 
-  @Field()
-  @Column()
-  contentType: string;
+  @Field(() => MediaType)
+  @Column({ type: 'enum', enum: MediaType, enumName: 'MediaType', default: MediaType.POST_MEDIA })
+  mediaType: MediaType;
 
-  @Field()
-  @Column({ default: false })
-  isVideo: boolean;
+  @Field(() => FileType)
+  @Column({ type: 'enum', enum: FileType, enumName: 'FileType', default: FileType.IMAGE })
+  fileType: FileType;
 
   @Field()
   @CreateDateColumn()
