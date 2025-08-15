@@ -1,11 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { AssetsEntity, CreatorAssetsEntity } from '../rdb/entities';
+import { CreatorAssetsEntity } from '../rdb/entities';
 import { UserRoles } from '../service.constants';
 import { AssetsService } from './assets.service';
 import { DeleteCreatorAsset } from './dto';
-import { CreateAssetInput } from './dto/create-asset.dto';
 
 @Resolver()
 export class AssetsResolver {
@@ -18,15 +17,6 @@ export class AssetsResolver {
     @Args('input') input: DeleteCreatorAsset,
   ): Promise<boolean> {
     return this.assetsService.deleteCreatorAsset(creatorId, input);
-  }
-
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Mutation(() => AssetsEntity)
-  public async createAsset(
-    @CurrentUser() creatorId: string,
-    @Args('input') input: CreateAssetInput,
-  ): Promise<AssetsEntity> {
-    return await this.assetsService.createAsset(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])

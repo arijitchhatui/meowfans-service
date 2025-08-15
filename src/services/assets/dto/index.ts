@@ -1,3 +1,3 @@
-export * from './create-asset.dto';
 export * from './delete-creator-asset.dto';
-export * from './get-creator-assets.dto';
+export * from './upload-media.input.dto';
+export * from './upload-media.output.dto';

@@ -45,4 +45,23 @@ export enum PostTypes {
   BANNED = 'BANNED',
 }
 
+export enum FileType {
+  VIDEO = 'video',
+  IMAGE = 'image',
+  AUDIO = 'audio',
+  DOCUMENT = 'document',
+}
+
+export enum MediaType {
+  PROFILE_MEDIA = 'profileMedia',
+  MESSAGE_MEDIA = 'messageMedia',
+  POST_MEDIA = 'postMedia',
+}
+
+export enum ImageType {
+  BLURRED = 'blurred',
+  ORIGINAL = 'original',
+  RESIZED = 'resized',
+}
+
 export const DEFAULT_POST_PRICE = 500;
