@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationInput } from '../../lib/helpers';
 import { RestrictFanInput } from '../creator-profiles';
-import { CreatorRestrictsRepository } from '../rdb/repositories';
+import { CreatorRestrictsRepository } from '../postgres/repositories';
 
 @Injectable()
 export class CreatorRestrictsService {

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationInput } from '../../lib/helpers';
 import { BlockFanInput } from '../creator-profiles';
-import { CreatorBlocksEntity } from '../rdb/entities';
-import { CreatorBlocksRepository } from '../rdb/repositories';
+import { CreatorBlocksEntity } from '../postgres/entities';
+import { CreatorBlocksRepository } from '../postgres/repositories';
 
 @Injectable()
 export class CreatorBlocksService {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PostCommentsRepository } from '../rdb/repositories';
 import { PaginationInput } from '../../lib/helpers';
+import { PostCommentsRepository } from '../postgres/repositories';
 
 @Injectable()
 export class PostCommentsService {

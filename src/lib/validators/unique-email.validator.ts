@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { UsersRepository } from '../../services/postgres/repositories';
 import { ValidationErrorCodes } from '../validation';
-import { UsersRepository } from '../../services/rdb/repositories';
 
 @Injectable()
 @ValidatorConstraint({ name: 'email', async: true })

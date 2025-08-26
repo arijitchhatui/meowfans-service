@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { CreateAndUpdateSocialAccountsInput } from '../creator-profiles';
-import { SocialAccountsRepository } from '../rdb/repositories';
+import { SocialAccountsRepository } from '../postgres/repositories';
 
 @Injectable()
 export class SocialAccountsService {

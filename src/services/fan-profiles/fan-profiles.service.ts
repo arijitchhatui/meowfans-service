@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
-import { CreatorFollowsRepository, FanProfilesRepository, UsersRepository } from '../rdb/repositories';
+import { CreatorFollowsRepository, FanProfilesRepository, UsersRepository } from '../postgres/repositories';
 import { UpdateUserProfileInput } from './dto/update-fan-profile.dto';
 
 @Injectable()

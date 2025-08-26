@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { PostCommentsEntity, PostsEntity, PostSharesEntity } from '../rdb/entities';
+import { PostCommentsEntity, PostsEntity, PostSharesEntity } from '../postgres/entities';
 import { UserRoles } from '../service.constants';
 import {
   CreateCommentInput,

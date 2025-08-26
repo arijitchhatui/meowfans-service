@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { CreatorAssetsEntity } from '../rdb/entities';
+import { CreatorAssetsEntity } from '../postgres/entities';
 import { UserRoles } from '../service.constants';
 import { AssetsService } from './assets.service';
 import { DeleteCreatorAsset } from './dto';

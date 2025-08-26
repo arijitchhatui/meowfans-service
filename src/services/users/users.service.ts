@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreatorAssetsRepository, PostAssetsRepository } from '../rdb/repositories';
+import { CreatorAssetsRepository, PostAssetsRepository } from '../postgres/repositories';
 
 @Injectable()
 export class UsersService {

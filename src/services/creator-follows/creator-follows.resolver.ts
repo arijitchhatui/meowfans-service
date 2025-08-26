@@ -3,7 +3,7 @@ import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { DeleteFollowerInput } from '../creator-profiles';
 import { FollowCreatorInput, UnFollowCreatorInput } from '../fan-profiles';
-import { CreatorFollowsEntity } from '../rdb/entities';
+import { CreatorFollowsEntity } from '../postgres/entities';
 import { UserRoles } from '../service.constants';
 import { CreatorFollowsService } from './creator-follows.service';
 
