@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { CreatorRestrictsEntity } from '../../rdb/entities';
+import { CreatorRestrictsEntity } from '../../postgres/entities';
 
 @ObjectType()
 export class GetRestrictedUsersOutput extends CreatorRestrictsEntity {

@@ -6,7 +6,7 @@ import {
   CreatorProfilesRepository,
   PostAssetsRepository,
   UsersRepository,
-} from '../rdb/repositories';
+} from '../postgres/repositories';
 import { UpdateCreatorProfileInput } from './dto';
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { REMOVE_SPACE_REGEX } from '../../services/auth';
+import { AssetsEntity } from '../../services/postgres/entities';
 import { GetPostsOutput } from '../../services/posts';
-import { AssetsEntity } from '../../services/rdb/entities';
 import { PostTypes } from '../../services/service.constants';
 
 export const splitFullName = (fullName: string): { firstName: string; lastName: string } => {

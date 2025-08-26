@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { In } from 'typeorm';
 import { PaginationInput } from '../../lib/helpers';
-import { PostsEntity } from '../rdb/entities';
+import { PostsEntity } from '../postgres/entities';
 import {
   CreatorAssetsRepository,
   CreatorProfilesRepository,
@@ -13,7 +13,7 @@ import {
   PostSharesRepository,
   PostsRepository,
   UsersRepository,
-} from '../rdb/repositories';
+} from '../postgres/repositories';
 import { DEFAULT_POST_PRICE, PostTypes } from '../service.constants';
 import {
   CreateCommentInput,

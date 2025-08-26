@@ -1,7 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import * as entities from './src/services/rdb/entities';
-import * as migrations from './src/services/rdb/migrations';
+import * as entities from './src/services/postgres/entities';
+import * as migrations from './src/services/postgres/migrations';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',

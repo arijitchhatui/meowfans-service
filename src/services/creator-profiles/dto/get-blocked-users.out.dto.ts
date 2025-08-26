@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { CreatorBlocksEntity } from '../../rdb/entities';
+import { CreatorBlocksEntity } from '../../postgres/entities';
 
 @ObjectType()
 export class GetBlockedUsersOutput extends CreatorBlocksEntity {

@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm-cli": "ts-node scripts/make-index.ts && dotenv -- typeorm-ts-node-commonjs",
     "make-index": "ts-node scripts/make-index.ts",
-    "migration:generate": "npm run typeorm-cli -- migration:generate ./src/services/rdb/migrations/rdb_$NAME -d ./typeorm.config.ts",
+    "migration:generate": "npm run typeorm-cli -- migration:generate ./src/services/postgres/migrations/rdb_$NAME -d ./typeorm.config.ts",
     "migration:run": "npm run typeorm-cli -- migration:run -d ./typeorm.config.ts",
     "migration:revert": "npm run typeorm-cli -- migration:revert -d ./typeorm.config.ts"
   },
@@ -61,7 +61,8 @@
     "sharp": "^0.34.3",
     "transformer": "^1.2.8",
     "typeorm": "^0.3.22",
-    "typeorm-naming-strategies": "^4.1.0"
+    "typeorm-naming-strategies": "^4.1.0",
+    "typesense": "^2.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

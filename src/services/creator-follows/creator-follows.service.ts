@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PaginationInput } from '../../lib/helpers';
 import { DeleteFollowerInput } from '../creator-profiles';
 import { FollowCreatorInput, UnFollowCreatorInput } from '../fan-profiles';
-import { CreatorFollowsEntity } from '../rdb/entities';
-import { CreatorFollowsRepository } from '../rdb/repositories';
+import { CreatorFollowsEntity } from '../postgres/entities';
+import { CreatorFollowsRepository } from '../postgres/repositories';
 
 @Injectable()
 export class CreatorFollowsService {

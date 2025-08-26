@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { UsersEntity } from '../rdb/entities';
+import { UsersEntity } from '../postgres/entities';
 import { AuthService } from './auth.service';
 import { Auth, CurrentUserExpanded, JwtUser } from './decorators';
 import { AuthOk, FanSignupInput, LoginInput } from './dto';

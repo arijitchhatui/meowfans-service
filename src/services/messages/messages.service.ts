@@ -4,14 +4,14 @@ import { In } from 'typeorm';
 import { PaginationInput } from '../../lib/helpers';
 import { MessageChannelParticipantsService } from '../message-channel-participants';
 import { MessageChannelsService } from '../message-channels';
-import { MessageChannelsEntity, MessageReactionsEntity, MessagesEntity } from '../rdb/entities';
+import { MessageChannelsEntity, MessageReactionsEntity, MessagesEntity } from '../postgres/entities';
 import {
   MessageAssetsRepository,
   MessageChannelsRepository,
   MessageReactionsRepository,
   MessageRepliesRepository,
   MessagesRepository,
-} from '../rdb/repositories';
+} from '../postgres/repositories';
 import {
   DeleteMessageInput,
   DeleteMessagesInput,

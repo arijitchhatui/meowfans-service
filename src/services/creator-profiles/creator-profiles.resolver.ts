@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { InjectUserToArg } from '../../lib';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { CreatorProfilesEntity } from '../rdb/entities';
+import { CreatorProfilesEntity } from '../postgres/entities';
 import { UserRoles } from '../service.constants';
 import { CreatorProfilesService } from './creator-profiles.service';
 import { UpdateCreatorProfileInput } from './dto';

@@ -36,4 +36,4 @@ import * as repositories from './repositories';
   providers: [...Object.values(repositories), EntityMaker],
   exports: Object.values(repositories),
 })
-export class RdbModule {}
+export class PostgresModule {}

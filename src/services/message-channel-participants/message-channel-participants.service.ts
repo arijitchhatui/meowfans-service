@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
-import { MessageChannelParticipantsRepository } from '../rdb/repositories';
+import { MessageChannelParticipantsRepository } from '../postgres/repositories';
 import { UpdateMessageChannelParticipantInput } from './dto';
 
 @Injectable()

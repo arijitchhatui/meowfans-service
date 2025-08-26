@@ -64,4 +64,8 @@ export enum ImageType {
   RESIZED = 'resized',
 }
 
+export enum ProviderTokens {
+  TYPE_SENSE_TOKEN = 'TYPE_SENSE_TOKEN',
+}
+
 export const DEFAULT_POST_PRICE = 500;
