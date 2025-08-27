@@ -12,19 +12,18 @@ export type TypeSenseClient = Client;
       provide: ProviderTokens.TYPE_SENSE_TOKEN,
       inject: [ConfigService],
       useFactory: (configService: ConfigService): TypeSenseClient => {
-        const client = new Client({
+        return new Client({
           nodes: [
             {
               host: configService.getOrThrow('TYPSENSE_HOST'),
               port: configService.getOrThrow('TYPESENSE_PORT'),
-              protocol: configService.getOrThrow('TYPSENSE_PROTOCOL'),
+              protocol: configService.getOrThrow('TYPESENSE_PROTOCOL'),
             },
           ],
           apiKey: configService.getOrThrow<string>('TYPESENSE_API_KEY'),
           connectionTimeoutSeconds: 2,
           randomizeNodes: true,
         });
-        return client;
       },
     },
   ],
