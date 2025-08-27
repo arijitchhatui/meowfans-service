@@ -3,10 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { splitFullName } from '../../lib/helpers/split-full-name';
+import { AwsS3ClientService } from '../aws';
 import { UsersEntity } from '../postgres/entities';
 import { CreatorProfilesRepository, FanProfilesRepository, UsersRepository } from '../postgres/repositories';
 import { UserRoles } from '../service.constants';
-import { UploadsService } from '../uploads';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';
 import { AuthOk } from './dto/auth.dto';
@@ -18,7 +18,7 @@ import { LoginInput } from './dto/login.dto';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private uploadsService: UploadsService,
+    private uploadsService: AwsS3ClientService,
     private usersRepository: UsersRepository,
     private fanProfilesRepository: FanProfilesRepository,
     private creatorProfilesRepository: CreatorProfilesRepository,

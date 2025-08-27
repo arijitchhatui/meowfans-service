@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AssetsModule } from './assets';
 import { AuthModule } from './auth';
+import { AwsS3Module } from './aws';
 import { CreatorBlocksModule } from './creator-blocks/creator-blocks.module';
 import { CreatorFollowsModule } from './creator-follows/creator-follows.module';
 import { CreatorProfilesModule } from './creator-profiles';
@@ -19,7 +20,6 @@ import { PostgresModule } from './postgres/postgres.module';
 import { PostsModule } from './posts';
 import { SocialAccountsModule } from './social-accounts/social-accounts.module';
 import { SocialAccountsService } from './social-accounts/social-accounts.service';
-import { UploadsModule } from './uploads';
 import { UsersModule } from './users';
 
 @Module({
@@ -40,7 +40,7 @@ import { UsersModule } from './users';
     }),
     AuthModule,
     UsersModule,
-    UploadsModule,
+    AwsS3Module,
     FanProfilesModule,
     CreatorProfilesModule,
     PostsModule,

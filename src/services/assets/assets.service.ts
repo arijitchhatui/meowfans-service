@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as sharp from 'sharp';
 import { PaginationInput } from '../../lib/helpers';
+import { AwsS3ClientService } from '../aws';
 import { AssetsEntity } from '../postgres/entities';
 import { AssetsRepository, CreatorAssetsRepository, CreatorProfilesRepository } from '../postgres/repositories';
 import { FileType, ImageType, MediaType } from '../service.constants';
-import { UploadsService } from '../uploads';
 import { DeleteCreatorAsset } from './dto';
 import { UploadMediaOutput } from './dto/upload-media.output.dto';
 
@@ -22,7 +22,7 @@ export class AssetsService {
     private creatorProfilesRepository: CreatorProfilesRepository,
     private creatorAssetsRepository: CreatorAssetsRepository,
     private assetsRepository: AssetsRepository,
-    private uploadsService: UploadsService,
+    private uploadsService: AwsS3ClientService,
   ) {}
 
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {

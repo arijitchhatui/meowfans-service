@@ -1,10 +1,9 @@
-import * as AWS from '@aws-sdk/client-s3';
-import { Global, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
 import { randomUUID } from 'crypto';
 import * as path from 'path';
-import { ImageType, MediaType } from '../service.constants';
+import { ImageType, MediaType, ProviderTokens } from '../service.constants';
+import { AwsS3Client } from './aws.module';
 
 interface UploadImageInput {
   buffer: Buffer;
@@ -17,23 +16,14 @@ interface UploadImageInput {
 
 const EXTENSION_REGEX = /_original\.[^/.]+$/;
 
-@Global()
 @Injectable()
-export class UploadsService {
-  private readonly s3: AWS.S3;
+export class AwsS3ClientService {
   private bucketName: string;
-  private bucketUrl: string;
 
-  public constructor(configService: ConfigService) {
-    this.s3 = new AWS.S3({
-      region: 'auto',
-      endpoint: configService.getOrThrow('AWS_S3_ENDPOINT'),
-      credentials: {
-        secretAccessKey: configService.getOrThrow('AWS_SECRET_ACCESS_KEY'),
-        accessKeyId: configService.getOrThrow('AWS_ACCESS_KEY_ID'),
-      },
-    });
-    this.bucketUrl = configService.getOrThrow('AWS_BUCKET_URL');
+  public constructor(
+    @Inject(ProviderTokens.AWS_S3_TOKEN) private awsS3Client: AwsS3Client,
+    configService: ConfigService,
+  ) {
     this.bucketName = configService.getOrThrow('AWS_BUCKET_NAME');
   }
 
@@ -42,7 +32,7 @@ export class UploadsService {
 
     const { url, path } = this.getImagePathAndUrl({ url: extendedUrl, imageType: input.imageType });
 
-    await this.s3.putObject({
+    await this.awsS3Client.putObject({
       Bucket: this.bucketName,
       Key: path,
       ACL: 'public-read',
