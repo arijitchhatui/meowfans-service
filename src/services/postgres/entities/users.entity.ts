@@ -21,6 +21,8 @@ registerEnumType(UserRoles, { name: 'UserRoles' });
 
 @ObjectType()
 @Entity({ name: 'users' })
+@Index('IDX_USER_EMAIL', ['email'], { unique: true })
+@Index('IDX_USER_USERNAME', ['username'], { unique: true })
 export class UsersEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field()
@@ -35,15 +37,15 @@ export class UsersEntity {
   password: string;
 
   @Field()
-  @Column({ default: 'Swift' })
+  @Column({ default: 'MEOW' })
   firstName: string;
 
   @Field()
-  @Column({ default: 'Send' })
+  @Column({ default: 'USER' })
   lastName: string;
 
   @Field()
-  @Column({ default: 'username' })
+  @Column({ default: 'meow_user' })
   username: string;
 
   @Field({ nullable: true })

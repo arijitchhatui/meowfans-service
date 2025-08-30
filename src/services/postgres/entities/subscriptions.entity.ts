@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToOne,
@@ -17,6 +18,7 @@ import { SubscriptionPlansEntity } from './subscription-plans.entity';
 
 @ObjectType()
 @Entity({ name: 'subscriptions' })
+@Index('IDX_SUBSCRIPTIONS_CREATOR_ID_FAN_ID', ['creatorId', 'fanId'])
 export class SubscriptionsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

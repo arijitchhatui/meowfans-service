@@ -33,8 +33,10 @@ import { PremiumPostUnlocksEntity } from './premium-post-unlocks.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 import { UsersEntity } from './users.entity';
 
-@ObjectType()
 @Entity({ name: 'fan_profiles' })
+@Index('IDX_FAN_PROFILE_FAN_ID', ['fanId'])
+@Index('IDX_FAN_PROFILE_APPLIED_AT_REJECTED_AT', ['appliedAt'])
+@ObjectType()
 export class FanProfilesEntity {
   @Field(() => String)
   @PrimaryGeneratedColumn('uuid')

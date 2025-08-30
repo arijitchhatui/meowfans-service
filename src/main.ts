@@ -25,7 +25,7 @@ async function bootstrap() {
   const port: number = configService.get<number>('PORT')!;
   const builder = new DocumentBuilder().addTag('auth').build();
   const document = SwaggerModule.createDocument(app, builder);
-  SwaggerModule.setup('/', app, document);
+  SwaggerModule.setup('/doc', app, document);
 
   await app.listen(port);
   logger.log(`Server is listening on host http://localhost:${port}`);

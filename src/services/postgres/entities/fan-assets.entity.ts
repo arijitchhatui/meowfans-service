@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -11,8 +12,10 @@ import {
 import { AssetsEntity } from './assets.entity';
 import { FanProfilesEntity } from './fan-profiles.entity';
 
-@ObjectType()
 @Entity({ name: 'fan_assets' })
+@Index('IDX_FAN_ASSETS_FAN_ID', ['fanId'])
+@Index('IDX_FAN_ASSETS_ASSET_ID', ['assetId'])
+@ObjectType()
 export class FanAssetsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

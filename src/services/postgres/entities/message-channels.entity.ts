@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -17,6 +18,8 @@ import { MessagesEntity } from './messages.entity';
 
 @ObjectType()
 @Entity({ name: 'message_channels' })
+@Index('IDX_MESSAGE_CHANNELS_CREATED_AT', ['createdAt'])
+@Index('IDX_MESSAGE_CHANNELS_LAST_MESSAGE_ID', ['lastMessageId'])
 export class MessageChannelsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

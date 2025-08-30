@@ -9,6 +9,7 @@ export class SessionsRepository extends Repository<SessionsEntity> {
 
   public async createSession(input: { ip?: string; user?: UsersEntity; userAgent?: string; userId: string }) {
     const { ip, userId, userAgent } = input;
+
     const newSession = this.create({
       ip,
       userId,
@@ -18,9 +19,9 @@ export class SessionsRepository extends Repository<SessionsEntity> {
     return await this.save(newSession);
   }
 
-  public async validateSession(input: { ip: string; user: UsersEntity; userAgent: string; userId: string }) {
-    const { ip, userId, userAgent } = input;
-    const session = await this.findOne({ where: { userId: userId, ip: ip, userAgent: userAgent } });
+  private async validateSession(input: { user: UsersEntity; userAgent: string; userId: string }) {
+    const { userId, userAgent } = input;
+    const session = await this.findOne({ where: { userId: userId, userAgent: userAgent } });
 
     if (!session) throw new UnauthorizedException({ message: 'New IP Address detected' });
   }
