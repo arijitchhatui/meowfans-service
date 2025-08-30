@@ -1,11 +1,16 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { splitFullName } from '../../lib/helpers/split-full-name';
 import { AwsS3ClientService } from '../aws';
 import { UsersEntity } from '../postgres/entities';
-import { CreatorProfilesRepository, FanProfilesRepository, UsersRepository } from '../postgres/repositories';
+import {
+  CreatorProfilesRepository,
+  FanProfilesRepository,
+  SessionsRepository,
+  UsersRepository,
+} from '../postgres/repositories';
 import { UserRoles } from '../service.constants';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';
@@ -16,10 +21,12 @@ import { LoginInput } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger(AuthService.name);
   constructor(
     private jwtService: JwtService,
-    private uploadsService: AwsS3ClientService,
+    private awsS3ClientService: AwsS3ClientService,
     private usersRepository: UsersRepository,
+    private sessionsRepository: SessionsRepository,
     private fanProfilesRepository: FanProfilesRepository,
     private creatorProfilesRepository: CreatorProfilesRepository,
   ) {}
@@ -34,7 +41,7 @@ export class AuthService {
     return { sub: user.id };
   }
 
-  public async login(userId: string): Promise<AuthOk> {
+  public async login(userId: string, request?: Partial<JwtUser>): Promise<AuthOk> {
     const user = await this.usersRepository.findOneOrFail({ where: { id: userId } });
 
     await this.usersRepository.update({ id: user.id }, { lastLoginAt: new Date() });
@@ -52,10 +59,24 @@ export class AuthService {
       accessTokenPayLoad.jti,
     );
 
-    return { userId: user.id, accessToken, refreshToken, roles: user.roles };
+    if (request) {
+      await this.sessionsRepository.createSession({ ip: request.ip, userAgent: request.userAgent, userId: user.id });
+      this.logger.log({
+        ip: request.ip,
+        userAgent: request.userAgent,
+        userId: user.id,
+      });
+    }
+
+    return {
+      userId: user.id,
+      accessToken,
+      refreshToken,
+      roles: user.roles,
+    };
   }
 
-  public async fanSignup(input: FanSignupInput) {
+  public async fanSignup(input: FanSignupInput, request?: Partial<JwtUser>) {
     await this.scanAvailableEmail(input.email);
     const username = await this.scanOrCreateUsername(input.fullName);
 
@@ -65,29 +86,31 @@ export class AuthService {
       username,
       password: await bcryptjs.hash(input.password, SALT),
       ...splitFullName(input.fullName),
-      avatarUrl: this.uploadsService.generateDefaultFanAvatarUrl(input.fullName.replace(/\s+/g, '+')),
-      bannerUrl: this.uploadsService.generateDefaultFanBannerUrl(),
+      avatarUrl: this.awsS3ClientService.generateDefaultFanAvatarUrl(input.fullName.replace(/\s+/g, '+')),
+      bannerUrl: this.awsS3ClientService.generateDefaultFanBannerUrl(),
       fanProfile: this.fanProfilesRepository.create({
         appliedAt: new Date(),
       }),
     });
     const user = await this.usersRepository.save(userProfileEntity);
 
-    return this.login(user.id);
+    return this.login(user.id, request);
   }
 
-  public async creatorSignup(input: CreatorSignupInput): Promise<AuthOk> {
+  public async creatorSignup(input: CreatorSignupInput, request?: Partial<JwtUser>): Promise<AuthOk> {
+    const { email, fullName, password } = input;
     await this.scanAvailableEmail(input.email);
+
     const username = await this.scanOrCreateUsername(input.username);
 
     const creatorProfileEntity = this.usersRepository.create({
       username,
-      email: input.email,
+      email,
       roles: [UserRoles.CREATOR],
-      ...splitFullName(input.fullName),
-      password: await bcryptjs.hash(input.password, SALT),
-      avatarUrl: this.uploadsService.generateDefaultCreatorAvatarUrl(input.fullName),
-      bannerUrl: this.uploadsService.generateDefaultCreatorBannerUrl(),
+      ...splitFullName(fullName),
+      password: await bcryptjs.hash(password, SALT),
+      avatarUrl: this.awsS3ClientService.generateDefaultCreatorAvatarUrl(fullName),
+      bannerUrl: this.awsS3ClientService.generateDefaultCreatorBannerUrl(),
 
       creatorProfile: this.creatorProfilesRepository.create({
         acceptedAt: new Date(),
@@ -95,7 +118,7 @@ export class AuthService {
     });
 
     const creator = await this.usersRepository.save(creatorProfileEntity);
-    return this.login(creator.id);
+    return this.login(creator.id, request);
   }
 
   public async getStatus(jwtUser: JwtUser): Promise<UsersEntity> {

@@ -12,6 +12,8 @@ export interface JwtUser {
   version: string;
   type: TokenType;
   roles: UserRoles[];
+  ip: string;
+  userAgent: string;
   associated_access_token_jti: string;
 }
 

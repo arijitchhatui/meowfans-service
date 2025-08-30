@@ -18,5 +18,6 @@ export * from './post-likes.repository';
 export * from './post-saves.repository';
 export * from './post-shares.repository';
 export * from './posts.repository';
+export * from './sessions.repository';
 export * from './social-accounts.repository';
 export * from './users.repository';

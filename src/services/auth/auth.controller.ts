@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { RequestUserParam } from '../../lib';
 import { UsersEntity } from '../postgres/entities';
 import { AuthService } from './auth.service';
 import { Auth, CurrentUserExpanded, JwtUser } from './decorators';
@@ -13,19 +14,22 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/login')
-  public async login(@Body() body: LoginInput): Promise<AuthOk> {
+  public async login(@Body() body: LoginInput, @RequestUserParam() request: Partial<JwtUser>): Promise<AuthOk> {
     const { sub: userId } = await this.authService.validateUser(body);
-    return await this.authService.login(userId);
+    return await this.authService.login(userId, request);
   }
 
   @Post('/fan-signup')
-  public async fanSignup(@Body() body: FanSignupInput): Promise<AuthOk> {
-    return await this.authService.fanSignup(body);
+  public async fanSignup(@Body() body: FanSignupInput, @RequestUserParam() request: Partial<JwtUser>): Promise<AuthOk> {
+    return await this.authService.fanSignup(body, request);
   }
 
   @Post('/creator-signup')
-  public async creatorSignup(@Body() body: CreatorSignupInput): Promise<AuthOk> {
-    return await this.authService.creatorSignup(body);
+  public async creatorSignup(
+    @Body() body: CreatorSignupInput,
+    @RequestUserParam() request: Partial<JwtUser>,
+  ): Promise<AuthOk> {
+    return await this.authService.creatorSignup(body, request);
   }
 
   @Auth(JwtAuthGuard, [])

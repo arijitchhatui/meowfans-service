@@ -6,14 +6,16 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import type { JwtUser } from '../../auth';
+import { UserRoles } from '../../service.constants';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanProfilesEntity } from './fan-profiles.entity';
-import { UserRoles } from '../../service.constants';
+import { SessionsEntity } from './sessions.entity';
 
 registerEnumType(UserRoles, { name: 'UserRoles' });
 
@@ -79,6 +81,9 @@ export class UsersEntity {
   @Field(() => CreatorProfilesEntity)
   @OneToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.user, { cascade: true })
   creatorProfile: CreatorProfilesEntity;
+
+  @OneToMany(() => SessionsEntity, ({ user }) => user, { onUpdate: 'CASCADE' })
+  sessionUser: SessionsEntity[];
 
   static isFan(user: UsersEntity | JwtUser): boolean {
     return user.roles.includes(UserRoles.FAN) ?? false;
