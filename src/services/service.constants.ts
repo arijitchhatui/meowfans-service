@@ -67,6 +67,7 @@ export enum ImageType {
 export enum ProviderTokens {
   TYPE_SENSE_TOKEN = 'TYPE_SENSE_TOKEN',
   AWS_S3_TOKEN = 'AWS_S3_TOKEN',
+  REQUEST_USER_TOKEN = 'REQUEST_USER_TOKEN',
 }
 
 export const DEFAULT_POST_PRICE = 500;

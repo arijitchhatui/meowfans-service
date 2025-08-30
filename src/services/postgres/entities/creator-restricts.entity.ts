@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -11,8 +12,11 @@ import {
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanProfilesEntity } from './fan-profiles.entity';
 
-@ObjectType()
 @Entity({ name: 'creator_restricts' })
+@Index('IDX_CREATOR_RESTRICTS_CREATOR_ID', ['creatorId'])
+@Index('IDX_CREATOR_RESTRICTS_FAN_ID', ['fanId'])
+@Index('IDX_CREATOR_RESTRICTS_FAN_ID_CREATOR_ID', ['fanId', 'creatorId'])
+@ObjectType()
 export class CreatorRestrictsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

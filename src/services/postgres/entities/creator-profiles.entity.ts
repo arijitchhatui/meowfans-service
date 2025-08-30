@@ -22,14 +22,17 @@ import { GroupMessagesEntity } from './group-messages.entity';
 import { GroupsEntity } from './groups.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
 import { PaymentsEntity } from './payments.entity';
+import { PostsEntity } from './posts.entity';
 import { SocialAccountsEntity } from './social-accounts.entity';
 import { SubscriptionPlansEntity } from './subscription-plans.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 import { UsersEntity } from './users.entity';
-import { PostsEntity } from './posts.entity';
 
 @ObjectType()
 @Entity({ name: 'creator_profiles' })
+@Index('IDX_CREATOR_PROFILES_ACCEPTED_AT', ['acceptedAt'])
+@Index('IDX_CREATOR_PROFILES_REJECTED_AT', ['rejectedAt'])
+@Index('IDX_CREATOR_PROFILES_VERIFIED', ['verified'])
 export class CreatorProfilesEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => String)

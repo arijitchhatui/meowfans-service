@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -24,6 +25,7 @@ import { PremiumPostUnlocksEntity } from './premium-post-unlocks.entity';
 registerEnumType(PostTypes, { name: 'PostTypes' });
 @ObjectType()
 @Entity({ name: 'posts' })
+@Index('IDX_POSTS_CREATOR_ID', ['creatorId'])
 export class PostsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

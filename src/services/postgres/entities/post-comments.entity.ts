@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -14,6 +15,7 @@ import { PostsEntity } from './posts.entity';
 
 @ObjectType()
 @Entity({ name: 'post_comments' })
+@Index('IDX_COMMENTS_POST_ID', ['postId'])
 export class PostCommentsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

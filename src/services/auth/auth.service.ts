@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
@@ -11,13 +11,14 @@ import {
   SessionsRepository,
   UsersRepository,
 } from '../postgres/repositories';
-import { UserRoles } from '../service.constants';
+import { ProviderTokens, UserRoles } from '../service.constants';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';
 import { AuthOk } from './dto/auth.dto';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { FanSignupInput } from './dto/fan-signup.dto';
 import { LoginInput } from './dto/login.dto';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +30,7 @@ export class AuthService {
     private sessionsRepository: SessionsRepository,
     private fanProfilesRepository: FanProfilesRepository,
     private creatorProfilesRepository: CreatorProfilesRepository,
+    @Inject(ProviderTokens.REQUEST_USER_TOKEN) private requestUser: Request,
   ) {}
 
   public async validateUser(input: LoginInput): Promise<{ sub: string }> {
@@ -41,7 +43,7 @@ export class AuthService {
     return { sub: user.id };
   }
 
-  public async login(userId: string, request?: Partial<JwtUser>): Promise<AuthOk> {
+  public async login(userId: string): Promise<AuthOk> {
     const user = await this.usersRepository.findOneOrFail({ where: { id: userId } });
 
     await this.usersRepository.update({ id: user.id }, { lastLoginAt: new Date() });
@@ -59,14 +61,16 @@ export class AuthService {
       accessTokenPayLoad.jti,
     );
 
-    if (request) {
-      await this.sessionsRepository.createSession({ ip: request.ip, userAgent: request.userAgent, userId: user.id });
-      this.logger.log({
-        ip: request.ip,
-        userAgent: request.userAgent,
-        userId: user.id,
-      });
-    }
+    this.logger.log({
+      ip: this.requestUser.ip,
+      userAgent: this.requestUser.headers['user-agent'],
+      userId: user.id,
+    });
+    await this.sessionsRepository.createSession({
+      ip: this.requestUser.ip,
+      userAgent: this.requestUser.headers['user-agent'],
+      userId: user.id,
+    });
 
     return {
       userId: user.id,
@@ -76,7 +80,7 @@ export class AuthService {
     };
   }
 
-  public async fanSignup(input: FanSignupInput, request?: Partial<JwtUser>) {
+  public async fanSignup(input: FanSignupInput) {
     await this.scanAvailableEmail(input.email);
     const username = await this.scanOrCreateUsername(input.fullName);
 
@@ -94,10 +98,10 @@ export class AuthService {
     });
     const user = await this.usersRepository.save(userProfileEntity);
 
-    return this.login(user.id, request);
+    return this.login(user.id);
   }
 
-  public async creatorSignup(input: CreatorSignupInput, request?: Partial<JwtUser>): Promise<AuthOk> {
+  public async creatorSignup(input: CreatorSignupInput): Promise<AuthOk> {
     const { email, fullName, password } = input;
     await this.scanAvailableEmail(input.email);
 
@@ -118,7 +122,7 @@ export class AuthService {
     });
 
     const creator = await this.usersRepository.save(creatorProfileEntity);
-    return this.login(creator.id, request);
+    return this.login(creator.id);
   }
 
   public async getStatus(jwtUser: JwtUser): Promise<UsersEntity> {
