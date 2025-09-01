@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { REQUEST } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { Request } from 'express';
 import { UniqueEmailValidator, UniqueUsernameValidator } from '../../lib';
@@ -10,7 +11,6 @@ import { SessionsService } from '../sessions/sessions.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { REQUEST } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -24,8 +24,8 @@ import { REQUEST } from '@nestjs/core';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
     JwtStrategy,
+    AuthService,
     UniqueEmailValidator,
     UniqueUsernameValidator,
     CryptoService,

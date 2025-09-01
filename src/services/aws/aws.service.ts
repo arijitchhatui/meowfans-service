@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
@@ -8,7 +8,8 @@ import { AwsS3Client } from './aws.module';
 interface UploadImageInput {
   buffer: Buffer;
   metaData: Record<string, string>;
-  file: Express.Multer.File;
+  originalFileName: string;
+  mimeType: string;
   mediaType: MediaType;
   userId: string;
   imageType: ImageType;
@@ -18,6 +19,7 @@ const EXTENSION_REGEX = /_original\.[^/.]+$/;
 
 @Injectable()
 export class AwsS3ClientService {
+  private logger = new Logger(AwsS3ClientService.name);
   private bucketName: string;
 
   public constructor(
@@ -27,19 +29,21 @@ export class AwsS3ClientService {
     this.bucketName = configService.getOrThrow('AWS_BUCKET_NAME');
   }
 
-  public async uploadImage(input: UploadImageInput): Promise<string> {
-    const extendedUrl = this.createUrl(input.file, input.mediaType, input.userId);
+  public async uploadR2Object(input: UploadImageInput): Promise<string> {
+    const extendedUrl = this.createUrl(input.originalFileName, input.mediaType, input.userId);
 
     const { url, path } = this.getImagePathAndUrl({ url: extendedUrl, imageType: input.imageType });
+    this.logger.log({ message: 'getting the path', path: path });
 
-    await this.awsS3Client.putObject({
+    const d = await this.awsS3Client.putObject({
       Bucket: this.bucketName,
       Key: path,
       ACL: 'public-read',
       Body: input.buffer,
       Metadata: input.metaData,
-      ContentType: input.file.mimetype,
+      ContentType: input.mimeType,
     });
+    this.logger.log({ d });
 
     return url;
   }
@@ -72,17 +76,17 @@ export class AwsS3ClientService {
 
     if (!url) return { url: '', path: '' };
 
-    if (imageType.includes('original')) return { url, path: uri.pathname };
+    if (imageType.includes('original')) return { url, path: uri.pathname.substring(1) };
 
     return {
       url: url.replace(EXTENSION_REGEX, imageTypeWithExtension),
-      path: uri.pathname.replace(EXTENSION_REGEX, imageTypeWithExtension),
+      path: uri.pathname.replace(EXTENSION_REGEX, imageTypeWithExtension).substring(1),
     };
   }
 
-  public createUrl(file: Express.Multer.File, mediaType: MediaType, userId: string): string {
-    const extension = path.extname(file.originalname).substring(1);
-    console.log(file.originalname);
+  public createUrl(originalFileName: string, mediaType: MediaType, userId: string): string {
+    const extension = path.extname(originalFileName).substring(1);
+    console.log(originalFileName);
 
     const rawFileName = `${mediaType}/${userId}/${randomUUID()}/_original.${extension}`;
 

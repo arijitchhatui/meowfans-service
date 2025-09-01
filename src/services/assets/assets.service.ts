@@ -48,6 +48,22 @@ export class AssetsService {
     return result;
   }
 
+  public async uploadFileV2(
+    creatorId: string,
+    originalFileName: string,
+    mediaType: MediaType,
+    buffer: Buffer,
+    mimeType: string,
+  ): Promise<UploadMediaOutput> {
+    const uploaded = await this.uploadImageToCloud(creatorId, mediaType, buffer, originalFileName, mimeType);
+
+    const asset = await this.injectAsset(creatorId, uploaded);
+
+    const result = { ...uploaded, assetId: asset.id };
+
+    return result;
+  }
+
   private getFileType(contentType: string): FileType {
     const fileType = contentType.split('/').at(0);
 
@@ -70,43 +86,43 @@ export class AssetsService {
     mediaType: MediaType,
     file: Express.Multer.File,
   ): Promise<UploadMediaOutput> {
-    return await this.uploadImageToCloud(creatorId, mediaType, file);
+    return await this.uploadImageToCloud(creatorId, mediaType, file.buffer, file.originalname, file.mimetype);
   }
 
   private async uploadImageToCloud(
     creatorId: string,
     mediaType: MediaType,
-    file: Express.Multer.File,
+    buffer: Buffer<ArrayBufferLike>,
+    originalName: string,
+    mimeType: string,
   ): Promise<UploadMediaOutput> {
-    const [rawImageBuffer, blurredImageBuffer] = await Promise.all([
-      this.convertImage(file).toBuffer(),
-      this.blurImage(file).toBuffer(),
-    ]);
+    const [blurredImageBuffer] = await Promise.all([this.blurImage(buffer).toBuffer()]);
 
     const [originalUrl, blurredUrl] = await Promise.all([
-      this.uploadsService.uploadImage({
-        buffer: rawImageBuffer,
-        file: file,
+      this.uploadsService.uploadR2Object({
+        buffer: buffer,
+        originalFileName: originalName,
         imageType: ImageType.ORIGINAL,
         mediaType: mediaType,
+        mimeType: mimeType,
         userId: creatorId,
-
-        metaData: { originalName: file.originalname },
+        metaData: { originalName: originalName },
       }),
-      this.uploadsService.uploadImage({
+      this.uploadsService.uploadR2Object({
         buffer: blurredImageBuffer,
-        file: file,
+        originalFileName: originalName,
         imageType: ImageType.BLURRED,
         mediaType: mediaType,
+        mimeType: mimeType,
         userId: creatorId,
-        metaData: { originalName: file.originalname },
+        metaData: { originalName: originalName },
       }),
     ]);
 
     const payLoad = {
       rawUrl: originalUrl,
       blurredUrl: blurredUrl,
-      mimeType: file.mimetype,
+      mimeType: mimeType,
       mediaType: mediaType,
       fileType: FileType.IMAGE,
     };
@@ -127,12 +143,12 @@ export class AssetsService {
     return newAsset;
   }
 
-  private convertImage(file: Express.Multer.File) {
-    return sharp(file.buffer).rotate().webp({ quality: 100 });
+  private convertImage(buffer: Buffer<ArrayBufferLike>) {
+    return sharp(buffer).rotate().webp({ quality: 100 });
   }
 
-  private blurImage(file: Express.Multer.File) {
-    return sharp(file.buffer)
+  private blurImage(buffer: Buffer<ArrayBufferLike>) {
+    return sharp(buffer)
       .resize({
         width: this.blurOptions.maxSize.width,
         height: this.blurOptions.maxSize.height,
