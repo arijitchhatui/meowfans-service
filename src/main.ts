@@ -15,8 +15,6 @@ async function bootstrap() {
   app.enableCors();
   const logger = new Logger(AppModule.name);
 
-  // whitelist: true, forbidNonWhitelisted: true
-
   SentryClientService(configService);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
