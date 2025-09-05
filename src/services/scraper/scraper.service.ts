@@ -28,7 +28,15 @@ export class ScraperService {
 
   public async initiate(creatorId: string, input: CreateScrapeInput) {
     const { hasBranch, url } = input;
-    this.logger.log({ message: 'Scraping started', hasBranch, url });
+    const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
+
+    this.logger.log({
+      message: 'Scraping started',
+      hasBranch: hasBranch,
+      url: url,
+      creatorId: creator.id,
+      email: creator.username,
+    });
 
     await this.uploadQueue.add({ creatorId, ...input });
   }

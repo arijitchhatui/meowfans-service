@@ -14,11 +14,7 @@ import * as repositories from './repositories';
       useFactory: (configService: ConfigService) => {
         const options: TypeOrmModuleOptions = {
           type: 'postgres',
-          host: configService.getOrThrow('POSTGRES_HOST'),
-          port: configService.getOrThrow('POSTGRES_PORT'),
-          username: configService.getOrThrow('POSTGRES_USERNAME'),
-          password: configService.getOrThrow('POSTGRES_PASSWORD'),
-          database: configService.getOrThrow('POSTGRES_DB'),
+          url: configService.get('SUPABASE_DB_URL'),
           logging: configService.get('NODE_ENV') === 'development',
           entities: [__dirname + '/../**/entities/**/*.entity.js'],
           migrations: [__dirname + '/../**/migrations/**/*[!index].js'],

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createCipheriv, createDecipheriv, createHash } from 'crypto';
-import { JwtFromRequestFunction } from 'passport-jwt';
 
 @Injectable()
 export class CryptoService {
