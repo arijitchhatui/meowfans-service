@@ -81,7 +81,7 @@ export enum ScrapingQuality {
   LOW = 'LOW',
 }
 
-export const ExtensionTypes = ['.png', '.jpg', '.webp', '.jpeg'];
+export const ExtensionTypes = ['.jpg'];
 
 export const DEFAULT_POST_PRICE = 500;
 

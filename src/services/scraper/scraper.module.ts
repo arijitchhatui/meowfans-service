@@ -6,6 +6,7 @@ import { AwsS3Module } from '../aws';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { DownloaderService } from '../downloader/downloader.service';
 import { QueueTypes } from '../service.constants';
+import { ScrapeConsumerService } from './scrape-consumer.service';
 import { ScraperResolver } from './scraper.resolver';
 import { ScraperService } from './scraper.service';
 
@@ -18,11 +19,19 @@ import { ScraperService } from './scraper.service';
       useFactory: () => ({
         launchOptions: {
           headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
         },
       }),
     }),
     AwsS3Module,
   ],
-  providers: [ScraperService, ScraperResolver, AssetsService, DownloaderService, DocumentSelectorService],
+  providers: [
+    ScraperService,
+    ScraperResolver,
+    AssetsService,
+    DownloaderService,
+    DocumentSelectorService,
+    ScrapeConsumerService,
+  ],
 })
 export class ScraperModule {}

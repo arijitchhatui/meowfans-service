@@ -1,9 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
-import { randomUUID } from 'crypto';
-import { InjectCore, PuppeteerCore, PuppeteerInstance } from 'nestjs-pptr';
-import { extname } from 'path';
+import { InjectCore, PuppeteerCore } from 'nestjs-pptr';
 import { Browser, Page } from 'puppeteer';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
@@ -18,7 +16,8 @@ export class ScraperService {
   private logger = new Logger(ScraperService.name);
 
   constructor(
-    @InjectQueue(QueueTypes.UPLOAD_QUEUE) private uploadQueue: Queue<CreateScrapeQueueInput>,
+    @InjectQueue(QueueTypes.UPLOAD_QUEUE)
+    private uploadQueue: Queue<CreateScrapeQueueInput>,
     private usersRepository: UsersRepository,
     private assetsService: AssetsService,
     private documentSelectorService: DocumentSelectorService,
@@ -26,31 +25,38 @@ export class ScraperService {
     @InjectCore() private readonly puppeteer: PuppeteerCore,
   ) {}
 
-  public async initiate(creatorId: string, input: CreateScrapeInput) {
-    const { hasBranch, url } = input;
+  public async initiate(creatorId: string, input: CreateScrapeInput): Promise<string> {
+    const { hasBranch, url, fileType, totalContent, qualityType } = input;
     const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
 
     this.logger.log({
       message: 'Scraping started',
-      hasBranch: hasBranch,
-      url: url,
+      hasBranch,
+      url,
       creatorId: creator.id,
       email: creator.username,
+      fileType,
+      totalContent,
+      qualityType,
     });
 
     await this.uploadQueue.add({ creatorId, ...input });
+
+    return 'Added job';
   }
 
   public async handleScrape(input: CreateScrapeQueueInput) {
-    const { creatorId, hasBranch, url } = input;
-    const { browser }: PuppeteerInstance = await this.puppeteer.launch('new_example');
+    const { hasBranch } = input;
+
+    const instance = await this.puppeteer.launch('default');
 
     try {
       return hasBranch
-        ? await this.scrapeBranches(browser, url, creatorId)
-        : await this.scrapeSingle(browser, url, creatorId);
+        ? await this.scrapeBranches(instance?.browser, input)
+        : await this.scrapeSingle(instance.browser, input);
     } finally {
       this.logger.log({ message: 'DONE' });
+      await this.puppeteer.destroy(instance);
     }
   }
 
@@ -59,29 +65,30 @@ export class ScraperService {
     return new Promise((res) => setTimeout(res, delay));
   }
 
-  private async scrapeSingle(browser: Browser, url: string, creatorId: string): Promise<UploadMediaOutput[]> {
+  private async scrapeSingle(browser: Browser, input: CreateScrapeQueueInput): Promise<UploadMediaOutput[]> {
     this.logger.log({ message: 'Single Scraping' });
+    const { url, creatorId, fileType, qualityType, totalContent } = input;
 
     const page: Page = await browser.newPage();
     await page.setExtraHTTPHeaders(this.getRandomHeaders(url));
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
-    const anchors = await this.documentSelectorService.getAnchors(page);
-    const filtered = this.documentSelectorService.filterByExtension(anchors);
+    const items = await this.documentSelectorService.handleFileType(page, fileType, qualityType);
 
-    this.logger.log(filtered, filtered.length);
+    this.logger.log(items.slice(0, totalContent), items.slice(0, totalContent).length);
 
     const results: UploadMediaOutput[] = [];
-    for (const link of filtered.slice(0, 5)) {
+    for (const link of items.slice(0, totalContent)) {
       try {
         await this.sleep();
         const buffer = await this.downloaderService.fetch(link, url);
-        const mimeType = this.resolveMimeType(link);
-        const filename = this.createFileName(link);
+        const mimeType = this.documentSelectorService.resolveMimeType(link);
+        const filename = this.documentSelectorService.createFileName(link);
+
         const uploaded = await this.assetsService.uploadFileV2(
           creatorId,
           filename,
-          MediaType.PROFILE_MEDIA,
+          MediaType.MESSAGE_MEDIA,
           buffer,
           mimeType,
         );
@@ -96,7 +103,9 @@ export class ScraperService {
     return results;
   }
 
-  private async scrapeBranches(browser: Browser, url: string, creatorId: string): Promise<UploadMediaOutput[]> {
+  private async scrapeBranches(browser: Browser, input: CreateScrapeQueueInput): Promise<UploadMediaOutput[]> {
+    const { url, totalContent } = input;
+
     const page: Page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2' });
 
@@ -104,20 +113,11 @@ export class ScraperService {
     await page.close();
 
     const results: UploadMediaOutput[] = [];
-    for (const branchUrl of branchUrls) {
-      const uploaded = await this.scrapeSingle(browser, branchUrl, creatorId);
+    for (const branchUrl of branchUrls.slice(0, totalContent)) {
+      const uploaded = await this.scrapeSingle(browser, { ...input, url: branchUrl });
       results.push(...uploaded);
     }
     return results;
-  }
-
-  private resolveMimeType(url: string): string {
-    const ext = extname(url).substring(1);
-    return ext ? `image/${ext}` : 'application/octet-stream';
-  }
-
-  private createFileName(link: string) {
-    return `public_${randomUUID()}${extname(link)}`;
   }
 
   private getRandomHeaders(baseUrl: string) {

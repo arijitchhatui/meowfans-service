@@ -1,5 +1,5 @@
 {
-  "name": "swiftsend-service-gql",
+  "name": "meowfans-service",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -12,6 +12,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "start:release": "git tag v$(node -p \"require('./package.json').version\") && git push origin v$(node -p \"require('./package.json').version\")",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",

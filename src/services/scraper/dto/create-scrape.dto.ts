@@ -1,4 +1,4 @@
-import { Field, InputType, registerEnumType } from '@nestjs/graphql';
+import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty } from 'class-validator';
 import { DocumentQualityType, FileType } from '../../service.constants';
 
@@ -14,9 +14,9 @@ export class CreateScrapeInput {
   hasBranch: boolean;
 
   @Field(() => FileType, { defaultValue: FileType.IMAGE })
-  mediaType: FileType;
+  fileType: FileType;
 
-  @Field(() => Number, { defaultValue: 10 })
+  @Field(() => Int, { defaultValue: 10 })
   totalContent: number;
 
   @Field(() => DocumentQualityType, { defaultValue: DocumentQualityType.LOW_DEFINITION })

@@ -1,28 +1,42 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { Page } from 'puppeteer';
-import { ExtensionTypes } from '../service.constants';
+import { DocumentQualityType, ExtensionTypes, FileType } from '../service.constants';
 
 @Injectable()
 export class DocumentSelectorService {
   private logger = new Logger(DocumentSelectorService.name);
-  public async getAnchors(page: Page): Promise<string[]> {
+
+  public async getImageUrls(page: Page, qualityType: DocumentQualityType): Promise<string[]> {
     this.logger.log({ message: 'Getting anchors' });
-    return page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
+
+    switch (qualityType) {
+      case DocumentQualityType.HIGH_DEFINITION:
+        return page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
+
+      case DocumentQualityType.LOW_DEFINITION:
+        return page.evaluate(() => {
+          return Array.from(document.querySelectorAll('img')).map(
+            (img) => img.getAttribute('data-src') || img.getAttribute('src-set')?.split(' ').pop() || img.src,
+          );
+        });
+
+      default:
+        return page.evaluate(() => {
+          return Array.from(document.querySelectorAll('img')).map(
+            (img) => img.getAttribute('data-src') || img.getAttribute('src-set')?.split(' ').pop() || img.src,
+          );
+        });
+    }
   }
 
-  public async getImages(page: Page): Promise<string[]> {
-    this.logger.log({ message: 'Getting images' });
-    return page.evaluate(() =>
-      Array.from(document.querySelectorAll('img')).map(
-        (img) => img.getAttribute('data-src') || img.getAttribute('src-set')?.split(' ').pop() || img.src,
-      ),
-    );
+  public async getAnchors(page: Page): Promise<string[]> {
+    return page.evaluate(() => Array.from(document.querySelectorAll('a')).map((anchor) => anchor.href));
   }
 
-  public async getVideos(page: Page): Promise<string[]> {
-    this.logger.log({ message: 'Getting videos' });
-    return page.evaluate(() => Array.from(document.querySelectorAll('video')).map((video) => video.src));
+  public async getVideoUrls(page: Page): Promise<string[]> {
+    return await page.evaluate(() => Array.from(document.querySelectorAll('video')).map((vid) => vid.src));
   }
 
   public filterByExtension(urls: string[]): string[] {
@@ -36,5 +50,29 @@ export class DocumentSelectorService {
 
   public async getPDFs(page: Page) {
     return await page.pdf();
+  }
+
+  public resolveMimeType(url: string): string {
+    const ext = extname(url).substring(1);
+    return ext ? `image/${ext}` : 'application/octet-stream';
+  }
+
+  public createFileName(link: string) {
+    return `public_${randomUUID()}${extname(link)}`;
+  }
+
+  public async handleFileType(page: Page, fileType: FileType, qualityType: DocumentQualityType) {
+    switch (fileType) {
+      case FileType.IMAGE: {
+        const anchors = await this.getImageUrls(page, qualityType);
+        return this.filterByExtension(anchors);
+      }
+
+      case FileType.VIDEO:
+        return await this.getVideoUrls(page);
+
+      default:
+        return [];
+    }
   }
 }
