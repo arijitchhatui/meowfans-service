@@ -42,7 +42,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "@sentry/nestjs": "^10.6.0",
     "@sentry/profiling-node": "^10.6.0",
-    "argon2": "^0.43.0",
+    "argon2": "^0.44.0",
     "axios": "^1.11.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
