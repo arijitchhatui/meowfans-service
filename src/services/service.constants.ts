@@ -52,6 +52,12 @@ export enum FileType {
   DOCUMENT = 'document',
 }
 
+export enum DocumentQualityType {
+  HIGH_DEFINITION = 'highDefinition',
+  LOW_DEFINITION = 'lowDefinition',
+  DEFAULT_DEFINITION = 'defaultDefinition',
+}
+
 export enum MediaType {
   PROFILE_MEDIA = 'profileMedia',
   MESSAGE_MEDIA = 'messageMedia',
