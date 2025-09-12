@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { PaginationInput } from '../../../lib/helpers';
+import { PaginationInput } from '@app/helpers';
 import { PostCommentsEntity } from '../entities';
 
 @Injectable()

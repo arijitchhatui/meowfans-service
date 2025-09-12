@@ -1,5 +1,5 @@
+import { PaginationInput } from '@app/helpers';
 import { Injectable } from '@nestjs/common';
-import { PaginationInput } from '../../lib/helpers';
 import { PostCommentsRepository } from '../postgres/repositories';
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { PostTypes } from '../../services/service.constants';
+import { PostTypes } from '../../src/services/service.constants';
 import { PostCreationErrorTypes } from '../validation';
 
 @Injectable()

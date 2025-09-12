@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { FanProfileOutput } from '../../../lib/helpers';
+import { FanProfileOutput } from 'src/services/creator-profiles';
 
 @ObjectType()
 export class GetCommentsOutput {

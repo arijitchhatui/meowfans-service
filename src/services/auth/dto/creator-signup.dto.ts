@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, Validate } from 'class-validator';
-import { UniqueEmailValidator } from '../../../lib';
 import { REMOVE_SPACE_REGEX, USER_NAME_CASE_REGEX } from '../constants';
+import { UniqueEmailValidator } from '../validators';
 
 export class CreatorSignupInput {
   @IsEmail()

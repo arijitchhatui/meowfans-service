@@ -1,9 +1,31 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@app/constants": "<rootDir>/../libs/constants/src",
+    "@app/constants/(.*)": "<rootDir>/../libs/constants/src/$1",
+    "@app/decorators": "<rootDir>/../libs/decorators/src",
+    "@app/decorators/(.*)": "<rootDir>/../libs/decorators/src/$1",
+    "@app/helpers": "<rootDir>/../libs/helpers/src",
+    "@app/helpers/(.*)": "<rootDir>/../libs/helpers/src/$1",
+    "@app/interceptors": "<rootDir>/../libs/interceptors/src",
+    "@app/interceptors/(.*)": "<rootDir>/../libs/interceptors/src/$1",
+    "@app/methods": "<rootDir>/../libs/methods/src",
+    "@app/methods/(.*)": "<rootDir>/../libs/methods/src/$1",
+    "@app/pipes": "<rootDir>/../libs/pipes/src",
+    "@app/pipes/(.*)": "<rootDir>/../libs/pipes/src/$1",
+    "@app/validation": "<rootDir>/../libs/validation/src",
+    "@app/validation/(.*)": "<rootDir>/../libs/validation/src/$1",
+    "@app/validators": "<rootDir>/../libs/validators/src",
+    "@app/validators/(.*)": "<rootDir>/../libs/validators/src/$1"
   }
 }

@@ -1,5 +1,5 @@
+import { PaginationInput } from '@app/helpers';
 import { Injectable } from '@nestjs/common';
-import { PaginationInput } from '../../lib/helpers';
 import { BlockFanInput } from '../creator-profiles';
 import { CreatorBlocksEntity } from '../postgres/entities';
 import { CreatorBlocksRepository } from '../postgres/repositories';
