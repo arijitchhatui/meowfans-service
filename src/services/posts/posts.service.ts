@@ -1,7 +1,7 @@
+import { PaginationInput } from '@app/helpers';
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { In } from 'typeorm';
-import { PaginationInput } from '../../lib/helpers';
 import { PostsEntity } from '../postgres/entities';
 import {
   CreatorAssetsRepository,

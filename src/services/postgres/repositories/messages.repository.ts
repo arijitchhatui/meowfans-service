@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { MessagesEntity } from '../entities';
-import { PaginationInput } from '../../../lib/helpers';
+import { PaginationInput } from '@app/helpers';
 
 @Injectable()
 export class MessagesRepository extends Repository<MessagesEntity> {

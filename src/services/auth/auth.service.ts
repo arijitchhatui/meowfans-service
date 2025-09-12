@@ -1,8 +1,9 @@
+import { splitFullName } from '@app/helpers';
 import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
-import { splitFullName } from '../../lib/helpers/split-full-name';
+import { Request } from 'express';
 import { AwsS3ClientService } from '../aws';
 import { UsersEntity } from '../postgres/entities';
 import {
@@ -18,7 +19,6 @@ import { AuthOk } from './dto/auth.dto';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { FanSignupInput } from './dto/fan-signup.dto';
 import { LoginInput } from './dto/login.dto';
-import { Request } from 'express';
 
 @Injectable()
 export class AuthService {

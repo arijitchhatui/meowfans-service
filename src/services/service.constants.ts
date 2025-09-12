@@ -1,3 +1,6 @@
+import { AssetsEntity } from './postgres/entities';
+import { GetPostsOutput } from './posts';
+
 export const AVATAR_COLORS = [
   '#5865f2',
   '#57f287',
@@ -211,3 +214,32 @@ export const headerPools = [
     'Connection': 'keep-alive',
   },
 ];
+
+type GetPostsOutputType = {
+  id: string;
+  caption: string;
+  creatorId: string;
+  unlockPrice: number | null;
+  likeCount: number;
+  saveCount: number;
+  shareCount: number;
+  commentCount: number;
+  totalEarning: number;
+  types: PostTypes[];
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date;
+  lastCommentId: string;
+  assets: AssetsEntity;
+};
+
+export const getPosts = () => {
+  const rawPosts: GetPostsOutputType[] = [];
+
+  const postsMap: Record<string, GetPostsOutput> = {};
+  for (const rawPost of rawPosts) {
+    postsMap[rawPost.id] ??= { ...rawPost, assets: [] };
+    postsMap[rawPost.id].assets.push(rawPost.assets);
+  }
+  return Object.values(postsMap);
+};

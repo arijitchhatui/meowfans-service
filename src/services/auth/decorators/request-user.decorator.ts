@@ -1,7 +1,7 @@
 import { applyDecorators, createParamDecorator, ExecutionContext, UseInterceptors } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
-import { JwtUser } from '../../services/auth';
+import { JwtUser } from '..';
 import { RequestUserInterceptor } from '../interceptors/inject-session.interceptor';
 
 export function RequestUser(): MethodDecorator & ClassDecorator {

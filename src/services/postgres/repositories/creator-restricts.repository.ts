@@ -1,9 +1,9 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { PaginationInput } from '../../../lib/helpers';
-import { EntityMaker } from '../../../lib/methods';
 import { GetRestrictedUsersOutput } from '../../creator-profiles';
 import { CreatorRestrictsEntity } from '../entities';
+import { PaginationInput } from '@app/helpers';
+import { EntityMaker } from '@app/methods';
 
 @Injectable()
 export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntity> {

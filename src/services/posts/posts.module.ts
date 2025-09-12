@@ -1,5 +1,5 @@
+import { HasAssetsForExclusivePropValidator, ProfanityValidator } from '@app/validators';
 import { Module } from '@nestjs/common';
-import { HasAssetsForExclusivePropValidator, ProfanityValidator } from '../../lib';
 import { PostsResolver } from './posts.resolver';
 import { PostsService } from './posts.service';
 
