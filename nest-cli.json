@@ -3,8 +3,84 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "plugins": ["@nestjs/swagger"],
+    "plugins": [
+      "@nestjs/swagger"
+    ],
     "deleteOutDir": true,
     "webpack": false
+  },
+  "projects": {
+    "constants": {
+      "type": "library",
+      "root": "libs/constants",
+      "entryFile": "index",
+      "sourceRoot": "libs/constants/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/constants/tsconfig.lib.json"
+      }
+    },
+    "decorators": {
+      "type": "library",
+      "root": "libs/decorators",
+      "entryFile": "index",
+      "sourceRoot": "libs/decorators/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/decorators/tsconfig.lib.json"
+      }
+    },
+    "helpers": {
+      "type": "library",
+      "root": "libs/helpers",
+      "entryFile": "index",
+      "sourceRoot": "libs/helpers/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/helpers/tsconfig.lib.json"
+      }
+    },
+    "interceptors": {
+      "type": "library",
+      "root": "libs/interceptors",
+      "entryFile": "index",
+      "sourceRoot": "libs/interceptors/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/interceptors/tsconfig.lib.json"
+      }
+    },
+    "methods": {
+      "type": "library",
+      "root": "libs/methods",
+      "entryFile": "index",
+      "sourceRoot": "libs/methods/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/methods/tsconfig.lib.json"
+      }
+    },
+    "pipes": {
+      "type": "library",
+      "root": "libs/pipes",
+      "entryFile": "index",
+      "sourceRoot": "libs/pipes/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/pipes/tsconfig.lib.json"
+      }
+    },
+    "validation": {
+      "type": "library",
+      "root": "libs/validation",
+      "entryFile": "index",
+      "sourceRoot": "libs/validation/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/validation/tsconfig.lib.json"
+      }
+    },
+    "validators": {
+      "type": "library",
+      "root": "libs/validators",
+      "entryFile": "index",
+      "sourceRoot": "libs/validators/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/validators/tsconfig.lib.json"
+      }
+    }
   }
 }

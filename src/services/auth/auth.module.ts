@@ -1,16 +1,16 @@
+import { CryptoService } from '@app/methods';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { REQUEST } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { Request } from 'express';
-import { UniqueEmailValidator, UniqueUsernameValidator } from '../../lib';
-import { CryptoService } from '../../lib/methods/encode.method';
 import { AwsS3Module } from '../aws';
 import { ProviderTokens } from '../service.constants';
 import { SessionsService } from '../sessions/sessions.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { UniqueEmailValidator, UniqueUsernameValidator } from './validators';
 
 @Module({
   imports: [

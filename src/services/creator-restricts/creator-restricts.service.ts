@@ -1,5 +1,5 @@
+import { PaginationInput } from '@app/helpers';
 import { Injectable } from '@nestjs/common';
-import { PaginationInput } from '../../lib/helpers';
 import { RestrictFanInput } from '../creator-profiles';
 import { CreatorRestrictsRepository } from '../postgres/repositories';
 

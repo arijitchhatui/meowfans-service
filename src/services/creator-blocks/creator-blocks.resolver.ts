@@ -1,5 +1,5 @@
+import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { PaginationInput } from '../../lib/helpers';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { BlockFanInput } from '../creator-profiles';
 import { CreatorBlocksEntity } from '../postgres/entities';

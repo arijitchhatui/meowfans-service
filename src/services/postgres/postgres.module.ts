@@ -2,8 +2,8 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { EntityMaker } from '../../lib/methods/from-raw-to-entity-type.method';
 import * as repositories from './repositories';
+import { EntityMaker } from '@app/methods';
 
 @Global()
 @Module({

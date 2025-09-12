@@ -1,6 +1,6 @@
+import { HasAssetsForExclusivePropValidator } from '@app/validators';
 import { Field, ID, InputType, Int } from '@nestjs/graphql';
 import { IsOptional, IsUUID, Validate } from 'class-validator';
-import { HasAssetsForExclusivePropValidator } from '../../../lib/validators/has-assets-for-exclusive.validator';
 
 @InputType()
 export class SendMessageFromCreatorInput {

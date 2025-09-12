@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { Validate } from 'class-validator';
-import { ProfanityValidator } from '../../../lib';
+import { ProfanityValidator } from '@app/validators';
 
 @InputType()
 export class CreateCommentInput {

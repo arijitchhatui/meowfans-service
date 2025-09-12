@@ -1,5 +1,5 @@
+import { PaginationInput } from '@app/helpers';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { PaginationInput } from '../../lib/helpers';
 import { DeleteFollowerInput } from '../creator-profiles';
 import { FollowCreatorInput, UnFollowCreatorInput } from '../fan-profiles';
 import { CreatorFollowsEntity } from '../postgres/entities';

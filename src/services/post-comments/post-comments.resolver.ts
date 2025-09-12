@@ -1,9 +1,9 @@
+import { PaginationInput } from '@app/helpers';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { UserRoles } from '../service.constants';
-import { PostCommentsService } from './post-comments.service';
 import { GetCommentsOutput } from './dto';
-import { PaginationInput } from '../../lib/helpers';
+import { PostCommentsService } from './post-comments.service';
 
 @Resolver()
 export class PostCommentsResolver {

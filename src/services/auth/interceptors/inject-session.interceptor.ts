@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
-import { SessionsRepository } from '../../services/postgres/repositories';
+import { SessionsRepository } from 'src/services/postgres/repositories';
 
 @Injectable()
 export class RequestUserInterceptor implements NestInterceptor {

@@ -1,5 +1,19 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { FanProfileOutput } from '../../../lib/helpers';
+
+@ObjectType()
+export class FanProfileOutput {
+  @Field()
+  firstName: string;
+
+  @Field()
+  lastName: string;
+
+  @Field()
+  username: string;
+
+  @Field()
+  avatarUrl: string;
+}
 
 @ObjectType()
 export class GetFollowedUsersOutput {
