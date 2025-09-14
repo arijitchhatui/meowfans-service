@@ -8,12 +8,12 @@ import { InjectUserToArg } from '@app/decorators';
 
 @Resolver()
 export class FanProfilesResolver {
-  public constructor(private userProfilesService: FanProfilesService) {}
+  public constructor(private fanProfilesService: FanProfilesService) {}
 
   @Auth(GqlAuthGuard, [UserRoles.FAN])
   @Query(() => FanProfilesEntity)
   public async getFanProfile(@CurrentUser() fanId: string): Promise<FanProfilesEntity> {
-    return await this.userProfilesService.getFanProfile(fanId);
+    return await this.fanProfilesService.getFanProfile(fanId);
   }
 
   @InjectUserToArg('input')
@@ -23,6 +23,6 @@ export class FanProfilesResolver {
     @CurrentUser() fanId: string,
     @Args('input') input: UpdateUserProfileInput,
   ): Promise<FanProfilesEntity> {
-    return await this.userProfilesService.updateFanProfile(fanId, input);
+    return await this.fanProfilesService.updateFanProfile(fanId, input);
   }
 }

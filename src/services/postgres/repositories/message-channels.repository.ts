@@ -1,9 +1,8 @@
+import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { GetChannelInput, GetChannelsOutput } from '../../message-channels/dto';
-import { MessageChannelsEntity, MessagesEntity } from '../entities';
-import { PaginationInput } from '@app/helpers';
-import { EntityMaker } from '@app/methods';
+import { GetChannelInput } from '../../message-channels/dto';
+import { MessageChannelsEntity } from '../entities';
 
 @Injectable()
 export class MessageChannelsRepository extends Repository<MessageChannelsEntity> {
@@ -47,30 +46,22 @@ export class MessageChannelsRepository extends Repository<MessageChannelsEntity>
   }
 
   public async getChannels(userId: string, input: PaginationInput) {
-    const messageSubQuery = this.createQueryBuilder()
-      .select('DISTINCT ON (m."channel_id") m."channel_id"', 'channelId')
-      .addSelect('m."content"', 'lastMessage')
-      .addSelect('m."created_at"', 'messageSentAt')
-      .from(MessagesEntity, 'm')
-      .orderBy('m."channel_id"')
-      .addOrderBy('m."created_at"', 'DESC');
-
-    const query = this.createQueryBuilder('message_channels')
-      .leftJoin(`(${messageSubQuery.getQuery()})`, 'lastMessage', '"lastMessage"."channelId" = message_channels.id')
-      .setParameters(messageSubQuery.getParameters())
-      .addSelect('"lastMessage"."lastMessage"', 'lastMessage')
-      .leftJoin('message_channels.creatorProfile', 'creatorProfile')
-      .leftJoin('message_channels.fanProfile', 'fanProfile')
-      .addSelect('fanProfile.fullName', 'fanFullName')
-      .addSelect('message_channels.*')
-      .addSelect('creatorProfile.fullName', 'creatorFullName')
-      .where('message_channels.creatorId = :userId OR message_channels.fanId = :userId', { userId: userId })
-      .orderBy('GREATEST(message_channels.creatorLastSentAt, message_channels.fanLastSentAt)', input.orderBy)
-      .getRawMany<GetChannelsOutput>();
-
-    return EntityMaker.fromRawToEntityType<GetChannelsOutput>({
-      rawQueryMap: query,
-      mappers: [{ aliasName: 'message_channels' }],
-    });
+    return await this.createQueryBuilder('mc')
+      .addSelect('mc.lastMessage', 'lastMessage')
+      .leftJoin('mc.creatorProfile', 'creatorProfile')
+      .leftJoin('mc.fanProfile', 'fanProfile')
+      .leftJoin('fanProfile.user', 'fan_user')
+      .leftJoin('creatorProfile.user', 'creator_user')
+      .leftJoinAndSelect('mc.participants', 'mcp')
+      .addSelect('mc.*')
+      .addSelect('fanProfile.fanId')
+      .addSelect('lastMessage.id')
+      .addSelect('creatorProfile.creatorId')
+      .addSelect(['fan_user.firstName', 'fan_user.lastName', 'fan_user.username', 'fan_user.avatarUrl'])
+      .addSelect(['creator_user.firstName', 'creator_user.lastName', 'creator_user.username', 'creator_user.avatarUrl'])
+      .where('mcp.userId = :userId', { userId: userId })
+      .orderBy('lastMessage.createdAt', input.orderBy)
+      .limit(input.limit)
+      .getMany();
   }
 }

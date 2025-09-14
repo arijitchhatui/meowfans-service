@@ -1,0 +1,11 @@
+ignoredBuiltDependencies:
+  - '@apollo/protobufjs'
+  - '@nestjs/core'
+  - '@scarf/scarf'
+  - '@sentry-internal/node-cpu-profiler'
+  - '@swc/core'
+  - argon2
+  - bcrypt
+  - msgpackr-extract
+  - puppeteer
+  - sharp

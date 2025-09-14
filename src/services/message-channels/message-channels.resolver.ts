@@ -3,7 +3,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { MessageChannelsEntity } from '../postgres/entities';
 import { UserRoles } from '../service.constants';
-import { CreateChannelInput, GetChannelInput, GetChannelOutput, GetChannelsOutput, UpdateChannelInput } from './dto';
+import { CreateChannelInput, GetChannelInput, GetChannelOutput, UpdateChannelInput } from './dto';
 import { MessageChannelsService } from './message-channels.service';
 
 @Resolver()
@@ -24,13 +24,13 @@ export class MessageChannelsResolver {
   ): Promise<MessageChannelsEntity> {
     return this.messageChannelsService.updateChannel(creatorId, input);
   }
-
+  //
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])
-  @Query(() => [GetChannelsOutput])
+  @Query(() => [MessageChannelsEntity])
   public async getChannels(
     @CurrentUser() userId: string,
     @Args('input') input: PaginationInput,
-  ): Promise<GetChannelsOutput[]> {
+  ): Promise<MessageChannelsEntity[]> {
     return await this.messageChannelsService.getChannels(userId, input);
   }
   //

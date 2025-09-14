@@ -1,9 +1,7 @@
+import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { GetRestrictedUsersOutput } from '../../creator-profiles';
 import { CreatorRestrictsEntity } from '../entities';
-import { PaginationInput } from '@app/helpers';
-import { EntityMaker } from '@app/methods';
 
 @Injectable()
 export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntity> {
@@ -14,23 +12,15 @@ export class CreatorRestrictsRepository extends Repository<CreatorRestrictsEntit
   }
 
   public async getRestrictedUsers(creatorId: string, input: PaginationInput) {
-    const query = this.createQueryBuilder('crs')
-      .leftJoin('users', 'user', 'user.id = crs.fanId')
-      .select('crs.*')
-      .addSelect('user.email')
-      .addSelect('user.firstName')
-      .addSelect('user.lastName')
-      .addSelect('user.username')
-      .addSelect('user.avatarUrl')
+    return await this.createQueryBuilder('crs')
+      .leftJoin('crs.fanProfile', 'fan')
+      .leftJoin('fan.user', 'user')
+      .addSelect('fan.fanId')
+      .addSelect(['user.firstName', 'user.lastName', 'user.avatarUrl', 'user.username'])
       .where('crs.creatorId = :creatorId', { creatorId: creatorId })
       .orderBy('crs.restrictedAt', input.orderBy)
       .limit(input.limit)
       .offset(input.offset)
-      .getRawMany<GetRestrictedUsersOutput>();
-
-    return await EntityMaker.fromRawToEntityType<GetRestrictedUsersOutput>({
-      rawQueryMap: query,
-      mappers: [{ entityFieldOutputName: 'userProfile', aliasName: 'user' }],
-    });
+      .getMany();
   }
 }

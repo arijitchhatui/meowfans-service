@@ -19,7 +19,7 @@ export class CreatorBlocksRepository extends Repository<CreatorBlocksEntity> {
       .addSelect(['user.firstName', 'user.lastName', 'user.avatarUrl', 'user.username'])
       .where('cbs.creatorId = :creatorId', { creatorId: creatorId })
       .limit(input.limit)
-      .orderBy('cbs.createdAt', input.orderBy)
+      .orderBy('cbs.blockedAt', input.orderBy)
       .offset(input.offset)
       .getMany();
   }
