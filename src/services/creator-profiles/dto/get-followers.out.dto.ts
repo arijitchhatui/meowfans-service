@@ -11,7 +11,7 @@ export class FanProfileOutput {
   @Field()
   username: string;
 
-  @Field()
+  @Field({ nullable: true })
   avatarUrl: string;
 }
 

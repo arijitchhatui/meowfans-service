@@ -35,7 +35,7 @@ export class AuthService {
 
   public async validateUser(input: LoginInput): Promise<{ sub: string }> {
     const user = await this.usersRepository.findOne({ where: { email: input.email } });
-    if (!user) throw new UnauthorizedException();
+    if (!user) throw new UnauthorizedException({ message: 'Not found!' });
 
     const isCorrect = await bcryptjs.compare(input.password, user.password);
     if (!isCorrect) throw new UnauthorizedException({ message: 'Invalid credentials!' });

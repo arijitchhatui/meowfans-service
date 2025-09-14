@@ -1,7 +1,8 @@
 import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { GetRestrictedUsersOutput, RestrictFanInput } from '../creator-profiles';
+import { RestrictFanInput } from '../creator-profiles';
+import { CreatorRestrictsEntity } from '../postgres/entities';
 import { UserRoles } from '../service.constants';
 import { CreatorRestrictsService } from './creator-restricts.service';
 
@@ -10,11 +11,11 @@ export class CreatorRestrictsResolver {
   public constructor(private creatorRestrictsService: CreatorRestrictsService) {}
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Query(() => [GetRestrictedUsersOutput])
+  @Query(() => [CreatorRestrictsEntity])
   public async getRestrictedUsers(
     @CurrentUser() creatorId: string,
     @Args('input') input: PaginationInput,
-  ): Promise<GetRestrictedUsersOutput[]> {
+  ): Promise<CreatorRestrictsEntity[]> {
     return await this.creatorRestrictsService.getRestrictedUsers(creatorId, input);
   }
 
