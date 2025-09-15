@@ -4,7 +4,7 @@ import { UsersEntity } from '../postgres/entities';
 import { UserRoles } from '../service.constants';
 import { AuthService } from './auth.service';
 import { Auth, CurrentUserExpanded, JwtUser } from './decorators';
-import { AuthOk, FanSignupInput, LoginInput } from './dto';
+import { AuthOk, FanSignupInput, LoginInput, VerifyJwtInput } from './dto';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { JwtAuthGuard } from './guards';
 
@@ -34,6 +34,11 @@ export class AuthController {
   @Get('/status')
   public async getStatus(@CurrentUserExpanded() user: JwtUser): Promise<UsersEntity> {
     return await this.authService.getStatus(user);
+  }
+
+  @Post('/verify')
+  public verifyJwt(@Body() input: VerifyJwtInput): JwtUser | null {
+    return this.authService.validateJwt(input);
   }
 
   @Auth(JwtAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])

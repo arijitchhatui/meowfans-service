@@ -19,6 +19,7 @@ import { AuthOk } from './dto/auth.dto';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { FanSignupInput } from './dto/fan-signup.dto';
 import { LoginInput } from './dto/login.dto';
+import { VerifyJwtInput } from './dto/verify.dto';
 
 @Injectable()
 export class AuthService {
@@ -135,9 +136,14 @@ export class AuthService {
     return user;
   }
 
-  validateJwt(jwtUser: JwtUser) {
-    if (jwtUser.version !== JWT_VERSION) throw new UnauthorizedException();
-    return jwtUser;
+  public validateJwt(input: VerifyJwtInput): JwtUser | null {
+    try {
+      const jwtUser = this.jwtService.verify<JwtUser>(input.token);
+      if (jwtUser.version !== JWT_VERSION) throw new UnauthorizedException();
+      return jwtUser;
+    } catch {
+      return null;
+    }
   }
 
   private async scanAvailableEmail(email: string) {
