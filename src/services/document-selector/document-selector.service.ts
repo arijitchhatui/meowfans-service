@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { Page } from 'puppeteer';
+import { HostNames } from 'src/util/constants';
 import { DocumentQualityType, ExtensionTypes, FileType } from '../service.constants';
 
 @Injectable()
@@ -37,6 +38,16 @@ export class DocumentSelectorService {
 
   public async getVideoUrls(page: Page): Promise<string[]> {
     return await page.evaluate(() => Array.from(document.querySelectorAll('video')).map((vid) => vid.src));
+  }
+
+  public async getAnchorsBasedOnHostName(anchors: string[], url: string, subDirectory?: string): Promise<string[]> {
+    const hostname = new URL(url).hostname as HostNames;
+    switch (hostname) {
+      case HostNames.COOMER:
+        return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));
+      default:
+        return anchors;
+    }
   }
 
   public filterByExtension(urls: string[]): string[] {
