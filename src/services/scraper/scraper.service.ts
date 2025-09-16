@@ -52,7 +52,7 @@ export class ScraperService {
 
     try {
       return hasBranch
-        ? await this.scrapeBranches(instance?.browser, input)
+        ? await this.scrapeBranches(instance.browser, input)
         : await this.scrapeSingle(instance.browser, input);
     } finally {
       this.logger.log({ message: 'DONE' });
@@ -67,7 +67,7 @@ export class ScraperService {
 
   private async scrapeSingle(browser: Browser, input: CreateScrapeQueueInput): Promise<UploadMediaOutput[]> {
     this.logger.log({ message: 'Single Scraping' });
-    const { url, creatorId, fileType, qualityType, totalContent } = input;
+    const { url, creatorId, fileType, qualityType } = input;
 
     const page: Page = await browser.newPage();
     await page.setExtraHTTPHeaders(this.getRandomHeaders(url));
@@ -75,10 +75,10 @@ export class ScraperService {
 
     const items = await this.documentSelectorService.handleFileType(page, fileType, qualityType);
 
-    this.logger.log(items.slice(0, totalContent), items.slice(0, totalContent).length);
+    this.logger.log(items, items.length);
 
     const results: UploadMediaOutput[] = [];
-    for (const link of items.slice(0, totalContent)) {
+    for (const link of items) {
       try {
         await this.sleep();
         const buffer = await this.downloaderService.fetch(link, url);
@@ -88,7 +88,7 @@ export class ScraperService {
         const uploaded = await this.assetsService.uploadFileV2(
           creatorId,
           filename,
-          MediaType.MESSAGE_MEDIA,
+          MediaType.PROFILE_MEDIA,
           buffer,
           mimeType,
         );
@@ -104,16 +104,16 @@ export class ScraperService {
   }
 
   private async scrapeBranches(browser: Browser, input: CreateScrapeQueueInput): Promise<UploadMediaOutput[]> {
-    const { url, totalContent } = input;
+    const { url } = input;
 
     const page: Page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2' });
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
     await page.close();
-
+    // TODO: add total content method later, for now initiate with as many request possible
     const results: UploadMediaOutput[] = [];
-    for (const branchUrl of branchUrls.slice(0, totalContent)) {
+    for (const branchUrl of branchUrls) {
       const uploaded = await this.scrapeSingle(browser, { ...input, url: branchUrl });
       results.push(...uploaded);
     }
