@@ -1,3 +1,4 @@
+import { HasSubdirectoryForBranch } from '@app/validators';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { PuppeteerModule } from 'nestjs-pptr';
@@ -32,6 +33,7 @@ import { ScraperService } from './scraper.service';
     DownloaderService,
     DocumentSelectorService,
     ScrapeConsumerService,
+    HasSubdirectoryForBranch,
   ],
 })
 export class ScraperModule {}

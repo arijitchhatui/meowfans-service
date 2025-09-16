@@ -26,7 +26,7 @@ export class ScraperService {
   ) {}
 
   public async initiate(creatorId: string, input: CreateScrapeInput): Promise<string> {
-    const { hasBranch, url, fileType, totalContent, qualityType } = input;
+    const { hasBranch, url, fileType, totalContent, qualityType, subDirectory } = input;
     const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
 
     this.logger.log({
@@ -38,6 +38,7 @@ export class ScraperService {
       fileType,
       totalContent,
       qualityType,
+      subDirectory,
     });
 
     await this.uploadQueue.add({ creatorId, ...input });
@@ -111,9 +112,15 @@ export class ScraperService {
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
     await page.close();
+
+    const hostBasedAnchorUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(
+      branchUrls,
+      url,
+      input.subDirectory,
+    );
     // TODO: add total content method later, for now initiate with as many request possible
     const results: UploadMediaOutput[] = [];
-    for (const branchUrl of branchUrls) {
+    for (const branchUrl of hostBasedAnchorUrls) {
       const uploaded = await this.scrapeSingle(browser, { ...input, url: branchUrl });
       results.push(...uploaded);
     }
