@@ -12,12 +12,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { JwtUser } from '../../auth';
-import { UserRoles } from '../../service.constants';
 import { MessageAssetsEntity } from './message-assets.entity';
 import { MessageChannelsEntity } from './message-channels.entity';
 import { MessagePurchasesEntity } from './message-purchases.entity';
 import { MessageReactionsEntity } from './message-reactions.entity';
 import { MessageRepliesEntity } from './message-replies.entity';
+import { UserRoles } from 'libs/enums/user-roles';
 
 @ObjectType()
 @Entity({ name: 'messages' })

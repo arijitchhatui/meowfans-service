@@ -1,3 +1,4 @@
+import { PostTypes } from '@app/enums';
 import { PaginationInput } from '@app/helpers';
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
@@ -14,7 +15,7 @@ import {
   PostsRepository,
   UsersRepository,
 } from '../postgres/repositories';
-import { DEFAULT_POST_PRICE, PostTypes } from '../service.constants';
+import { DEFAULT_POST_PRICE } from '../service.constants';
 import {
   CreateCommentInput,
   DeleteCommentInput,

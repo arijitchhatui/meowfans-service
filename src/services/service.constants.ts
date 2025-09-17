@@ -1,3 +1,4 @@
+import { PostTypes } from '@app/enums';
 import { AssetsEntity } from './postgres/entities';
 import { GetPostsOutput } from './posts';
 
@@ -27,70 +28,9 @@ export const BANNER_COLORS = [
   '#cb5aff',
 ];
 
-export enum UserRoles {
-  FAN = 'fan',
-  ADMIN = 'admin',
-  SUPER_VIEWER = 'super_viewer',
-  CREATOR = 'creator',
-}
-
-export enum SortOrder {
-  ASC = 'ASC',
-  DESC = 'DESC',
-}
-
-export enum PostTypes {
-  PUBLIC = 'PUBLIC',
-  EXCLUSIVE = 'EXCLUSIVE',
-  PRIVATE = 'PRIVATE',
-  ARCHIVED = 'ARCHIVED',
-  HIDDEN = 'HIDDEN',
-  BANNED = 'BANNED',
-}
-
-export enum FileType {
-  VIDEO = 'video',
-  IMAGE = 'image',
-  AUDIO = 'audio',
-  DOCUMENT = 'document',
-}
-
-export enum DocumentQualityType {
-  HIGH_DEFINITION = 'highDefinition',
-  LOW_DEFINITION = 'lowDefinition',
-  DEFAULT_DEFINITION = 'defaultDefinition',
-}
-
-export enum MediaType {
-  PROFILE_MEDIA = 'profileMedia',
-  MESSAGE_MEDIA = 'messageMedia',
-  POST_MEDIA = 'postMedia',
-}
-
-export enum ImageType {
-  BLURRED = 'blurred',
-  ORIGINAL = 'original',
-  RESIZED = 'resized',
-}
-
-export enum ProviderTokens {
-  TYPE_SENSE_TOKEN = 'TYPE_SENSE_TOKEN',
-  AWS_S3_TOKEN = 'AWS_S3_TOKEN',
-  REQUEST_USER_TOKEN = 'REQUEST_USER_TOKEN',
-}
-
-export enum ScrapingQuality {
-  HIGH = 'HIGH',
-  LOW = 'LOW',
-}
-
 export const ExtensionTypes = ['.jpg'];
 
 export const DEFAULT_POST_PRICE = 500;
-
-export enum QueueTypes {
-  UPLOAD_QUEUE = 'upload_queue',
-}
 
 export const headerPools = [
   {

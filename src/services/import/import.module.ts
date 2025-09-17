@@ -1,15 +1,15 @@
 import { HasSubdirectoryForBranch } from '@app/validators';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { QueueTypes } from 'libs/enums/queue-type';
 import { PuppeteerModule } from 'nestjs-pptr';
 import { AssetsService } from '../assets';
 import { AwsS3Module } from '../aws';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { DownloaderService } from '../downloader/downloader.service';
-import { QueueTypes } from '../service.constants';
-import { ScrapeConsumerService } from './scrape-consumer.service';
-import { ScraperResolver } from './scraper.resolver';
-import { ScraperService } from './scraper.service';
+import { ImportConsumerService } from './import-consumer.service';
+import { ImportResolver } from './import.resolver';
+import { ImportService } from './import.service';
 
 @Module({
   imports: [
@@ -27,13 +27,13 @@ import { ScraperService } from './scraper.service';
     AwsS3Module,
   ],
   providers: [
-    ScraperService,
-    ScraperResolver,
+    ImportService,
+    ImportResolver,
     AssetsService,
     DownloaderService,
     DocumentSelectorService,
-    ScrapeConsumerService,
+    ImportConsumerService,
     HasSubdirectoryForBranch,
   ],
 })
-export class ScraperModule {}
+export class ImportModule {}

@@ -1,11 +1,11 @@
+import { DocumentQualityType, FileType } from '@app/enums';
 import { HasSubdirectoryForBranch } from '@app/validators';
 import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty, Validate } from 'class-validator';
-import { DocumentQualityType, FileType } from '../../service.constants';
 
 registerEnumType(DocumentQualityType, { name: 'DocumentQualityType' });
 @InputType()
-export class CreateScrapeInput {
+export class CreateImportInput {
   @IsNotEmpty()
   @Field(() => String)
   url: string;
@@ -28,6 +28,6 @@ export class CreateScrapeInput {
   subDirectory?: string;
 }
 
-export class CreateScrapeQueueInput extends CreateScrapeInput {
+export class CreateImportQueueInput extends CreateImportInput {
   creatorId: string;
 }

@@ -3,8 +3,9 @@ import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validat
 import { Not } from 'typeorm';
 import { REMOVE_SPACE_REGEX, USER_NAME_CASE_REGEX } from '..';
 import { UsersRepository } from '../../postgres/repositories';
-import { ExtendedValidationArguments, ValidationErrorCodes } from '@app/validation';
+import { ExtendedValidationArguments } from '@app/validation';
 import { VALIDATION_CONTEXT } from '@app/interceptors';
+import { ValidationErrorCodes } from 'libs/enums/validation-error-code';
 
 @Injectable()
 @ValidatorConstraint({ name: 'username', async: true })

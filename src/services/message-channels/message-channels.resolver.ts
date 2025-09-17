@@ -1,8 +1,8 @@
 import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UserRoles } from 'libs/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { MessageChannelsEntity } from '../postgres/entities';
-import { UserRoles } from '../service.constants';
 import { CreateChannelInput, GetChannelInput, GetChannelOutput, UpdateChannelInput } from './dto';
 import { MessageChannelsService } from './message-channels.service';
 

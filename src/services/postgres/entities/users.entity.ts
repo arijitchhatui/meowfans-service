@@ -1,5 +1,6 @@
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { IsEmail } from 'class-validator';
+import { UserRoles } from 'libs/enums/user-roles';
 import {
   Column,
   CreateDateColumn,
@@ -12,7 +13,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import type { JwtUser } from '../../auth';
-import { UserRoles } from '../../service.constants';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanProfilesEntity } from './fan-profiles.entity';
 import { SessionsEntity } from './sessions.entity';

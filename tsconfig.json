@@ -17,33 +17,14 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@app/constants": [
-        "libs/constants/src"
-      ],
-      "@app/constants/*": [
-        "libs/constants/src/*"
-      ],
-      "@app/decorators": [
-        "./libs/decorators"
-      ],
-      "@app/helpers": [
-        "./libs/helpers"
-      ],
-      "@app/interceptors": [
-        "./libs/interceptors"
-      ],
-      "@app/methods": [
-        "./libs/methods"
-      ],
-      "@app/pipes": [
-        "./libs/pipes"
-      ],
-      "@app/validation": [
-        "./libs/validation"
-      ],
-      "@app/validators": [
-        "./libs/validators"
-      ]
+      "@app/decorators": ["./libs/decorators"],
+      "@app/enums": ["./libs/enums"],
+      "@app/helpers": ["./libs/helpers"],
+      "@app/interceptors": ["./libs/interceptors"],
+      "@app/methods": ["./libs/methods"],
+      "@app/pipes": ["./libs/pipes"],
+      "@app/validation": ["./libs/validation"],
+      "@app/validators": ["./libs/validators"]
     },
     "baseUrl": "./"
   }
