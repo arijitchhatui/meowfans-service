@@ -1,6 +1,6 @@
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { BullModule, BullRootModuleOptions } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -46,9 +46,9 @@ import { UsersModule } from './users';
     }),
     BullModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService): Promise<BullRootModuleOptions> => {
-        return { redis: configService.getOrThrow<string>('REDIS_URL') };
-      },
+      useFactory: (configService: ConfigService) => ({
+        url: configService.getOrThrow<string>('REDIS_URL'),
+      }),
     }),
     AuthModule,
     UsersModule,
