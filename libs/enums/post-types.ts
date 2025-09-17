@@ -1,0 +1,8 @@
+export enum PostTypes {
+  PUBLIC = 'PUBLIC',
+  EXCLUSIVE = 'EXCLUSIVE',
+  PRIVATE = 'PRIVATE',
+  ARCHIVED = 'ARCHIVED',
+  HIDDEN = 'HIDDEN',
+  BANNED = 'BANNED',
+}

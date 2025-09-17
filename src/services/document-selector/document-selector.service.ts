@@ -1,9 +1,9 @@
+import { DocumentQualityType, FileType, HostNames } from '@app/enums';
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { Page } from 'puppeteer';
-import { HostNames } from 'src/util/constants';
-import { DocumentQualityType, ExtensionTypes, FileType } from '../service.constants';
+import { ExtensionTypes } from '../service.constants';
 
 @Injectable()
 export class DocumentSelectorService {

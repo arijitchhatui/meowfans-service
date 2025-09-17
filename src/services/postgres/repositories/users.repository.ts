@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { UserRoles } from 'libs/enums/user-roles';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { UserRoles } from '../../service.constants';
 import { UsersEntity } from '../entities/users.entity';
 
 @Injectable()

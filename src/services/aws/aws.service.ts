@@ -1,8 +1,8 @@
+import { ImageType, MediaType, ProviderTokens } from '@app/enums';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
-import { ImageType, MediaType, ProviderTokens } from '../service.constants';
 import { AwsS3Client } from './aws.module';
 
 interface UploadImageInput {

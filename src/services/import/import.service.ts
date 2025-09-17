@@ -1,23 +1,25 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
+import { MediaType } from 'libs/enums/media-type';
+import { QueueTypes } from 'libs/enums/queue-type';
 import { InjectCore, PuppeteerCore } from 'nestjs-pptr';
 import { Browser, Page } from 'puppeteer';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { DownloaderService } from '../downloader/downloader.service';
 import { UsersRepository } from '../postgres/repositories';
-import { headerPools, MediaType, QueueTypes } from '../service.constants';
-import { CreateScrapeInput, CreateScrapeQueueInput } from './dto/create-scrape.dto';
+import { headerPools } from '../service.constants';
+import { CreateImportInput, CreateImportQueueInput } from './dto/create-import.dto';
 import { UploadMediaOutput } from './dto/upload-media.out';
 
 @Injectable()
-export class ScraperService {
-  private logger = new Logger(ScraperService.name);
+export class ImportService {
+  private logger = new Logger(ImportService.name);
 
   constructor(
     @InjectQueue(QueueTypes.UPLOAD_QUEUE)
-    private uploadQueue: Queue<CreateScrapeQueueInput>,
+    private uploadQueue: Queue<CreateImportQueueInput>,
     private usersRepository: UsersRepository,
     private assetsService: AssetsService,
     private documentSelectorService: DocumentSelectorService,
@@ -25,7 +27,7 @@ export class ScraperService {
     @InjectCore() private readonly puppeteer: PuppeteerCore,
   ) {}
 
-  public async initiate(creatorId: string, input: CreateScrapeInput): Promise<string> {
+  public async initiate(creatorId: string, input: CreateImportInput): Promise<string> {
     const { hasBranch, url, fileType, totalContent, qualityType, subDirectory } = input;
     const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
 
@@ -46,7 +48,7 @@ export class ScraperService {
     return 'Added job';
   }
 
-  public async handleScrape(input: CreateScrapeQueueInput) {
+  public async handleScrape(input: CreateImportQueueInput) {
     const { hasBranch } = input;
 
     const instance = await this.puppeteer.launch('default');
@@ -66,7 +68,7 @@ export class ScraperService {
     return new Promise((res) => setTimeout(res, delay));
   }
 
-  private async scrapeSingle(browser: Browser, input: CreateScrapeQueueInput): Promise<UploadMediaOutput[]> {
+  private async scrapeSingle(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     this.logger.log({ message: 'Single Scraping' });
     const { url, creatorId, fileType, qualityType } = input;
 
@@ -104,7 +106,7 @@ export class ScraperService {
     return results;
   }
 
-  private async scrapeBranches(browser: Browser, input: CreateScrapeQueueInput): Promise<UploadMediaOutput[]> {
+  private async scrapeBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     const { url } = input;
 
     const page: Page = await browser.newPage();

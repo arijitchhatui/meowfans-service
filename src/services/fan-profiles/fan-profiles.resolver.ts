@@ -1,10 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { FanProfilesEntity } from '../postgres/entities';
-import { UserRoles } from '../service.constants';
 import { UpdateUserProfileInput } from './dto';
 import { FanProfilesService } from './fan-profiles.service';
 import { InjectUserToArg } from '@app/decorators';
+import { UserRoles } from 'libs/enums/user-roles';
 
 @Resolver()
 export class FanProfilesResolver {

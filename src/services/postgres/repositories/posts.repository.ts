@@ -1,9 +1,9 @@
+import { PostTypes } from '@app/enums';
+import { PaginationInput } from '@app/helpers';
+import { EntityMaker } from '@app/methods';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { GetPostsInfoOutput } from '../../posts';
-import { PostTypes } from '../../service.constants';
-import { PaginationInput } from '@app/helpers';
-import { EntityMaker } from '@app/methods';
 import { PostCommentsEntity, PremiumPostUnlocksEntity } from '../entities';
 import { PostsEntity } from '../entities/posts.entity';
 

@@ -1,3 +1,4 @@
+import { ProviderTokens } from '@app/enums';
 import { CryptoService } from '@app/methods';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -5,7 +6,6 @@ import { REQUEST } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { Request } from 'express';
 import { AwsS3Module } from '../aws';
-import { ProviderTokens } from '../service.constants';
 import { SessionsService } from '../sessions/sessions.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';

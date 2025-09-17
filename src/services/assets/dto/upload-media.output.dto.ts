@@ -1,5 +1,5 @@
+import { FileType, MediaType } from '@app/enums';
 import { ApiProperty } from '@nestjs/swagger';
-import { FileType, MediaType } from '../../service.constants';
 
 export class UploadMediaOutput {
   @ApiProperty({ nullable: false, default: 'string' })

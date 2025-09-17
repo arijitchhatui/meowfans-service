@@ -1,6 +1,6 @@
+import { GraphqlErrorCodes } from '@app/enums';
 import { UserInputError } from '@nestjs/apollo';
 import { ValidationError, ValidationPipe } from '@nestjs/common';
-import { GraphqlErrorCodes } from '../validation';
 
 export class ExtendedGraphqlValidationPipe extends ValidationPipe {
   constructor() {

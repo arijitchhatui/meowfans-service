@@ -1,9 +1,9 @@
 import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UserRoles } from 'libs/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { BlockFanInput } from '../creator-profiles';
 import { CreatorBlocksEntity } from '../postgres/entities';
-import { UserRoles } from '../service.constants';
 import { CreatorBlocksService } from './creator-blocks.service';
 
 @Resolver()

@@ -2,8 +2,8 @@ import { PaginationInput } from '@app/helpers';
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { MessageChannelsRepository } from '../postgres/repositories';
-import { UserRoles } from '../service.constants';
 import { CreateChannelInput, GetChannelInput, UpdateChannelInput } from './dto';
+import { UserRoles } from 'libs/enums/user-roles';
 
 @Injectable()
 export class MessageChannelsService {

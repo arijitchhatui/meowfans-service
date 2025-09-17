@@ -1,7 +1,7 @@
+import { ProviderTokens } from '@app/enums';
 import * as AWS from '@aws-sdk/client-s3';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ProviderTokens } from '../service.constants';
 import { AwsS3ClientService } from './aws.service';
 
 export type AwsS3Client = AWS.S3;

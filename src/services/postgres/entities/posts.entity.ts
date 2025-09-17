@@ -1,3 +1,4 @@
+import { PostTypes } from '@app/enums';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
@@ -12,7 +13,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PostTypes } from '../../service.constants';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { PostAssetsEntity } from './post-assets.entity';
 import { PostCommentsEntity } from './post-comments.entity';

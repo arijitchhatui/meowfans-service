@@ -1,8 +1,8 @@
 import { Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { UserRoles } from 'libs/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard, JwtAuthGuard } from '../auth';
-import { UserRoles } from '../service.constants';
 import { AssetsService } from './assets.service';
 import { UploadMediaOutput } from './dto';
 import { UploadMediaInput } from './dto/upload-media.input.dto';

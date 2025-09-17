@@ -1,3 +1,4 @@
+import { FileType, MediaType } from '@app/enums';
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
@@ -9,7 +10,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FileType, MediaType } from '../../service.constants';
 import { CreatorAssetsEntity } from './creator-assets.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanAssetsEntity } from './fan-assets.entity';

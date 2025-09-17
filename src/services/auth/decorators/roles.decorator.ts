@@ -1,5 +1,5 @@
 import { CustomDecorator, SetMetadata } from '@nestjs/common';
-import { UserRoles } from '../../service.constants';
+import { UserRoles } from 'libs/enums/user-roles';
 
 export const RolesKey = 'roles';
 

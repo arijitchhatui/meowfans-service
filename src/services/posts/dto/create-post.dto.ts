@@ -1,7 +1,7 @@
+import { PostTypes } from '@app/enums';
+import { HasAssetsForExclusivePropValidator, ProfanityValidator } from '@app/validators';
 import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsUUID, Validate } from 'class-validator';
-import { HasAssetsForExclusivePropValidator, ProfanityValidator } from '@app/validators';
-import { PostTypes } from '../../service.constants';
 
 registerEnumType(PostTypes, { name: 'PostTypes' });
 @InputType()

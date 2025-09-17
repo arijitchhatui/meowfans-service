@@ -1,9 +1,11 @@
+import { ProviderTokens } from '@app/enums';
 import { splitFullName } from '@app/helpers';
 import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { Request } from 'express';
+import { UserRoles } from 'libs/enums/user-roles';
 import { AwsS3ClientService } from '../aws';
 import { UsersEntity } from '../postgres/entities';
 import {
@@ -12,7 +14,6 @@ import {
   SessionsRepository,
   UsersRepository,
 } from '../postgres/repositories';
-import { ProviderTokens, UserRoles } from '../service.constants';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';
 import { AuthOk } from './dto/auth.dto';
