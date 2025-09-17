@@ -10,30 +10,26 @@ export class DocumentSelectorService {
   private logger = new Logger(DocumentSelectorService.name);
 
   public async getImageUrls(page: Page, qualityType: DocumentQualityType): Promise<string[]> {
-    this.logger.log({ message: 'Getting anchors' });
+    this.logger.log({ qualityType: qualityType });
+    return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
 
-    switch (qualityType) {
-      case DocumentQualityType.HIGH_DEFINITION:
-        return page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
+    // switch (qualityType) {
+    //   case DocumentQualityType.HIGH_DEFINITION:
+    //     return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
 
-      case DocumentQualityType.LOW_DEFINITION:
-        return page.evaluate(() => {
-          return Array.from(document.querySelectorAll('img')).map(
-            (img) => img.getAttribute('data-src') || img.getAttribute('src-set')?.split(' ').pop() || img.src,
-          );
-        });
+    //   case DocumentQualityType.LOW_DEFINITION:
+    //     return page.evaluate(() => {
+    //       return Array.from(document.querySelectorAll('img')).map(
+    //         (img) => img.getAttribute('data-src') || img.getAttribute('src-set')?.split(' ').pop() || img.src,
+    //       );
+    //     });
 
-      default:
-        return page.evaluate(() => {
-          return Array.from(document.querySelectorAll('img')).map(
-            (img) => img.getAttribute('data-src') || img.getAttribute('src-set')?.split(' ').pop() || img.src,
-          );
-        });
-    }
+    //   default:
+    // }
   }
 
   public async getAnchors(page: Page): Promise<string[]> {
-    return page.evaluate(() => Array.from(document.querySelectorAll('a')).map((anchor) => anchor.href));
+    return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((anchor) => anchor.href));
   }
 
   public async getVideoUrls(page: Page): Promise<string[]> {
@@ -42,11 +38,12 @@ export class DocumentSelectorService {
 
   public async getAnchorsBasedOnHostName(anchors: string[], url: string, subDirectory?: string): Promise<string[]> {
     const hostname = new URL(url).hostname as HostNames;
+    this.logger.log({ hostname: hostname });
     switch (hostname) {
       case HostNames.COOMER:
         return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));
       default:
-        return anchors;
+        return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));
     }
   }
 
@@ -75,6 +72,7 @@ export class DocumentSelectorService {
   public async handleFileType(page: Page, fileType: FileType, qualityType: DocumentQualityType) {
     switch (fileType) {
       case FileType.IMAGE: {
+        this.logger.log({ message: 'FileType.Image' });
         const anchors = await this.getImageUrls(page, qualityType);
         return this.filterByExtension(anchors);
       }
@@ -83,6 +81,7 @@ export class DocumentSelectorService {
         return await this.getVideoUrls(page);
 
       default:
+        this.logger.log({ message: 'Empty array' });
         return [];
     }
   }
