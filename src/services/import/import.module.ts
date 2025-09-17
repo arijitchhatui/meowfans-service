@@ -15,6 +15,14 @@ import { ImportService } from './import.service';
   imports: [
     BullModule.registerQueue({
       name: QueueTypes.UPLOAD_QUEUE,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: 5000,
+        timeout: 15000,
+        removeOnComplete: true,
+        removeOnFail: true,
+        stackTraceLimit: 1,
+      },
     }),
     PuppeteerModule.forRootAsync({
       useFactory: () => ({
