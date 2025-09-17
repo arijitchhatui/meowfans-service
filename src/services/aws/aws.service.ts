@@ -33,9 +33,8 @@ export class AwsS3ClientService {
     const extendedUrl = this.createUrl(input.originalFileName, input.mediaType, input.userId);
 
     const { url, path } = this.getImagePathAndUrl({ url: extendedUrl, imageType: input.imageType });
-    this.logger.log({ message: 'getting the path', path: path });
 
-    const d = await this.awsS3Client.putObject({
+    await this.awsS3Client.putObject({
       Bucket: this.bucketName,
       Key: path,
       ACL: 'public-read',
@@ -43,7 +42,6 @@ export class AwsS3ClientService {
       Metadata: input.metaData,
       ContentType: input.mimeType,
     });
-    this.logger.log({ d });
 
     return url;
   }
@@ -86,7 +84,6 @@ export class AwsS3ClientService {
 
   public createUrl(originalFileName: string, mediaType: MediaType, userId: string): string {
     const extension = path.extname(originalFileName).substring(1);
-    console.log(originalFileName);
 
     const rawFileName = `${mediaType}/${userId}/${randomUUID()}/_original.${extension}`;
 

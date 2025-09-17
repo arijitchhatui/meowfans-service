@@ -12,6 +12,6 @@ export class ImportConsumerService {
   constructor(private importService: ImportService) {}
   @Process()
   public async startConsuming(input: Job<CreateImportQueueInput>) {
-    await this.importService.handleScrape(input.data);
+    await this.importService.handleImport(input.data);
   }
 }

@@ -5,11 +5,12 @@ import { headerPools } from '../service.constants';
 @Injectable()
 export class DownloaderService {
   public async fetch(downloadUrl: string, baseUrl: string): Promise<Buffer<ArrayBufferLike>> {
+    console.log('GETTING RESPONSE FROM AXIOS 🔵');
+
     const { data } = await axios.get<Buffer<ArrayBufferLike>>(downloadUrl, {
       responseType: 'arraybuffer',
       headers: this.getRandomHeaders(baseUrl),
     });
-    console.log(data);
     return data;
   }
 

@@ -1,3 +1,4 @@
+import { DocumentQualityType } from '@app/enums';
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
@@ -31,8 +32,8 @@ export class ImportService {
     const { hasBranch, url, fileType, totalContent, qualityType, subDirectory } = input;
     const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
 
-    this.logger.log({
-      message: 'Scraping started',
+    console.log({
+      message: 'Importing started',
       hasBranch,
       url,
       creatorId: creator.id,
@@ -48,40 +49,45 @@ export class ImportService {
     return 'Added job';
   }
 
-  public async handleScrape(input: CreateImportQueueInput) {
+  public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
 
-    const instance = await this.puppeteer.launch('default');
+    const instance = await this.puppeteer.launch('default', { headless: true });
 
     try {
       return hasBranch
-        ? await this.scrapeBranches(instance.browser, input)
-        : await this.scrapeSingle(instance.browser, input);
+        ? await this.importBranches(instance.browser, input)
+        : await this.importSingleBranch(instance.browser, input);
     } finally {
-      this.logger.log({ message: 'DONE' });
+      console.log({ message: 'DONE' });
       await this.puppeteer.destroy(instance);
     }
   }
 
   private async sleep() {
     const delay = Math.floor(Math.random() * 1500) + 2000;
-    return new Promise((res) => setTimeout(res, delay));
+    return await new Promise((res) => setTimeout(res, delay));
   }
 
-  private async scrapeSingle(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
-    this.logger.log({ message: 'Single Scraping' });
-    const { url, creatorId, fileType, qualityType } = input;
+  private async importSingleBranch(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
+    const { url, creatorId } = input;
 
     const page: Page = await browser.newPage();
     await page.setExtraHTTPHeaders(this.getRandomHeaders(url));
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
-    const items = await this.documentSelectorService.handleFileType(page, fileType, qualityType);
+    const urls = await this.documentSelectorService.getImageUrls(page, DocumentQualityType.HIGH_DEFINITION);
+    const filteredUrls = this.documentSelectorService.filterByExtension(urls);
 
-    this.logger.log(items, items.length);
+    console.log(`Found ${filteredUrls.length} images`);
 
-    const results: UploadMediaOutput[] = [];
-    for (const link of items) {
+    return await this.handleUpload(filteredUrls, url, creatorId);
+  }
+
+  private async handleUpload(filteredUrls: string[], url: string, creatorId: string) {
+    const assets: UploadMediaOutput[] = [];
+    for (const link of filteredUrls) {
+      console.log('URL ➡️', link);
       try {
         await this.sleep();
         const buffer = await this.downloaderService.fetch(link, url);
@@ -95,36 +101,40 @@ export class ImportService {
           buffer,
           mimeType,
         );
-
-        results.push(uploaded);
-      } catch (err) {
-        this.logger.error(`Failed scraping ${link}`, err);
+        assets.push(uploaded);
+        console.log(`Left posts to be downloaded: ${filteredUrls.length - filteredUrls.indexOf(link)}`);
+      } catch {
+        console.log('❌ FAILED TO SAVE!', url);
       }
     }
-
-    await page.close();
-    return results;
+    return assets;
   }
 
-  private async scrapeBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
-    const { url } = input;
+  private async importBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
+    const { url, subDirectory } = input;
 
     const page: Page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2' });
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
-    await page.close();
 
-    const hostBasedAnchorUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(
-      branchUrls,
-      url,
-      input.subDirectory,
-    );
+    const filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
+
+    await page.close();
+    console.log('ANCHORS FOUND: ', filteredUrls, filteredUrls.length);
+
     // TODO: add total content method later, for now initiate with as many request possible
     const results: UploadMediaOutput[] = [];
-    for (const branchUrl of hostBasedAnchorUrls) {
-      const uploaded = await this.scrapeSingle(browser, { ...input, url: branchUrl });
-      results.push(...uploaded);
+    for (const anchor of filteredUrls) {
+      try {
+        console.log('VISITING:', anchor);
+        console.log('Left anchors to be visited: %d\n', filteredUrls.length - filteredUrls.indexOf(anchor));
+
+        const uploaded = await this.importSingleBranch(browser, { ...input, url: anchor });
+        results.push(...uploaded);
+      } catch (error) {
+        console.error(`❌ Error processing anchor : ${anchor}`, error);
+      }
     }
     return results;
   }
