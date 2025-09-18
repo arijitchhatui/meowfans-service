@@ -20,13 +20,13 @@ const makeIndex = async (directory: string) => {
 };
 
 const paths = [
-  'src/lib/decorators',
-  'src/lib/interceptors',
-  'src/lib/pipes',
-  'src/lib/helpers',
-  'src/lib/methods',
-  'src/lib/validation',
-  'src/lib/validators',
+  'libs/decorators',
+  'libs/interceptors',
+  'libs/pipes',
+  'libs/helpers',
+  'libs/methods',
+  'libs/validation',
+  'libs/validators',
   'src/services/postgres/entities',
   'src/services/postgres/repositories',
   'src/services/postgres/migrations',

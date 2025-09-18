@@ -1,10 +1,10 @@
 import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UserRoles } from 'libs/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { RestrictFanInput } from '../creator-profiles';
 import { CreatorRestrictsEntity } from '../postgres/entities';
 import { CreatorRestrictsService } from './creator-restricts.service';
+import { UserRoles } from '../../util/enums';
 
 @Resolver()
 export class CreatorRestrictsResolver {

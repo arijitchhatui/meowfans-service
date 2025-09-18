@@ -1,4 +1,3 @@
-import { PostTypes } from '@app/enums';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
@@ -21,6 +20,7 @@ import { PostPurchasesEntity } from './post-purchases.entity';
 import { PostSavesEntity } from './post-saves.entity';
 import { PostSharesEntity } from './post-shares.entity';
 import { PremiumPostUnlocksEntity } from './premium-post-unlocks.entity';
+import { PostTypes } from '../../../util/enums';
 
 registerEnumType(PostTypes, { name: 'PostTypes' });
 @ObjectType()

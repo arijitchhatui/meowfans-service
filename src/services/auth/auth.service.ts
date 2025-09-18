@@ -1,11 +1,10 @@
-import { ProviderTokens } from '@app/enums';
 import { splitFullName } from '@app/helpers';
 import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import { Request } from 'express';
-import { UserRoles } from 'libs/enums/user-roles';
+import { ProviderTokens, UserRoles } from '../../util/enums';
 import { AwsS3ClientService } from '../aws';
 import { UsersEntity } from '../postgres/entities';
 import {

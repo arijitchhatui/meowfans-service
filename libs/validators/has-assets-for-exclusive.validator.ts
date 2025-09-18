@@ -1,6 +1,6 @@
-import { PostCreationErrorTypes, PostTypes } from '@app/enums';
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { PostCreationErrorTypes, PostTypes } from '../../src/util/enums';
 
 @Injectable()
 @ValidatorConstraint({ name: 'HasAssetsForExclusiveProp', async: true })

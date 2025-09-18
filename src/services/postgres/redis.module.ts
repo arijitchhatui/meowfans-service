@@ -1,7 +1,7 @@
-import { ProviderTokens } from '@app/enums';
-import { Global, Inject, Module } from '@nestjs/common';
+import { Global, Inject, Logger, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { ProviderTokens } from '../../util/enums';
 
 @Global()
 @Module({
@@ -17,8 +17,10 @@ import Redis from 'ioredis';
   exports: [ProviderTokens.REDIS_TOKEN],
 })
 export class RedisModule {
+  private logger = new Logger(RedisModule.name);
   constructor(@Inject(ProviderTokens.REDIS_TOKEN) private redis: Redis) {}
-  onModuleInit() {
-    this.redis.ping();
+  async onModuleInit() {
+    const res = await this.redis.ping();
+    this.logger.log(res);
   }
 }

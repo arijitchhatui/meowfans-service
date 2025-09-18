@@ -1,7 +1,7 @@
 import { profanity } from '@2toad/profanity';
-import { ProfanityWarningTypes } from '@app/enums';
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { ProfanityWarningTypes } from '../../src/util/enums';
 
 @Injectable()
 @ValidatorConstraint({ name: 'credential', async: true })

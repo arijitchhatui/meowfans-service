@@ -1,6 +1,6 @@
 import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UserRoles } from 'libs/enums/user-roles';
+import { UserRoles } from '../../../src/util/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { CreatorAssetsEntity } from '../postgres/entities';
 import { AssetsService } from './assets.service';
@@ -12,11 +12,11 @@ export class AssetsResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Mutation(() => Boolean)
-  public async deleteCreatorAsset(
+  public async deleteCreatorAssets(
     @CurrentUser() creatorId: string,
     @Args('input') input: DeleteCreatorAsset,
   ): Promise<boolean> {
-    return this.assetsService.deleteCreatorAsset(creatorId, input);
+    return await this.assetsService.deleteCreatorAssets(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
@@ -26,5 +26,11 @@ export class AssetsResolver {
     @Args('input') input: PaginationInput,
   ): Promise<CreatorAssetsEntity[]> {
     return await this.assetsService.getCreatorAssets(creatorId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Mutation(() => Boolean)
+  public async deleteAllAssets(@CurrentUser() creatorId: string): Promise<boolean> {
+    return await this.assetsService.deleteAllAssets(creatorId);
   }
 }

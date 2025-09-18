@@ -1,11 +1,11 @@
+import { VALIDATION_CONTEXT } from '@app/interceptors';
+import { ExtendedValidationArguments } from '@app/validation';
 import { Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { Not } from 'typeorm';
 import { REMOVE_SPACE_REGEX, USER_NAME_CASE_REGEX } from '..';
 import { UsersRepository } from '../../postgres/repositories';
-import { ExtendedValidationArguments } from '@app/validation';
-import { VALIDATION_CONTEXT } from '@app/interceptors';
-import { ValidationErrorCodes } from 'libs/enums/validation-error-code';
+import { ValidationErrorCodes } from '../../../util/enums';
 
 @Injectable()
 @ValidatorConstraint({ name: 'username', async: true })

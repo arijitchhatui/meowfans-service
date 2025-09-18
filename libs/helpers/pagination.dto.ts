@@ -1,7 +1,6 @@
-import { PostTypes } from '@app/enums';
 import { Field, ID, InputType, Int } from '@nestjs/graphql';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { SortOrder } from 'libs/enums/sort-order';
+import { PostTypes, SortOrder } from '../../src/util/enums';
 
 @InputType()
 export class PaginationInput {

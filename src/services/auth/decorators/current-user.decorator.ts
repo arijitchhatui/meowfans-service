@@ -1,8 +1,8 @@
 import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
-import { UserRoles } from 'libs/enums/user-roles';
 import { TokenType } from '../constants/auth.constants';
+import { UserRoles } from '../../../util/enums';
 
 export interface JwtUser {
   sub: string; // holds userId

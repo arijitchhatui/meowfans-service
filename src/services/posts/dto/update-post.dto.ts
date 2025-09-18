@@ -1,5 +1,5 @@
-import { PostTypes } from '@app/enums';
 import { Field, InputType } from '@nestjs/graphql';
+import { PostTypes } from '../../../util/enums';
 
 @InputType()
 export class UpdatePostInput {

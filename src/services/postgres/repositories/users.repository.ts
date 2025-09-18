@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { UserRoles } from 'libs/enums/user-roles';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { UserRoles } from '../../../util/enums';
 import { UsersEntity } from '../entities/users.entity';
 
 @Injectable()
@@ -21,5 +21,11 @@ export class UsersRepository extends Repository<UsersEntity> {
 
   public async isAdmin(adminId: string): Promise<boolean> {
     return this.exists({ where: { roles: UserRoles.ADMIN, id: adminId } });
+  }
+
+  public async deleteUser(userId: string) {
+    await this.findOneOrFail({ where: { id: userId } });
+    const result = await this.delete({ id: userId });
+    return !!result.affected;
   }
 }

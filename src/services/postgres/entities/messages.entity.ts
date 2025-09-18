@@ -17,7 +17,7 @@ import { MessageChannelsEntity } from './message-channels.entity';
 import { MessagePurchasesEntity } from './message-purchases.entity';
 import { MessageReactionsEntity } from './message-reactions.entity';
 import { MessageRepliesEntity } from './message-replies.entity';
-import { UserRoles } from 'libs/enums/user-roles';
+import { UserRoles } from '../../../util/enums';
 
 @ObjectType()
 @Entity({ name: 'messages' })

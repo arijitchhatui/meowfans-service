@@ -1,4 +1,3 @@
-import { FileType, MediaType } from '@app/enums';
 import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
@@ -15,6 +14,7 @@ import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanAssetsEntity } from './fan-assets.entity';
 import { MessageAssetsEntity } from './message-assets.entity';
 import { PostAssetsEntity } from './post-assets.entity';
+import { FileType, MediaType } from '../../../util/enums';
 
 registerEnumType(MediaType, { name: 'MediaType' });
 registerEnumType(FileType, { name: 'FileType' });

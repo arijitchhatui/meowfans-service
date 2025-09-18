@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
 import { MessageChannelsRepository } from '../postgres/repositories';
 import { CreateChannelInput, GetChannelInput, UpdateChannelInput } from './dto';
-import { UserRoles } from 'libs/enums/user-roles';
+import { UserRoles } from '../../util/enums';
 
 @Injectable()
 export class MessageChannelsService {

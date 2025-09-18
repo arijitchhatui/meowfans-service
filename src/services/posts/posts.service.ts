@@ -1,4 +1,3 @@
-import { PostTypes } from '@app/enums';
 import { PaginationInput } from '@app/helpers';
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
@@ -29,6 +28,7 @@ import {
   UpdatePostInput,
 } from './dto';
 import { CreatePostInput } from './dto/create-post.dto';
+import { PostTypes } from '../../util/enums';
 
 @Injectable()
 export class PostsService {

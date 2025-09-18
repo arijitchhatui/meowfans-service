@@ -18,7 +18,7 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@app/decorators": ["./libs/decorators"],
-      "@app/enums": ["./libs/enums"],
+      "@app/enums": ["./util/enums"],
       "@app/helpers": ["./libs/helpers"],
       "@app/interceptors": ["./libs/interceptors"],
       "@app/methods": ["./libs/methods"],
@@ -26,6 +26,5 @@
       "@app/validation": ["./libs/validation"],
       "@app/validators": ["./libs/validators"]
     },
-    "baseUrl": "./"
   }
 }

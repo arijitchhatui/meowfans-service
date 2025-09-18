@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { UserRoles } from 'libs/enums/user-roles';
+import { UserRoles } from '../../util/enums';
 import { UsersEntity } from '../postgres/entities';
 import { AuthService } from './auth.service';
 import { Auth, CurrentUserExpanded, JwtUser } from './decorators';

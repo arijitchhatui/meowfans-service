@@ -1,5 +1,5 @@
-import { FileType, MediaType } from '@app/enums';
 import { Field, ObjectType } from '@nestjs/graphql';
+import { FileType, MediaType } from '../../../util/enums';
 
 @ObjectType()
 export class UploadMediaOutput {

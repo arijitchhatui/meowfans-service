@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +10,9 @@ import {
 } from 'typeorm';
 import { AssetsEntity } from './assets.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { AssetTypes } from '../../../util/enums';
 
+registerEnumType(AssetTypes, { name: 'AssetTypes' });
 @ObjectType()
 @Entity({ name: 'creator_assets' })
 export class CreatorAssetsEntity {
@@ -29,6 +31,10 @@ export class CreatorAssetsEntity {
   @Field()
   @CreateDateColumn()
   createdAt: Date;
+
+  @Field(() => AssetTypes)
+  @Column({ default: AssetTypes.PRIVATE, nullable: false })
+  type: AssetTypes;
 
   @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })

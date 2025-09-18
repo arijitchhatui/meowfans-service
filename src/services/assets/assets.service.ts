@@ -1,7 +1,7 @@
-import { FileType, ImageType, MediaType } from '@app/enums';
 import { PaginationInput } from '@app/helpers';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as sharp from 'sharp';
+import { FileType, ImageType, MediaType } from '../../util/enums';
 import { AwsS3ClientService } from '../aws';
 import { AssetsEntity } from '../postgres/entities';
 import { AssetsRepository, CreatorAssetsRepository, CreatorProfilesRepository } from '../postgres/repositories';
@@ -29,8 +29,25 @@ export class AssetsService {
     return await this.creatorAssetsRepository.getCreatorAssets(creatorId, input);
   }
 
-  public async deleteCreatorAsset(creatorId: string, input: DeleteCreatorAsset) {
-    const result = await this.creatorAssetsRepository.delete({ creatorId, assetId: input.assetId });
+  public async deleteCreatorAssets(creatorId: string, input: DeleteCreatorAsset) {
+    const deleteResult = await Promise.all(
+      input.assetIds.map(async (assetId) => {
+        const exists = await this.creatorAssetsRepository.findOne({
+          where: { creatorId: creatorId, assetId: assetId },
+        });
+        if (exists) {
+          const result = await this.creatorAssetsRepository.delete({ creatorId, assetId: assetId });
+          return !!result.affected;
+        }
+        return false;
+      }),
+    );
+    return deleteResult.some((deleted) => deleted);
+  }
+
+  public async deleteAllAssets(creatorId: string) {
+    await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
+    const result = await this.creatorAssetsRepository.delete({ creatorId });
     return !!result.affected;
   }
 

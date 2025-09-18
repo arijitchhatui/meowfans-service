@@ -1,10 +1,10 @@
 import { InjectUserToArg } from '@app/decorators';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UserRoles } from 'libs/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { CreatorProfilesEntity } from '../postgres/entities';
 import { CreatorProfilesService } from './creator-profiles.service';
 import { UpdateCreatorProfileInput } from './dto';
+import { UserRoles } from '../../util/enums';
 
 @Resolver()
 export class CreatorProfilesResolver {

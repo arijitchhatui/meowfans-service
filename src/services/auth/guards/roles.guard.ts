@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
-import { UserRoles } from 'libs/enums/user-roles';
+import { UserRoles } from '../../../util/enums';
 import { RolesKey } from '../decorators';
 
 @Injectable()

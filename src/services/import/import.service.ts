@@ -1,11 +1,9 @@
-import { DocumentQualityType } from '@app/enums';
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
-import { MediaType } from 'libs/enums/media-type';
-import { QueueTypes } from 'libs/enums/queue-type';
 import { InjectCore, PuppeteerCore } from 'nestjs-pptr';
 import { Browser, Page } from 'puppeteer';
+import { MediaType, QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { DownloaderService } from '../downloader/downloader.service';
@@ -70,15 +68,16 @@ export class ImportService {
   }
 
   private async importSingleBranch(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
-    const { url, creatorId } = input;
+    const { url, creatorId, qualityType } = input;
 
     const page: Page = await browser.newPage();
     await page.setExtraHTTPHeaders(this.getRandomHeaders(url));
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
-    const urls = await this.documentSelectorService.getImageUrls(page, DocumentQualityType.HIGH_DEFINITION);
+    const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
     const filteredUrls = this.documentSelectorService.filterByExtension(urls);
 
+    console.log('Filtered image urls: ', filteredUrls);
     console.log(`Found ${filteredUrls.length} images`);
 
     return await this.handleUpload(filteredUrls, url, creatorId);
