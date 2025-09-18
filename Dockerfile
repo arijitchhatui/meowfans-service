@@ -1,4 +1,4 @@
-FROM node:22-alpine AS nodejs
+FROM ghcr.io/puppeteer/puppeteer:latest AS nodejs
 
 WORKDIR /app
 
