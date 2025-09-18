@@ -1,10 +1,10 @@
 import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UserRoles } from 'libs/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { MessageChannelsEntity } from '../postgres/entities';
 import { CreateChannelInput, GetChannelInput, GetChannelOutput, UpdateChannelInput } from './dto';
 import { MessageChannelsService } from './message-channels.service';
+import { UserRoles } from '../../util/enums';
 
 @Resolver()
 export class MessageChannelsResolver {

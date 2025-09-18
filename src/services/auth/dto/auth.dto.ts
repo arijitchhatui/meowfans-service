@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { UserRoles } from 'libs/enums/user-roles';
+import { UserRoles } from '../../../util/enums';
 
 @ObjectType()
 export class AuthOk {

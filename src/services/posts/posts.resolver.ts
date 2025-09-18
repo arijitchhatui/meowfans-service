@@ -16,7 +16,7 @@ import {
   UpdatePostInput,
 } from './dto';
 import { PostsService } from './posts.service';
-import { UserRoles } from 'libs/enums/user-roles';
+import { UserRoles } from '../../util/enums';
 
 @Resolver()
 export class PostsResolver {

@@ -1,4 +1,4 @@
-import { PostTypes } from '@app/enums';
+import { PostTypes } from '../../src/util/enums';
 import { AssetsEntity } from './postgres/entities';
 import { GetPostsOutput } from './posts';
 
@@ -28,7 +28,7 @@ export const BANNER_COLORS = [
   '#cb5aff',
 ];
 
-export const ExtensionTypes = ['.jpg', '.jpeg', '.webp', '.webm'];
+export const ExtensionTypes = ['.jpg', '.jpeg', '.webp', '.webm', '.png'];
 
 export const DEFAULT_POST_PRICE = 500;
 

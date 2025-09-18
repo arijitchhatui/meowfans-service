@@ -1,31 +1,26 @@
-import { DocumentQualityType, FileType, HostNames } from '@app/enums';
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { Page } from 'puppeteer';
+import { DocumentQualityType, HostNames } from '../../util/enums';
 import { ExtensionTypes } from '../service.constants';
 
 @Injectable()
 export class DocumentSelectorService {
   private logger = new Logger(DocumentSelectorService.name);
 
-  public async getImageUrls(page: Page, qualityType: DocumentQualityType): Promise<string[]> {
+  public async getContentUrls(page: Page, qualityType: DocumentQualityType): Promise<string[]> {
     this.logger.log({ qualityType: qualityType });
-    return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
+    switch (qualityType) {
+      case DocumentQualityType.HIGH_DEFINITION:
+        return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
 
-    // switch (qualityType) {
-    //   case DocumentQualityType.HIGH_DEFINITION:
-    //     return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
+      case DocumentQualityType.LOW_DEFINITION:
+        return page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
 
-    //   case DocumentQualityType.LOW_DEFINITION:
-    //     return page.evaluate(() => {
-    //       return Array.from(document.querySelectorAll('img')).map(
-    //         (img) => img.getAttribute('data-src') || img.getAttribute('src-set')?.split(' ').pop() || img.src,
-    //       );
-    //     });
-
-    //   default:
-    // }
+      default:
+        return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
+    }
   }
 
   public async getAnchors(page: Page): Promise<string[]> {
@@ -42,8 +37,10 @@ export class DocumentSelectorService {
     switch (hostname) {
       case HostNames.COOMER:
         return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));
+      case HostNames.WALLHAVEN:
+        return anchors.filter((anchor) => anchor.includes(`https://wallhaven.cc/w/`));
       default:
-        return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));
+        return anchors;
     }
   }
 
@@ -67,22 +64,5 @@ export class DocumentSelectorService {
 
   public createFileName(link: string) {
     return `public_${randomUUID()}${extname(link)}`;
-  }
-
-  public async handleFileType(page: Page, fileType: FileType, qualityType: DocumentQualityType) {
-    switch (fileType) {
-      case FileType.IMAGE: {
-        this.logger.log({ message: 'FileType.Image' });
-        const anchors = await this.getImageUrls(page, qualityType);
-        return this.filterByExtension(anchors);
-      }
-
-      case FileType.VIDEO:
-        return await this.getVideoUrls(page);
-
-      default:
-        this.logger.log({ message: 'Empty array' });
-        return [];
-    }
   }
 }

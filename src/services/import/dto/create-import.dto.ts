@@ -1,7 +1,7 @@
-import { DocumentQualityType, FileType } from '@app/enums';
 import { HasSubdirectoryForBranch } from '@app/validators';
 import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty, Validate } from 'class-validator';
+import { DocumentQualityType, FileType } from '../../../util/enums';
 
 registerEnumType(DocumentQualityType, { name: 'DocumentQualityType' });
 @InputType()

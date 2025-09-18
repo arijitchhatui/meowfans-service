@@ -1,7 +1,7 @@
-import { PostTypes } from '@app/enums';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Column, CreateDateColumn, DeleteDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { AssetsEntity } from '../../postgres/entities';
+import { PostTypes } from '../../../util/enums';
 
 registerEnumType(PostTypes, { name: 'PostTypes' });
 @ObjectType()

@@ -1,7 +1,6 @@
 import { HasSubdirectoryForBranch } from '@app/validators';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { QueueTypes } from 'libs/enums/queue-type';
 import { PuppeteerModule } from 'nestjs-pptr';
 import { AssetsService } from '../assets';
 import { AwsS3Module } from '../aws';
@@ -10,13 +9,14 @@ import { DownloaderService } from '../downloader/downloader.service';
 import { ImportConsumerService } from './import-consumer.service';
 import { ImportResolver } from './import.resolver';
 import { ImportService } from './import.service';
+import { QueueTypes } from '../../util/enums';
 
 @Module({
   imports: [
     BullModule.registerQueue({
       name: QueueTypes.UPLOAD_QUEUE,
       defaultJobOptions: {
-        attempts: 3,
+        attempts: 2,
         backoff: 5000,
         timeout: 15000,
         removeOnComplete: true,

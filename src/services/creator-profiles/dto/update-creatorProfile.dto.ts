@@ -1,7 +1,7 @@
 import { ProfanityValidator } from '@app/validators';
 import { Field, InputType } from '@nestjs/graphql';
 import { Validate, ValidateIf } from 'class-validator';
-import { UniqueUsernameValidator } from 'src/services/auth';
+import { UniqueUsernameValidator } from '../../auth';
 
 @InputType()
 export class UpdateCreatorProfileInput {

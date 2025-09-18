@@ -1,5 +1,5 @@
-import { MediaType } from '@app/enums';
 import { IsEnum } from 'class-validator';
+import { MediaType } from '../../../util/enums';
 
 export class UploadMediaInput {
   @IsEnum(MediaType)

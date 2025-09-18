@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ObjectType } from '@nestjs/graphql';
-import { UserRoles } from 'libs/enums/user-roles';
 import {
   Column,
   CreateDateColumn,
@@ -11,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { MessageChannelsEntity } from './message-channels.entity';
+import { UserRoles } from '../../../util/enums';
 
 @ObjectType()
 @Injectable()
