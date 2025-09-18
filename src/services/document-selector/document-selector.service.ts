@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Page } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
-import { Page } from 'puppeteer';
 import { DocumentQualityType, HostNames } from '../../util/enums';
 import { ExtensionTypes } from '../service.constants';
 
@@ -16,7 +16,7 @@ export class DocumentSelectorService {
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
 
       case DocumentQualityType.LOW_DEFINITION:
-        return page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
+        return await page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
 
       default:
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));

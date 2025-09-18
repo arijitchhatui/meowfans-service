@@ -1,8 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
+import { Browser, BrowserContext, chromium, Page } from '@playwright/test';
 import { Queue } from 'bull';
-import { InjectCore, PuppeteerCore } from 'nestjs-pptr';
-import { Browser, Page } from 'puppeteer';
 import { MediaType, QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
@@ -23,7 +22,6 @@ export class ImportService {
     private assetsService: AssetsService,
     private documentSelectorService: DocumentSelectorService,
     private downloaderService: DownloaderService,
-    @InjectCore() private readonly puppeteer: PuppeteerCore,
   ) {}
 
   public async initiate(creatorId: string, input: CreateImportInput): Promise<string> {
@@ -50,15 +48,13 @@ export class ImportService {
   public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
 
-    const instance = await this.puppeteer.launch('default', { headless: true });
+    const browser = await chromium.connect('ws://0.0.0.0:3003/');
 
     try {
-      return hasBranch
-        ? await this.importBranches(instance.browser, input)
-        : await this.importSingleBranch(instance.browser, input);
+      return hasBranch ? await this.importBranches(browser, input) : await this.importSingleBranch(browser, input);
     } finally {
       console.log({ message: 'DONE' });
-      await this.puppeteer.destroy(instance);
+      await browser.close();
     }
   }
 
@@ -70,9 +66,12 @@ export class ImportService {
   private async importSingleBranch(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     const { url, creatorId, qualityType } = input;
 
-    const page: Page = await browser.newPage();
-    await page.setExtraHTTPHeaders(this.getRandomHeaders(url));
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    const context: BrowserContext = await browser.newContext({
+      extraHTTPHeaders: this.getRandomHeaders(url),
+    });
+    const page: Page = await context.newPage();
+
+    await page.goto(url, { waitUntil: 'networkidle' });
 
     const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
     const filteredUrls = this.documentSelectorService.filterByExtension(urls);
@@ -80,7 +79,10 @@ export class ImportService {
     console.log('Filtered image urls: ', filteredUrls);
     console.log(`Found ${filteredUrls.length} images`);
 
-    return await this.handleUpload(filteredUrls, url, creatorId);
+    const result = await this.handleUpload(filteredUrls, url, creatorId);
+
+    await context.close();
+    return result;
   }
 
   private async handleUpload(filteredUrls: string[], url: string, creatorId: string) {
@@ -112,17 +114,19 @@ export class ImportService {
   private async importBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     const { url, subDirectory } = input;
 
-    const page: Page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    const context = await browser.newContext();
+    const page: Page = await context.newPage();
+
+    await page.goto(url, { waitUntil: 'networkidle' });
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
-
     const filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
 
     await page.close();
+    await context.close();
+
     console.log('ANCHORS FOUND: ', filteredUrls, filteredUrls.length);
 
-    // TODO: add total content method later, for now initiate with as many request possible
     const results: UploadMediaOutput[] = [];
     for (const anchor of filteredUrls) {
       try {

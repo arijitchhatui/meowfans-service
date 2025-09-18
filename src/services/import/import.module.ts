@@ -1,7 +1,7 @@
 import { HasSubdirectoryForBranch } from '@app/validators';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { PuppeteerModule } from 'nestjs-pptr';
+import { QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
 import { AwsS3Module } from '../aws';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
@@ -9,7 +9,7 @@ import { DownloaderService } from '../downloader/downloader.service';
 import { ImportConsumerService } from './import-consumer.service';
 import { ImportResolver } from './import.resolver';
 import { ImportService } from './import.service';
-import { QueueTypes } from '../../util/enums';
+import { PlaywrightModule } from './playwright.module';
 
 @Module({
   imports: [
@@ -24,14 +24,7 @@ import { QueueTypes } from '../../util/enums';
         stackTraceLimit: 1,
       },
     }),
-    PuppeteerModule.forRootAsync({
-      useFactory: () => ({
-        launchOptions: {
-          headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        },
-      }),
-    }),
+    PlaywrightModule,
     AwsS3Module,
   ],
   providers: [
