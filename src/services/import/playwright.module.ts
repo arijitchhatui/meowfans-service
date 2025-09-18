@@ -8,10 +8,7 @@ import { ProviderTokens } from '../../util/enums';
     {
       provide: ProviderTokens.PLAYWRIGHT_TOKEN,
       useFactory: async (): Promise<Browser> => {
-        return await chromium.launch({
-          headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        });
+        return await chromium.connect('ws://api.meowfans.app/meowfans-service-playwright');
       },
     },
   ],

@@ -45,10 +45,25 @@ export class ImportService {
     return 'Added job';
   }
 
+  // async onModuleInit() {
+  //   await this.uploadQueue.add({
+  //     // message: 'Importing started',
+  //     hasBranch: true,
+  //     url: 'https://wallhaven.cc/tag/1405',
+  //     creatorId: 'a446d922-ed3c-4a23-b1e8-9d9059b7710c',
+  //     // email: 'spider',
+  //     fileType: FileType.IMAGE,
+  //     // fileType: 'image',
+  //     totalContent: 0,
+  //     qualityType: DocumentQualityType.LOW_DEFINITION,
+  //     subDirectory: '1405',
+  //   });
+  // }
+
   public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
-
-    const browser = await chromium.connect('ws://0.0.0.0:3003/');
+    const browser = await chromium.connect('ws://api.meowfans.app/meowfans-service-playwright/');
+    // const browser = await chromium.connect('ws://0.0.0.0:3003/');
 
     try {
       return hasBranch ? await this.importBranches(browser, input) : await this.importSingleBranch(browser, input);
