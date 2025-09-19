@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import { Agent } from 'https';
 import { headerPools } from '../service.constants';
 
 @Injectable()
@@ -8,14 +9,15 @@ export class DownloaderService {
   public async fetch(downloadUrl: string, baseUrl: string): Promise<Buffer<ArrayBufferLike> | null> {
     this.logger.log('GETTING RESPONSE FROM AXIOS 🔵');
     try {
+      const agent = new Agent({ family: 4 });
       const { data } = await axios.get<Buffer<ArrayBufferLike>>(downloadUrl, {
         responseType: 'arraybuffer',
         headers: this.getRandomHeaders(baseUrl),
+        httpsAgent: agent,
       });
       return data;
-    } catch (error) {
+    } catch {
       this.logger.error('Axios error');
-      this.logger.error(error);
     }
     return null;
   }
