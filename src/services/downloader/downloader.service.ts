@@ -13,8 +13,9 @@ export class DownloaderService {
         headers: this.getRandomHeaders(baseUrl),
       });
       return data;
-    } catch {
+    } catch (error) {
       this.logger.error('Axios error');
+      this.logger.error(error);
     }
     return null;
   }
