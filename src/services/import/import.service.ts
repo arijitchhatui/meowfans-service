@@ -71,6 +71,7 @@ export class ImportService {
   private async importSingleBranch(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     const { url, creatorId, qualityType } = input;
 
+    this.logger.log({ VISITING: 'SINGLE BRANCH' });
     if (this.visitedAnchors.has(url)) {
       this.logger.log(`Skipping already visited: ${url}`);
       return [];
@@ -78,7 +79,12 @@ export class ImportService {
     this.visitedAnchors.add(url);
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    try {
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+    } catch {
+      this.logger.warn(`Navigation timeout for ${url}, falling back to domcontentloaded`);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    }
 
     const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
     const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
@@ -132,9 +138,15 @@ export class ImportService {
 
   private async importBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     const { url, subDirectory } = input;
+    this.logger.log({ VISITING: 'MULTIPLE BRANCH' });
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    try {
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+    } catch {
+      this.logger.warn(`Navigation timeout for ${url}, falling back to domcontentloaded`);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    }
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
     this.logger.log({ branchUrls });
