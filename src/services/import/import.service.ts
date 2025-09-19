@@ -48,8 +48,9 @@ export class ImportService {
 
   public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
-    await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
+    // .launch({ headless: true })
+    // const browser = await chromium.launch({ headless: true });
 
     try {
       return hasBranch ? await this.importBranches(browser, input) : await this.importSingleBranch(browser, input);
