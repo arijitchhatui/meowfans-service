@@ -1,5 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Browser, chromium, Page } from '@playwright/test';
 import { Queue } from 'bull';
 import { MediaType, QueueTypes } from '../../util/enums';
@@ -23,6 +24,7 @@ export class ImportService {
     private assetsService: AssetsService,
     private documentSelectorService: DocumentSelectorService,
     private downloaderService: DownloaderService,
+    private configService: ConfigService,
   ) {}
 
   public async initiate(creatorId: string, input: CreateImportInput): Promise<string> {
@@ -47,9 +49,7 @@ export class ImportService {
   public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
     this.logger.log({ hasBranch });
-    // const browser = await chromium.connect('wss://api.meowfans.app/meowfans-service-playwright/');
-    const browser = await chromium.connect('ws://shark-app-6rchn.ondigitalocean.app/');
-    // const browser = await chromium.connect('ws://0.0.0.0:3003/');
+    const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
 
     try {
       return hasBranch ? await this.importBranches(browser, input) : await this.importSingleBranch(browser, input);
