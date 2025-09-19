@@ -42,6 +42,7 @@ export class ImportService {
       subDirectory,
     });
 
+    this.visitedAnchors.clear();
     await this.uploadQueue.add({ creatorId, ...input });
     return 'Added job';
   }
@@ -80,10 +81,10 @@ export class ImportService {
 
     const page = await browser.newPage();
     try {
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
     } catch {
       this.logger.warn(`Navigation timeout for ${url}, falling back to domcontentloaded`);
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     }
 
     const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
@@ -107,6 +108,8 @@ export class ImportService {
         const buffer = await this.downloaderService.fetch(link, url);
         const mimeType = this.documentSelectorService.resolveMimeType(link);
         const filename = this.documentSelectorService.createFileName(link);
+
+        if (buffer === null) throw new Error('Axios error:: RETURNING');
 
         const uploaded = await this.assetsService.uploadFileV2(
           creatorId,
@@ -142,10 +145,10 @@ export class ImportService {
 
     const page = await browser.newPage();
     try {
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
     } catch {
       this.logger.warn(`Navigation timeout for ${url}, falling back to domcontentloaded`);
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     }
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
