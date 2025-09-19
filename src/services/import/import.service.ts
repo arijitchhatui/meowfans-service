@@ -49,7 +49,7 @@ export class ImportService {
   public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
     const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
-    // .launch({ headless: true })
+    this.logger.log({ message: 'Browser is initialized' });
     // const browser = await chromium.launch({ headless: true });
 
     try {
@@ -78,7 +78,7 @@ export class ImportService {
     this.visitedAnchors.add(url);
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle' });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
     const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
@@ -134,7 +134,7 @@ export class ImportService {
     const { url, subDirectory } = input;
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle' });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
     this.logger.log({ branchUrls });
