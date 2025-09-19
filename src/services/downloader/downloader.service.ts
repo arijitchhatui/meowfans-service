@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { headerPools } from '../service.constants';
 
 @Injectable()
 export class DownloaderService {
+  private logger = new Logger(DownloaderService.name);
   public async fetch(downloadUrl: string, baseUrl: string): Promise<Buffer<ArrayBufferLike>> {
-    console.log('GETTING RESPONSE FROM AXIOS 🔵');
+    this.logger.log('GETTING RESPONSE FROM AXIOS 🔵');
 
     const { data } = await axios.get<Buffer<ArrayBufferLike>>(downloadUrl, {
       responseType: 'arraybuffer',

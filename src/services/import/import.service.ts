@@ -1,6 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
-import { Browser, BrowserContext, chromium, Page } from '@playwright/test';
+import { Browser, chromium, Page } from '@playwright/test';
 import { Queue } from 'bull';
 import { MediaType, QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
@@ -14,6 +14,7 @@ import { UploadMediaOutput } from './dto/upload-media.out';
 @Injectable()
 export class ImportService {
   private logger = new Logger(ImportService.name);
+  private visitedAnchors = new Set<string>();
 
   constructor(
     @InjectQueue(QueueTypes.UPLOAD_QUEUE)
@@ -28,12 +29,11 @@ export class ImportService {
     const { hasBranch, url, fileType, totalContent, qualityType, subDirectory } = input;
     const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
 
-    console.log({
+    this.logger.log({
       message: 'Importing started',
       hasBranch,
       url,
       creatorId: creator.id,
-      email: creator.username,
       fileType,
       totalContent,
       qualityType,
@@ -41,34 +41,23 @@ export class ImportService {
     });
 
     await this.uploadQueue.add({ creatorId, ...input });
-
     return 'Added job';
   }
 
-  // async onModuleInit() {
-  //   await this.uploadQueue.add({
-  //     // message: 'Importing started',
-  //     hasBranch: true,
-  //     url: 'https://wallhaven.cc/tag/1405',
-  //     creatorId: 'a446d922-ed3c-4a23-b1e8-9d9059b7710c',
-  //     // email: 'spider',
-  //     fileType: FileType.IMAGE,
-  //     // fileType: 'image',
-  //     totalContent: 0,
-  //     qualityType: DocumentQualityType.LOW_DEFINITION,
-  //     subDirectory: '1405',
-  //   });
-  // }
-
   public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
-    const browser = await chromium.connect('ws://api.meowfans.app/meowfans-service-playwright/');
+    this.logger.log({ hasBranch });
+    // const browser = await chromium.connect('wss://api.meowfans.app/meowfans-service-playwright/');
+    const browser = await chromium.connect('ws://shark-app-6rchn.ondigitalocean.app/');
     // const browser = await chromium.connect('ws://0.0.0.0:3003/');
 
     try {
       return hasBranch ? await this.importBranches(browser, input) : await this.importSingleBranch(browser, input);
+    } catch (error) {
+      this.logger.error('❌ Import failed', error);
+      throw error;
     } finally {
-      console.log({ message: 'DONE' });
+      this.logger.log({ message: 'DONE' });
       await browser.close();
     }
   }
@@ -81,29 +70,31 @@ export class ImportService {
   private async importSingleBranch(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     const { url, creatorId, qualityType } = input;
 
-    const context: BrowserContext = await browser.newContext({
-      extraHTTPHeaders: this.getRandomHeaders(url),
-    });
-    const page: Page = await context.newPage();
+    if (this.visitedAnchors.has(url)) {
+      this.logger.log(`Skipping already visited: ${url}`);
+      return [];
+    }
+    this.visitedAnchors.add(url);
 
-    await page.goto(url, { waitUntil: 'networkidle' });
+    const page: Page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
-    const filteredUrls = this.documentSelectorService.filterByExtension(urls);
+    const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
 
-    console.log('Filtered image urls: ', filteredUrls);
-    console.log(`Found ${filteredUrls.length} images`);
+    this.logger.log('Filtered image urls: ', filteredUrls);
+    this.logger.log(`Found ${filteredUrls.length} images`);
 
     const result = await this.handleUpload(filteredUrls, url, creatorId);
 
-    await context.close();
+    await page.close();
     return result;
   }
 
   private async handleUpload(filteredUrls: string[], url: string, creatorId: string) {
     const assets: UploadMediaOutput[] = [];
     for (const link of filteredUrls) {
-      console.log('URL ➡️', link);
+      this.logger.log('URL ➡️', link);
       try {
         await this.sleep();
         const buffer = await this.downloaderService.fetch(link, url);
@@ -118,9 +109,9 @@ export class ImportService {
           mimeType,
         );
         assets.push(uploaded);
-        console.log(`Left posts to be downloaded: ${filteredUrls.length - filteredUrls.indexOf(link)}`);
-      } catch {
-        console.log('❌ FAILED TO SAVE!', url);
+        this.logger.log(`Left posts to be downloaded: ${filteredUrls.length - filteredUrls.indexOf(link)}`);
+      } catch (err) {
+        this.logger.log('❌ FAILED TO SAVE!', link, err?.message);
       }
     }
     return assets;
@@ -129,29 +120,31 @@ export class ImportService {
   private async importBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
     const { url, subDirectory } = input;
 
-    const context = await browser.newContext();
-    const page: Page = await context.newPage();
-
-    await page.goto(url, { waitUntil: 'networkidle' });
+    const context = await browser.newContext({
+      extraHTTPHeaders: this.getRandomHeaders(url),
+    });
+    const page = await context.newPage();
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     const branchUrls = await this.documentSelectorService.getAnchors(page);
-    const filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
+    let filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
+
+    filteredUrls = [...new Set(filteredUrls)].filter((a) => !this.visitedAnchors.has(a));
 
     await page.close();
-    await context.close();
 
-    console.log('ANCHORS FOUND: ', filteredUrls, filteredUrls.length);
+    this.logger.log('ANCHORS FOUND: ', filteredUrls, filteredUrls.length);
 
     const results: UploadMediaOutput[] = [];
     for (const anchor of filteredUrls) {
       try {
-        console.log('VISITING:', anchor);
-        console.log('Left anchors to be visited: %d\n', filteredUrls.length - filteredUrls.indexOf(anchor));
+        this.logger.log('VISITING:', anchor);
+        this.logger.log('Left anchors to be visited: %d\n', filteredUrls.length - filteredUrls.indexOf(anchor));
 
         const uploaded = await this.importSingleBranch(browser, { ...input, url: anchor });
         results.push(...uploaded);
       } catch (error) {
-        console.error(`❌ Error processing anchor : ${anchor}`, error);
+        this.logger.error(`❌ Error processing anchor : ${anchor}`, error);
       }
     }
     return results;
