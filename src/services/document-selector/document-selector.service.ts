@@ -12,12 +12,15 @@ export class DocumentSelectorService {
     this.logger.log({ qualityType: qualityType });
     switch (qualityType) {
       case DocumentQualityType.HIGH_DEFINITION:
+        this.logger.log({ collect: 'anchors: definition: high' });
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
 
       case DocumentQualityType.LOW_DEFINITION:
+        this.logger.log({ collect: 'image: definition: low' });
         return await page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
 
       default:
+        this.logger.log({ collect: 'anchor: definition: default' });
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
     }
   }
@@ -35,8 +38,10 @@ export class DocumentSelectorService {
     this.logger.log({ hostname: hostname });
     switch (hostname) {
       case HostNames.COOMER:
+        this.logger.log({ TARGET_HOST_URL: 'COOMER' });
         return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));
       case HostNames.WALLHAVEN:
+        this.logger.log({ TARGET_HOST_URL: 'WALLHAVEN' });
         return anchors.filter((anchor) => anchor.includes(`https://wallhaven.cc/w/`));
       default:
         return anchors;
