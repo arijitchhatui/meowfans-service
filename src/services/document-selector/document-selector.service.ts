@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { Page } from '@playwright/test';
 import { extname } from 'path';
-import { Page } from 'puppeteer';
 import { DocumentQualityType, HostNames } from '../../util/enums';
 import { ExtensionTypes } from '../service.constants';
 
@@ -16,7 +15,7 @@ export class DocumentSelectorService {
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
 
       case DocumentQualityType.LOW_DEFINITION:
-        return page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
+        return await page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
 
       default:
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
@@ -44,9 +43,14 @@ export class DocumentSelectorService {
     }
   }
 
-  public filterByExtension(urls: string[]): string[] {
+  public filterByExtension(urls: string[], pageUrl: string): string[] {
     this.logger.log({ message: 'Filtering extensions' });
-    return urls.filter((url) => ExtensionTypes.includes(extname(url)));
+    let filtered = urls.filter((url) => ExtensionTypes.includes(extname(url)));
+    if (pageUrl.includes('wallhaven.cc')) {
+      filtered = filtered.filter((url) => url.includes('w.wallhaven.cc'));
+    }
+
+    return filtered;
   }
 
   public async getScreenShot(page: Page): Promise<Uint8Array<ArrayBufferLike>> {
@@ -58,11 +62,14 @@ export class DocumentSelectorService {
   }
 
   public resolveMimeType(url: string): string {
-    const ext = extname(url).substring(1);
-    return ext ? `image/${ext}` : 'application/octet-stream';
+    if (url.endsWith('.png')) return 'image/png';
+    if (url.endsWith('.jpg') || url.endsWith('.jpeg')) return 'image/jpeg';
+    if (url.endsWith('.gif')) return 'image/gif';
+    if (url.endsWith('.webp')) return 'image/webp';
+    return 'application/octet-stream';
   }
 
-  public createFileName(link: string) {
-    return `public_${randomUUID()}${extname(link)}`;
+  public createFileName(url: string) {
+    return url.split('/').pop() ?? `file-${Date.now()}`;
   }
 }
