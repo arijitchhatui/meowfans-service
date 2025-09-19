@@ -33,10 +33,10 @@ export class AssetsService {
     const deleteResult = await Promise.all(
       input.assetIds.map(async (assetId) => {
         const exists = await this.creatorAssetsRepository.findOne({
-          where: { creatorId: creatorId, assetId: assetId },
+          where: { creatorId, assetId },
         });
         if (exists) {
-          const result = await this.creatorAssetsRepository.delete({ creatorId, assetId: assetId });
+          const result = await this.creatorAssetsRepository.delete({ creatorId, assetId });
           return !!result.affected;
         }
         return false;
@@ -46,7 +46,7 @@ export class AssetsService {
   }
 
   public async deleteAllAssets(creatorId: string) {
-    await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
+    await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId } });
     const result = await this.creatorAssetsRepository.delete({ creatorId });
     return !!result.affected;
   }
@@ -57,12 +57,8 @@ export class AssetsService {
     mediaType: MediaType,
   ): Promise<UploadMediaOutput> {
     const uploaded = await this.handleUpload(creatorId, mediaType, file);
-
     const asset = await this.injectAsset(creatorId, uploaded);
-
-    const result = { ...uploaded, assetId: asset.id };
-
-    return result;
+    return { ...uploaded, assetId: asset.id };
   }
 
   public async uploadFileV2(
@@ -73,17 +69,12 @@ export class AssetsService {
     mimeType: string,
   ): Promise<UploadMediaOutput> {
     const uploaded = await this.uploadImageToCloud(creatorId, mediaType, buffer, originalFileName, mimeType);
-
     const asset = await this.injectAsset(creatorId, uploaded);
-
-    const result = { ...uploaded, assetId: asset.id };
-
-    return result;
+    return { ...uploaded, assetId: asset.id };
   }
 
   private getFileType(contentType: string): FileType {
     const fileType = contentType.split('/').at(0);
-
     if (!fileType) throw new BadRequestException('Invalid filetype provided!');
 
     switch (fileType) {
@@ -109,7 +100,7 @@ export class AssetsService {
   private async uploadImageToCloud(
     creatorId: string,
     mediaType: MediaType,
-    buffer: Buffer<ArrayBufferLike>,
+    buffer: Buffer,
     originalName: string,
     mimeType: string,
   ): Promise<UploadMediaOutput> {
@@ -117,54 +108,49 @@ export class AssetsService {
 
     const [originalUrl, blurredUrl] = await Promise.all([
       this.uploadsService.uploadR2Object({
-        buffer: buffer,
+        buffer,
         originalFileName: originalName,
         imageType: ImageType.ORIGINAL,
-        mediaType: mediaType,
-        mimeType: mimeType,
+        mediaType,
+        mimeType,
         userId: creatorId,
-        metaData: { originalName: originalName },
+        metaData: { originalName },
       }),
       this.uploadsService.uploadR2Object({
         buffer: blurredImageBuffer,
         originalFileName: originalName,
         imageType: ImageType.BLURRED,
-        mediaType: mediaType,
-        mimeType: mimeType,
+        mediaType,
+        mimeType,
         userId: creatorId,
-        metaData: { originalName: originalName },
+        metaData: { originalName },
       }),
     ]);
 
-    const payLoad = {
+    return {
       rawUrl: originalUrl,
-      blurredUrl: blurredUrl,
-      mimeType: mimeType,
-      mediaType: mediaType,
+      blurredUrl,
+      mimeType,
+      mediaType,
       fileType: FileType.IMAGE,
     };
-
-    return payLoad;
   }
 
   private async injectAsset(creatorId: string, assetPayload: UploadMediaOutput): Promise<AssetsEntity> {
     const creatorProfile = await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId } });
-
     const asset = this.assetsRepository.create({ ...assetPayload, creatorProfile });
 
-    const [newAsset] = await Promise.all([
-      await this.assetsRepository.save(asset),
-      await this.creatorAssetsRepository.insert({ creatorProfile, asset }),
-    ]);
+    const newAsset = await this.assetsRepository.save(asset);
+    await this.creatorAssetsRepository.insert({ creatorProfile, asset });
 
     return newAsset;
   }
 
-  private convertImage(buffer: Buffer<ArrayBufferLike>) {
+  private convertImage(buffer: Buffer) {
     return sharp(buffer).rotate().webp({ quality: 100 });
   }
 
-  private blurImage(buffer: Buffer<ArrayBufferLike>) {
+  private blurImage(buffer: Buffer) {
     return sharp(buffer)
       .resize({
         width: this.blurOptions.maxSize.width,
