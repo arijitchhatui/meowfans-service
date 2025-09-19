@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Browser, chromium, Page } from '@playwright/test';
+import { Browser, chromium } from '@playwright/test';
 import { Queue } from 'bull';
 import { MediaType, QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
@@ -48,8 +48,8 @@ export class ImportService {
 
   public async handleImport(input: CreateImportQueueInput) {
     const { hasBranch } = input;
-    this.logger.log({ hasBranch });
-    const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
+    await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
+    const browser = await chromium.launch({ headless: true });
 
     try {
       return hasBranch ? await this.importBranches(browser, input) : await this.importSingleBranch(browser, input);
@@ -76,8 +76,8 @@ export class ImportService {
     }
     this.visitedAnchors.add(url);
 
-    const page: Page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle' });
 
     const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
     const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
@@ -117,34 +117,43 @@ export class ImportService {
     return assets;
   }
 
-  private async importBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
-    const { url, subDirectory } = input;
-
-    const context = await browser.newContext({
-      extraHTTPHeaders: this.getRandomHeaders(url),
-    });
-    const page = await context.newPage();
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-
-    const branchUrls = await this.documentSelectorService.getAnchors(page);
+  private async handleFilter(branchUrls: string[], url: string, subDirectory?: string): Promise<string[]> {
     let filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
+
+    this.logger.log({ filteredUrls });
 
     filteredUrls = [...new Set(filteredUrls)].filter((a) => !this.visitedAnchors.has(a));
 
-    await page.close();
+    this.logger.log({ alteredUrls: filteredUrls });
 
-    this.logger.log('ANCHORS FOUND: ', filteredUrls, filteredUrls.length);
+    return filteredUrls;
+  }
+
+  private async importBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
+    const { url, subDirectory } = input;
+
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle' });
+
+    const branchUrls = await this.documentSelectorService.getAnchors(page);
+    this.logger.log({ branchUrls });
+
+    const filteredUrls = await this.handleFilter(branchUrls, url, subDirectory);
+
+    await page.close();
+    this.logger.log({ 'ANCHORS FOUND': filteredUrls, 'filteredUrlsLength': filteredUrls.length });
 
     const results: UploadMediaOutput[] = [];
     for (const anchor of filteredUrls) {
       try {
-        this.logger.log('VISITING:', anchor);
-        this.logger.log('Left anchors to be visited: %d\n', filteredUrls.length - filteredUrls.indexOf(anchor));
+        this.logger.log({ VISITING: anchor });
+        this.logger.log({ 'Left anchors to be visited': filteredUrls.length - filteredUrls.indexOf(anchor) });
 
         const uploaded = await this.importSingleBranch(browser, { ...input, url: anchor });
         results.push(...uploaded);
       } catch (error) {
-        this.logger.error(`❌ Error processing anchor : ${anchor}`, error);
+        this.logger.error({ '❌ Error processing anchor': anchor });
+        this.logger.error(error);
       }
     }
     return results;
