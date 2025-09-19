@@ -113,7 +113,7 @@ export class AssetsService {
     originalName: string,
     mimeType: string,
   ): Promise<UploadMediaOutput> {
-    const [blurredImageBuffer] = await Promise.all([this.blurImage(buffer).toBuffer()]);
+    const blurredImageBuffer = await this.blurImage(buffer).toBuffer();
 
     const [originalUrl, blurredUrl] = await Promise.all([
       this.uploadsService.uploadR2Object({
