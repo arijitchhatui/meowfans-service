@@ -4,9 +4,6 @@ export class Rdb_1758383507238 implements MigrationInterface {
   name = 'Rdb_1758383507238';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "public"."IDX_VAULT_URL"`);
-    await queryRunner.query(`DROP INDEX "public"."IDX_CREATOR_ID"`);
-    await queryRunner.query(`DROP TABLE "Vaults"`);
     await queryRunner.query(
       `CREATE TABLE "vaults" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "creator_id" uuid NOT NULL, "url" character varying NOT NULL, "status" "public"."DownloadStates" NOT NULL DEFAULT 'PENDING', "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, CONSTRAINT "UQ_64fed5fa059564065b1848ca751" UNIQUE ("url"), CONSTRAINT "PK_487a5346fa3693a430b6d6db60c" PRIMARY KEY ("id"))`,
     );
