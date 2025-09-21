@@ -13,7 +13,6 @@ import { CreatorProfilesModule } from './creator-profiles';
 import { CreatorRestrictsModule } from './creator-restricts/creator-restricts.module';
 import { DocumentSelectorModule } from './document-selector/document-selector.module';
 import { DownloaderModule } from './downloader/downloader.module';
-import { DownloaderService } from './downloader/downloader.service';
 import { FanProfilesModule } from './fan-profiles';
 import { ImportModule } from './import/import.module';
 import { MessageChannelParticipantsModule } from './message-channel-participants';
@@ -73,6 +72,6 @@ import { VaultsModule } from './vaults';
     DocumentSelectorModule,
   ],
   controllers: [],
-  providers: [DownloaderService],
+  providers: [],
 })
 export class ServicesModule {}

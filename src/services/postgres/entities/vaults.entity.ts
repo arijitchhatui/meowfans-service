@@ -7,11 +7,13 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { DownloadStates } from '../../../util/enums/download-state';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { VaultObjectsEntity } from './vaults-objects.entity';
 
 registerEnumType(DownloadStates, { name: 'DownloadStates' });
 @ObjectType()
@@ -31,10 +33,6 @@ export class VaultsEntity {
   @Column({ unique: true })
   url: string;
 
-  @Field(() => DownloadStates)
-  @Column({ type: 'enum', enum: DownloadStates, enumName: 'DownloadStates', default: DownloadStates.PENDING })
-  status: DownloadStates;
-
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
@@ -50,4 +48,7 @@ export class VaultsEntity {
   @ManyToOne(() => CreatorProfilesEntity, ({ vaults }) => vaults, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
+
+  @OneToMany(() => VaultObjectsEntity, ({ vault }) => vault, { cascade: true })
+  vaultObjects: VaultObjectsEntity[];
 }

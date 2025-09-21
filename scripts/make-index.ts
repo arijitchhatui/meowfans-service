@@ -7,7 +7,11 @@ const makeIndex = async (directory: string) => {
   const dirPath = path.join(__dirname, '..', directory);
   console.log(`Making index file in ${directory}`);
 
-  const files = fs.readdirSync(dirPath).filter((file) => file !== INDEX_FILE_NAME);
+  const files = fs
+    .readdirSync(dirPath)
+    .filter((file) => file !== INDEX_FILE_NAME)
+    .filter((file) => !file.startsWith('.')) // Exclude hidden files like .DS_Store
+    .filter((file) => file.endsWith('.ts') || fs.statSync(path.join(dirPath, file)).isDirectory()); // Only .ts files or directories
   console.log(`Found ${files.length} ${files.length > 1 ? 'files' : 'file'}`);
 
   if (!files.length) return;
