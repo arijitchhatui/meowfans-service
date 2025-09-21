@@ -30,8 +30,9 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .orderBy(
         `
         CASE vo.status
-        WHEN 'PENDING' THEN 1
-        WHEN 'FULFILLED' THEN 2
+        WHEN 'PENDING' THEN 3
+        WHEN 'PROCESSING' THEN 2
+        WHEN 'FULFILLED' THEN 1
         END
         `,
         input.orderBy,

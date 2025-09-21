@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
 import { request } from 'undici';
 import { MediaType, QueueTypes } from '../../util/enums';
+import { DownloadStates } from '../../util/enums/download-state';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { VaultsObjectsRepository } from '../postgres/repositories';
@@ -53,41 +54,43 @@ export class DownloaderService {
   public async handleUpload(input: UploadVaultQueueInput) {
     const { vaultObjectIds, creatorId } = input;
     if (!vaultObjectIds.length) return;
+    try {
+      for (const vaultObjectId of vaultObjectIds) {
+        await new Promise((res) => setTimeout(res, 1500));
 
-    for (const vaultObjectId of vaultObjectIds) {
-      const vaultObject = await this.vaultObjectsRepository.findOneOrFail({
-        where: { id: vaultObjectId },
-        relations: { vault: true },
-      });
-
-      try {
-        const buffer = await this.fetch(vaultObject.objectUrl, vaultObject.vault.url);
-        const mimeType = this.documentSelectorService.resolveMimeType(vaultObject.objectUrl);
-
-        if (!buffer) throw new Error('UNDICI ERROR :: RETURNING');
-
-        await this.assetsService.uploadFileV2(
-          creatorId,
-          vaultObject.objectUrl,
-          MediaType.PROFILE_MEDIA,
-          buffer,
-          mimeType,
-        );
-
-        await this.vaultObjectsRepository.updateStatusToFulfilledState(vaultObject.objectUrl);
-
-        this.logger.log(`✅ DOWNLOADED & UPLOADED: ${vaultObject.objectUrl}`);
-        return await this.vaultObjectsRepository.findOneOrFail({
+        const vaultObject = await this.vaultObjectsRepository.findOneOrFail({
           where: { id: vaultObjectId },
           relations: { vault: true },
         });
-      } catch (err) {
-        this.logger.error('❌ FAILED TO SAVE!', vaultObject.objectUrl, err?.message);
-        return await this.vaultObjectsRepository.findOneOrFail({
-          where: { id: vaultObjectId },
-          relations: { vault: true },
-        });
+
+        if (vaultObject.status !== DownloadStates.FULFILLED) {
+          this.logger.log({ PROCESSING_URL: vaultObject.vault.url });
+
+          try {
+            const buffer = await this.fetch(vaultObject.objectUrl, vaultObject.vault.url);
+            const mimeType = this.documentSelectorService.resolveMimeType(vaultObject.objectUrl);
+
+            if (!buffer) throw new Error('UNDICI ERROR :: RETURNING');
+
+            await this.assetsService.uploadFileV2(
+              creatorId,
+              vaultObject.objectUrl,
+              MediaType.PROFILE_MEDIA,
+              buffer,
+              mimeType,
+            );
+
+            await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
+
+            this.logger.log(`✅ DOWNLOADED & UPLOADED: ${vaultObject.objectUrl}`);
+          } catch (err) {
+            this.logger.error('❌ FAILED TO SAVE!', vaultObject.objectUrl, err?.message);
+            await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
+          }
+        }
       }
+    } finally {
+      this.logger.log('The job is finished');
     }
   }
 
