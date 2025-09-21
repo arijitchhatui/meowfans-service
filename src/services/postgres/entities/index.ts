@@ -34,4 +34,5 @@ export * from './social-accounts.entity';
 export * from './subscription-plans.entity';
 export * from './subscriptions.entity';
 export * from './users.entity';
+export * from './vaults-objects.entity';
 export * from './vaults.entity';

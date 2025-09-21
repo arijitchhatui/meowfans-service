@@ -1,9 +1,9 @@
 import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
-export class InsertVaultInput {
-  @Field(() => String)
-  objectUrl: string;
+export class BulkInsertVaultInput {
+  @Field(() => [String])
+  objects: string[];
 
   @Field(() => String)
   baseUrl: string;

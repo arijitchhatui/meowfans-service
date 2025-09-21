@@ -1,69 +1,94 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
-import axios from 'axios';
-import { Agent } from 'https';
-import { MediaType } from '../../util/enums';
+import { Queue } from 'bull';
+import { request } from 'undici';
+import { MediaType, QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
-import { VaultsEntity } from '../postgres/entities';
-import { VaultsRepository } from '../postgres/repositories';
+import { VaultsObjectsRepository } from '../postgres/repositories';
 import { headerPools } from '../service.constants';
-import { InsertVaultInput } from '../vaults/dto';
+import { UploadVaultInput, UploadVaultQueueInput } from './dto';
 
 @Injectable()
 export class DownloaderService {
+  private logger = new Logger(DownloaderService.name);
   constructor(
-    private vaultsRepository: VaultsRepository,
-    private assetsService: AssetsService,
+    @InjectQueue(QueueTypes.UPLOAD_VAULT_QUEUE)
+    private uploadVaultQueue: Queue<UploadVaultQueueInput>,
+    private vaultObjectsRepository: VaultsObjectsRepository,
     private documentSelectorService: DocumentSelectorService,
+    private assetsService: AssetsService,
   ) {}
 
-  private logger = new Logger(DownloaderService.name);
-  private readonly agent = new Agent({
-    family: 4,
-    keepAlive: true,
-    maxSockets: 10,
-  });
+  public async fetch(downloadUrl: string, baseUrl: string): Promise<Buffer | null> {
+    this.logger.log('PROCESSING REQUEST THROUGH UNDICI 🚀🚀🚀🚀');
+    this.logger.log({ downloadUrl, baseUrl });
 
-  public async fetch(downloadUrl: string, baseUrl: string): Promise<Buffer<ArrayBufferLike> | null> {
-    this.logger.log('GETTING RESPONSE FROM AXIOS 🔵');
     try {
-      const { data } = await axios.get<ArrayBuffer>(downloadUrl, {
-        responseType: 'arraybuffer',
+      const { body, statusCode } = await request(downloadUrl, {
+        method: 'GET',
         headers: this.getRandomHeaders(baseUrl),
-        httpsAgent: this.agent,
       });
-      this.logger.log('GOT THE DATA');
-      return Buffer.from(data);
-    } catch {
-      this.logger.error('Axios error');
+
+      if (statusCode !== 200) {
+        this.logger.error(`Undici fetch failed with status: ${statusCode}`);
+        return null;
+      }
+
+      const buffer = Buffer.from(await body.arrayBuffer());
+      this.logger.log(`✅ GOT THE DATA: ${buffer.length} bytes`);
+      return buffer;
+    } catch (err) {
+      this.logger.error('❌ Undici fetch error', err);
+      return null;
     }
-    return null;
   }
 
-  public async uploadVaults(creatorId: string, input: InsertVaultInput) {
-    const { urls } = input;
-    this.logger.log(urls);
+  public async uploadVault(creatorId: string, input: UploadVaultInput) {
+    this.logger.log({ creatorId, ...input });
+    await this.uploadVaultQueue.add({ creatorId, ...input });
+    return 'Job added';
+  }
 
-    const updatedVaults: VaultsEntity[] = [];
-    for (const url of urls) {
+  public async handleUpload(input: UploadVaultQueueInput) {
+    const { vaultObjectIds, creatorId } = input;
+    if (!vaultObjectIds.length) return;
+
+    for (const vaultObjectId of vaultObjectIds) {
+      const vaultObject = await this.vaultObjectsRepository.findOneOrFail({
+        where: { id: vaultObjectId },
+        relations: { vault: true },
+      });
+
       try {
-        const buffer = await this.fetch(url, url);
-        const mimeType = this.documentSelectorService.resolveMimeType(url);
+        const buffer = await this.fetch(vaultObject.objectUrl, vaultObject.vault.url);
+        const mimeType = this.documentSelectorService.resolveMimeType(vaultObject.objectUrl);
 
-        if (!buffer) throw new Error('AXIOS ERROR :: RETURNING');
+        if (!buffer) throw new Error('UNDICI ERROR :: RETURNING');
 
-        await this.assetsService.uploadFileV2(creatorId, url, MediaType.PROFILE_MEDIA, buffer, mimeType);
-        await this.vaultsRepository.updateStatusToFulfilledState(creatorId, url);
-        const updated = await this.vaultsRepository.findOneOrFail({ where: { creatorId: creatorId, url: url } });
+        await this.assetsService.uploadFileV2(
+          creatorId,
+          vaultObject.objectUrl,
+          MediaType.PROFILE_MEDIA,
+          buffer,
+          mimeType,
+        );
 
-        updatedVaults.push(updated);
-        this.logger.log(`DOWNLOADED & UPLOADED: ${url}`);
+        await this.vaultObjectsRepository.updateStatusToFulfilledState(vaultObject.objectUrl);
+
+        this.logger.log(`✅ DOWNLOADED & UPLOADED: ${vaultObject.objectUrl}`);
+        return await this.vaultObjectsRepository.findOneOrFail({
+          where: { id: vaultObjectId },
+          relations: { vault: true },
+        });
       } catch (err) {
-        this.logger.error('❌ FAILED TO SAVE!', url, err?.message);
+        this.logger.error('❌ FAILED TO SAVE!', vaultObject.objectUrl, err?.message);
+        return await this.vaultObjectsRepository.findOneOrFail({
+          where: { id: vaultObjectId },
+          relations: { vault: true },
+        });
       }
     }
-
-    return updatedVaults;
   }
 
   private getRandomHeaders(baseUrl: string) {

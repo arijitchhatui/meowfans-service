@@ -2,18 +2,15 @@ import { HasSubdirectoryForBranch } from '@app/validators';
 import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty, Validate } from 'class-validator';
 import { DocumentQualityType, FileType } from '../../../util/enums';
+import { ImportTypes } from '../../../util/enums/import-types';
 
 registerEnumType(DocumentQualityType, { name: 'DocumentQualityType' });
+registerEnumType(ImportTypes, { name: 'ImportTypes' });
 @InputType()
 export class CreateImportInput {
   @IsNotEmpty()
   @Field(() => String)
   url: string;
-
-  @IsNotEmpty()
-  @Field({ defaultValue: false })
-  @Validate(HasSubdirectoryForBranch)
-  hasBranch: boolean;
 
   @Field(() => FileType, { defaultValue: FileType.IMAGE })
   fileType: FileType;
@@ -21,11 +18,21 @@ export class CreateImportInput {
   @Field(() => Int, { defaultValue: 10 })
   totalContent: number;
 
+  @Field(() => ImportTypes, { defaultValue: ImportTypes.PROFILE })
+  importType: ImportTypes;
+
   @Field(() => DocumentQualityType, { defaultValue: DocumentQualityType.HIGH_DEFINITION })
   qualityType: DocumentQualityType;
 
-  @Field(() => String, { nullable: true })
-  subDirectory?: string;
+  @Validate(HasSubdirectoryForBranch)
+  @Field(() => String, { nullable: false })
+  subDirectory: string;
+
+  @Field(() => Int, { defaultValue: 0 })
+  start: number;
+
+  @Field(() => Int, { defaultValue: 0 })
+  exclude: number;
 }
 
 export class CreateImportQueueInput extends CreateImportInput {

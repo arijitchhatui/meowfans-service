@@ -6,9 +6,9 @@ import { CreateImportInput } from '../../src/services/import/dto/create-import.d
 @ValidatorConstraint({ name: 'HasSubdirectoryForBranch', async: true })
 export class HasSubdirectoryForBranch implements ValidatorConstraintInterface {
   public validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> | boolean {
-    const { subDirectory, hasBranch } = validationArguments?.object as CreateImportInput;
+    const { subDirectory } = validationArguments?.object as CreateImportInput;
 
-    if (hasBranch && !subDirectory) return false;
+    if (!subDirectory) return false;
 
     return true;
   }
