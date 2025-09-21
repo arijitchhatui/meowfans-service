@@ -27,6 +27,7 @@ import { SocialAccountsEntity } from './social-accounts.entity';
 import { SubscriptionPlansEntity } from './subscription-plans.entity';
 import { SubscriptionsEntity } from './subscriptions.entity';
 import { UsersEntity } from './users.entity';
+import { VaultsEntity } from './vaults.entity';
 
 @ObjectType()
 @Entity({ name: 'creator_profiles' })
@@ -111,6 +112,9 @@ export class CreatorProfilesEntity {
   @JoinColumn({ name: 'creator_id' })
   @Index()
   user: UsersEntity;
+
+  @OneToMany(() => VaultsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
+  vaults: VaultsEntity[];
 
   @OneToMany(() => PostsEntity, ({ creatorProfile }) => creatorProfile, { cascade: true })
   posts: PostsEntity[];

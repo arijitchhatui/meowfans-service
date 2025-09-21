@@ -8,9 +8,8 @@ import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { DownloaderService } from '../downloader/downloader.service';
 import { UsersRepository } from '../postgres/repositories';
-import { headerPools } from '../service.constants';
+import { VaultsService } from '../vaults';
 import { CreateImportInput, CreateImportQueueInput } from './dto/create-import.dto';
-import { UploadMediaOutput } from './dto/upload-media.out';
 
 @Injectable()
 export class ImportService {
@@ -25,6 +24,7 @@ export class ImportService {
     private documentSelectorService: DocumentSelectorService,
     private downloaderService: DownloaderService,
     private configService: ConfigService,
+    private vaultsService: VaultsService,
   ) {}
 
   public async initiate(creatorId: string, input: CreateImportInput): Promise<string> {
@@ -48,13 +48,17 @@ export class ImportService {
   }
 
   public async handleImport(input: CreateImportQueueInput) {
-    const { hasBranch } = input;
+    const { hasBranch, creatorId } = input;
     const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
-    this.logger.log({ message: 'Browser is initialized' });
-    // const browser = await chromium.launch({ headless: true });
+
+    this.logger.log({ BROWSER_INITIATE_MESSAGE: 'Browser is initialized', BROWSER_VERSION: browser.version() });
 
     try {
-      return hasBranch ? await this.importBranches(browser, input) : await this.importSingleBranch(browser, input);
+      const imageUrls = hasBranch
+        ? await this.importProfile(browser, input)
+        : await this.importSingleBranch(browser, input);
+
+      await this.handleUploadToVault(creatorId, imageUrls);
     } catch (error) {
       this.logger.error('❌ Import failed', error);
       throw error;
@@ -66,117 +70,162 @@ export class ImportService {
 
   private async sleep() {
     const delay = Math.floor(Math.random() * 1500) + 2000;
-    return await new Promise((res) => setTimeout(res, delay));
+    return new Promise((res) => setTimeout(res, delay));
   }
 
-  private async importSingleBranch(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
-    const { url, creatorId, qualityType } = input;
-
-    this.logger.log({ VISITING: 'SINGLE BRANCH' });
-    if (this.visitedAnchors.has(url)) {
-      this.logger.log(`Skipping already visited: ${url}`);
-      return [];
-    }
-    this.visitedAnchors.add(url);
+  private async importSingleBranch(browser: Browser, input: CreateImportQueueInput) {
+    const { url, qualityType } = input;
 
     const page = await browser.newPage();
     try {
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-    } catch {
-      this.logger.warn(`Navigation timeout for ${url}, falling back to domcontentloaded`);
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        this.logger.warn(`Navigation timeout for ${url}, fallback to DOMContentLoaded`);
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      }
+      this.logger.log({ VISITING_SINGLE_BRANCH_URL: url });
+
+      const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
+
+      const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
+
+      this.logger.log(`Filtered images count: ${filteredUrls.length}`);
+
+      return filteredUrls;
+    } finally {
+      await page.close();
     }
-
-    const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
-    const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
-
-    this.logger.log('Filtered image urls: ', filteredUrls);
-    this.logger.log(`Found ${filteredUrls.length} images`);
-
-    const result = await this.handleUpload(filteredUrls, url, creatorId);
-
-    await page.close();
-    return result;
   }
 
   private async handleUpload(filteredUrls: string[], url: string, creatorId: string) {
-    const assets: UploadMediaOutput[] = [];
     for (const link of filteredUrls) {
-      this.logger.log('URL ➡️', link);
       try {
         await this.sleep();
         const buffer = await this.downloaderService.fetch(link, url);
         const mimeType = this.documentSelectorService.resolveMimeType(link);
         const filename = this.documentSelectorService.createFileName(link);
 
-        if (buffer === null) throw new Error('Axios error:: RETURNING');
+        if (!buffer) throw new Error('Axios error :: RETURNING');
 
-        const uploaded = await this.assetsService.uploadFileV2(
-          creatorId,
-          filename,
-          MediaType.PROFILE_MEDIA,
-          buffer,
-          mimeType,
-        );
-        assets.push(uploaded);
-        this.logger.log(`Left posts to be downloaded: ${filteredUrls.length - filteredUrls.indexOf(link)}`);
+        await this.assetsService.uploadFileV2(creatorId, filename, MediaType.PROFILE_MEDIA, buffer, mimeType);
+        await this.vaultsService.updateStatusToFulfilledState(creatorId, link);
+
+        this.logger.log(`Downloaded & uploaded: ${link}`);
       } catch (err) {
-        this.logger.log('❌ FAILED TO SAVE!', link, err?.message);
+        this.logger.error('❌ FAILED TO SAVE!', link, err?.message);
       }
     }
-    return assets;
+  }
+
+  private async handleUploadToVault(creatorId: string, filteredUrls: string[]) {
+    await this.vaultsService.bulkInsert(creatorId, { urls: filteredUrls });
   }
 
   private async handleFilter(branchUrls: string[], url: string, subDirectory?: string): Promise<string[]> {
-    let filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
-
-    this.logger.log({ filteredUrls });
-
-    filteredUrls = [...new Set(filteredUrls)].filter((a) => !this.visitedAnchors.has(a));
-
-    this.logger.log({ alteredUrls: filteredUrls });
-
-    return filteredUrls;
+    const filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
+    return Array.from(new Set(filteredUrls));
   }
 
-  private async importBranches(browser: Browser, input: CreateImportQueueInput): Promise<UploadMediaOutput[]> {
+  public async importProfile(browser: Browser, input: CreateImportQueueInput) {
     const { url, subDirectory } = input;
-    this.logger.log({ VISITING: 'MULTIPLE BRANCH' });
-
     const page = await browser.newPage();
     try {
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-    } catch {
-      this.logger.warn(`Navigation timeout for ${url}, falling back to domcontentloaded`);
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    }
-
-    const branchUrls = await this.documentSelectorService.getAnchors(page);
-    this.logger.log({ branchUrls });
-
-    const filteredUrls = await this.handleFilter(branchUrls, url, subDirectory);
-
-    await page.close();
-    this.logger.log({ 'ANCHORS FOUND': filteredUrls, 'filteredUrlsLength': filteredUrls.length });
-
-    const results: UploadMediaOutput[] = [];
-    for (const anchor of filteredUrls) {
       try {
-        this.logger.log({ VISITING: anchor });
-        this.logger.log({ 'Left anchors to be visited': filteredUrls.length - filteredUrls.indexOf(anchor) });
-
-        const uploaded = await this.importSingleBranch(browser, { ...input, url: anchor });
-        results.push(...uploaded);
-      } catch (error) {
-        this.logger.error({ '❌ Error processing anchor': anchor });
-        this.logger.error(error);
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       }
+
+      const anchorUrls = await this.documentSelectorService.getAnchors(page);
+      const allQueryUrls = anchorUrls.filter((url) => url.includes(`/user/${subDirectory}?o=`));
+      const queryUrls = Array.from(new Set(allQueryUrls)).slice(1);
+      this.logger.log({ queryUrls });
+
+      const imageUrls = await this.handleQueryUrls(browser, input, queryUrls);
+
+      this.logger.log({ imageUrls });
+      return imageUrls;
+    } finally {
+      await page.close();
     }
-    return results;
   }
 
-  private getRandomHeaders(baseUrl: string) {
-    const header = headerPools[Math.floor(Math.random() * headerPools.length)];
-    return Object.fromEntries(Object.entries({ ...header, Referer: baseUrl }));
+  private async handleQueryUrls(browser: Browser, input: CreateImportQueueInput, queryUrls: string[]) {
+    const imageUrls: string[] = [];
+
+    for (const queryUrl of queryUrls) {
+      const page = await browser.newPage();
+      try {
+        try {
+          await page.goto(queryUrl, { waitUntil: 'networkidle', timeout: 30000 });
+        } catch {
+          await page.goto(queryUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        }
+        this.logger.log({
+          VISITING_QUERY_URL: queryUrl,
+          LEFT_QUERY_URL: queryUrls.length - queryUrls.indexOf(queryUrl) + 1,
+        });
+
+        const branchUrls = await this.documentSelectorService.getAnchors(page);
+        const filteredUrls = await this.handleFilter(branchUrls, input.url, input.subDirectory);
+
+        this.logger.log({ filteredUrls });
+
+        const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
+
+        this.logger.log({ validImageUrls });
+
+        imageUrls.push(...validImageUrls);
+      } finally {
+        await page.close();
+      }
+    }
+
+    return imageUrls;
+  }
+
+  private async handleBranchUrls(browser: Browser, input: CreateImportQueueInput, formattedUrls: string[]) {
+    const imageUrls: string[] = [];
+
+    for (const anchor of formattedUrls) {
+      try {
+        this.logger.log({
+          VISITING_BRANCH_URL: anchor,
+          LEFT_BRANCH_URL: formattedUrls.length - formattedUrls.indexOf(anchor) + 1,
+        });
+
+        const urls = await this.importSingleBranch(browser, { ...input, url: anchor });
+        imageUrls.push(...urls);
+      } catch {
+        this.logger.error({ '❌ Error processing anchor': anchor });
+      }
+    }
+
+    return imageUrls;
+  }
+
+  private async importBranches(browser: Browser, input: CreateImportQueueInput) {
+    const page = await browser.newPage();
+    try {
+      try {
+        await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        await page.goto(input.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      }
+
+      const branchUrls = await this.documentSelectorService.getAnchors(page);
+      const filteredUrls = await this.handleFilter(branchUrls, input.url, input.subDirectory);
+
+      for (const anchor of filteredUrls) {
+        try {
+          await this.importSingleBranch(browser, { ...input, url: anchor });
+        } catch {
+          this.logger.error({ '❌ Error processing anchor': anchor });
+        }
+      }
+    } finally {
+      await page.close();
+    }
   }
 }

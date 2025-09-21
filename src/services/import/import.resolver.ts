@@ -1,8 +1,8 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
+import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { CreateImportInput } from './dto/create-import.dto';
 import { ImportService } from './import.service';
-import { UserRoles } from '../../util/enums';
 
 @Resolver()
 export class ImportResolver {

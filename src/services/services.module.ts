@@ -26,6 +26,7 @@ import { PostsModule } from './posts';
 import { SessionsModule } from './sessions/sessions.module';
 import { SocialAccountsModule } from './social-accounts/social-accounts.module';
 import { UsersModule } from './users';
+import { VaultsModule } from './vaults';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { UsersModule } from './users';
     SocialAccountsModule,
     SessionsModule,
     ImportModule,
+    VaultsModule,
     DownloaderModule,
     DocumentSelectorModule,
   ],

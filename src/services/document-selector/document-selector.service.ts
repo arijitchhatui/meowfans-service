@@ -12,15 +12,15 @@ export class DocumentSelectorService {
     this.logger.log({ qualityType: qualityType });
     switch (qualityType) {
       case DocumentQualityType.HIGH_DEFINITION:
-        this.logger.log({ collect: 'anchors: definition: high' });
+        this.logger.log({ message: 'Collecting HIGH_DEFINITION :: ANCHOR' });
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
 
       case DocumentQualityType.LOW_DEFINITION:
-        this.logger.log({ collect: 'image: definition: low' });
+        this.logger.log({ message: 'Collecting LOW_DEFINITION :: IMAGE' });
         return await page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
 
       default:
-        this.logger.log({ collect: 'anchor: definition: default' });
+        this.logger.log({ message: 'Collecting DEFAULT_DEFINITION :: ANCHOR' });
         return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((a) => a.href));
     }
   }
@@ -49,7 +49,7 @@ export class DocumentSelectorService {
   }
 
   public filterByExtension(urls: string[], pageUrl: string): string[] {
-    this.logger.log({ message: 'Filtering extensions' });
+    this.logger.log({ FILTERING_BY_EXTENSION: 'JPG/JPEG ||>>>|| OTHER_WEBSITES' });
     let filtered = urls.filter((url) => ExtensionTypes.includes(extname(url)));
     if (pageUrl.includes('wallhaven.cc')) {
       filtered = filtered.filter((url) => url.includes('w.wallhaven.cc'));
