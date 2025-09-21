@@ -1,0 +1,6 @@
+export enum DownloadStates {
+  PENDING = 'PENDING',
+  FULFILLED = 'FULFILLED',
+  REJECTED = 'REJECTED',
+  PROCESSING = 'PROCESSING',
+}

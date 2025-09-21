@@ -21,3 +21,4 @@ export * from './posts.repository';
 export * from './sessions.repository';
 export * from './social-accounts.repository';
 export * from './users.repository';
+export * from './vaults.repository';

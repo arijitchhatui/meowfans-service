@@ -6,6 +6,7 @@ import { AssetsService } from '../assets';
 import { AwsS3Module } from '../aws';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { DownloaderService } from '../downloader/downloader.service';
+import { VaultsService } from '../vaults';
 import { ImportConsumerService } from './import-consumer.service';
 import { ImportResolver } from './import.resolver';
 import { ImportService } from './import.service';
@@ -31,6 +32,7 @@ import { PlaywrightModule } from './playwright.module';
     ImportService,
     ImportResolver,
     AssetsService,
+    VaultsService,
     DownloaderService,
     DocumentSelectorService,
     ImportConsumerService,
