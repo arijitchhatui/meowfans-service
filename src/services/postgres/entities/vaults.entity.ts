@@ -30,7 +30,7 @@ export class VaultsEntity {
   creatorId: string;
 
   @Field()
-  @Column({ unique: true })
+  @Column()
   url: string;
 
   @Field(() => Date)

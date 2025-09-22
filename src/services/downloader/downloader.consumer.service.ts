@@ -11,9 +11,15 @@ export class DownloaderConsumerService {
 
   constructor(private downloaderService: DownloaderService) {}
 
+  onModuleInit() {}
+
   @Process()
   public async startDownloading(input: Job<UploadVaultQueueInput>) {
     this.logger.log({ JOB_STARTED: 'started downloading' });
-    await this.downloaderService.handleUpload(input.data);
+    try {
+      await this.downloaderService.handleUpload(input.data);
+    } catch (error) {
+      console.log('consumer error 2', error);
+    }
   }
 }

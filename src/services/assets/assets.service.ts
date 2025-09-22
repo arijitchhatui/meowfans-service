@@ -1,11 +1,11 @@
 import { PaginationInput } from '@app/helpers';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as sharp from 'sharp';
-import { FileType, ImageType, MediaType } from '../../util/enums';
+import { AssetType, FileType, ImageType, MediaType } from '../../util/enums';
 import { AwsS3ClientService } from '../aws';
 import { AssetsEntity } from '../postgres/entities';
 import { AssetsRepository, CreatorAssetsRepository, CreatorProfilesRepository } from '../postgres/repositories';
-import { DeleteCreatorAsset } from './dto';
+import { DeleteCreatorAsset, UpdateAssetsInput } from './dto';
 import { UploadMediaOutput } from './dto/upload-media.output.dto';
 
 @Injectable()
@@ -27,6 +27,10 @@ export class AssetsService {
 
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {
     return await this.creatorAssetsRepository.getCreatorAssets(creatorId, input);
+  }
+
+  public async updateAssets(creatorId: string, input: UpdateAssetsInput) {
+    return await this.creatorAssetsRepository.updateAssetType(creatorId, input);
   }
 
   public async deleteCreatorAssets(creatorId: string, input: DeleteCreatorAsset) {
@@ -55,9 +59,10 @@ export class AssetsService {
     creatorId: string,
     file: Express.Multer.File,
     mediaType: MediaType,
+    assetType: AssetType,
   ): Promise<UploadMediaOutput> {
     const uploaded = await this.handleUpload(creatorId, mediaType, file);
-    const asset = await this.injectAsset(creatorId, uploaded);
+    const asset = await this.injectAsset(creatorId, uploaded, assetType);
     return { ...uploaded, assetId: asset.id };
   }
 
@@ -67,9 +72,11 @@ export class AssetsService {
     mediaType: MediaType,
     buffer: Buffer,
     mimeType: string,
+    assetType: AssetType,
   ): Promise<UploadMediaOutput> {
     const uploaded = await this.uploadImageToCloud(creatorId, mediaType, buffer, originalFileName, mimeType);
-    const asset = await this.injectAsset(creatorId, uploaded);
+    const asset = await this.injectAsset(creatorId, uploaded, assetType);
+    console.log('UPLOADED TO S3');
     return { ...uploaded, assetId: asset.id };
   }
 
@@ -105,7 +112,6 @@ export class AssetsService {
     mimeType: string,
   ): Promise<UploadMediaOutput> {
     const blurredImageBuffer = await this.blurImage(buffer).toBuffer();
-
     const [originalUrl, blurredUrl] = await Promise.all([
       this.uploadsService.uploadR2Object({
         buffer,
@@ -126,7 +132,6 @@ export class AssetsService {
         metaData: { originalName },
       }),
     ]);
-
     return {
       rawUrl: originalUrl,
       blurredUrl,
@@ -136,12 +141,16 @@ export class AssetsService {
     };
   }
 
-  private async injectAsset(creatorId: string, assetPayload: UploadMediaOutput): Promise<AssetsEntity> {
+  private async injectAsset(
+    creatorId: string,
+    assetPayload: UploadMediaOutput,
+    assetType: AssetType,
+  ): Promise<AssetsEntity> {
     const creatorProfile = await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId } });
     const asset = this.assetsRepository.create({ ...assetPayload, creatorProfile });
 
     const newAsset = await this.assetsRepository.save(asset);
-    await this.creatorAssetsRepository.insert({ creatorProfile, asset });
+    await this.creatorAssetsRepository.insert({ creatorProfile, asset, type: assetType });
 
     return newAsset;
   }
