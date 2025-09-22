@@ -6,8 +6,7 @@ import { Queue } from 'bull';
 import { QueueTypes } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
-import { UsersRepository } from '../postgres/repositories';
-import { VaultsService } from '../vaults';
+import { UsersRepository, VaultsRepository } from '../postgres/repositories';
 import { CreateImportInput, CreateImportQueueInput } from './dto/create-import.dto';
 
 @Injectable()
@@ -20,7 +19,7 @@ export class ImportService {
     private usersRepository: UsersRepository,
     private documentSelectorService: DocumentSelectorService,
     private configService: ConfigService,
-    private vaultsService: VaultsService,
+    private vaultsRepository: VaultsRepository,
   ) {}
 
   public async initiate(creatorId: string, input: CreateImportInput): Promise<string> {
@@ -59,9 +58,9 @@ export class ImportService {
         case ImportTypes.PROFILE:
           return await this.importProfile(browser, input);
         case ImportTypes.BRANCH:
-          return await this.importBranches(browser, input);
+          return await this.importBranch(browser, input);
         case ImportTypes.SINGLE:
-          return await this.importSingleBranch(browser, input);
+          return await this.importPage(browser, input);
         default:
           return;
       }
@@ -88,6 +87,10 @@ export class ImportService {
       try {
         await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       } catch {
+        this.logger.warn({
+          METHOD: this.importProfile.name,
+          NAVIGATION_TIMEOUT_FALLING_BACK_TO_DOM_CONTENT_LOADED_FOR_URL: input.url,
+        });
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       }
 
@@ -116,31 +119,47 @@ export class ImportService {
     }
   }
 
-  private async importBranches(browser: Browser, input: CreateImportQueueInput) {
+  private async importBranch(browser: Browser, input: CreateImportQueueInput) {
+    const imageUrls: string[] = [];
+
     const page = await browser.newPage();
     try {
       try {
         await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
       } catch {
+        this.logger.warn({
+          METHOD: this.importBranch.name,
+          NAVIGATION_TIMEOUT_FALLING_BACK_TO_DOM_CONTENT_LOADED_FOR_URL: input.url,
+        });
         await page.goto(input.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       }
 
+      this.logger.log({
+        METHOD: this.importBranch.name,
+        VISITING_QUERY_URL: input.url,
+      });
+
       const branchUrls = await this.documentSelectorService.getAnchors(page);
       const filteredUrls = await this.handleFilter(branchUrls, input.url, input.subDirectory);
+      this.logger.log({
+        METHOD: this.importBranch.name,
+        filteredUrls,
+      });
 
-      for (const anchor of filteredUrls) {
-        try {
-          await this.importSingleBranch(browser, { ...input, url: anchor });
-        } catch {
-          this.logger.error({ '❌ Error processing anchor': anchor });
-        }
-      }
+      const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
+      this.logger.log({
+        METHOD: this.importBranch.name,
+        validImageUrls,
+      });
+
+      imageUrls.push(...validImageUrls);
     } finally {
       await page.close();
     }
+    return imageUrls;
   }
 
-  private async importSingleBranch(browser: Browser, input: CreateImportQueueInput) {
+  private async importPage(browser: Browser, input: CreateImportQueueInput) {
     const { url, qualityType } = input;
 
     const page = await browser.newPage();
@@ -149,7 +168,7 @@ export class ImportService {
         await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       } catch {
         this.logger.warn({
-          METHOD: this.importSingleBranch.name,
+          METHOD: this.importPage.name,
           NAVIGATION_TIMEOUT_FALLING_BACK_TO_DOM_CONTENT_LOADED_FOR_URL: url,
         });
 
@@ -157,7 +176,7 @@ export class ImportService {
       }
 
       this.logger.log({
-        METHOD: this.importSingleBranch.name,
+        METHOD: this.importPage.name,
         VISITING_SINGLE_BRANCH_URL: url,
       });
 
@@ -165,9 +184,10 @@ export class ImportService {
       const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
 
       this.logger.log({
-        METHOD: this.importSingleBranch.name,
+        METHOD: this.importPage.name,
         FILTERED_IMAGES_COUNT: filteredUrls.length,
       });
+      await this.handleUploadToVault(input.creatorId, url, filteredUrls);
 
       return filteredUrls;
     } finally {
@@ -179,36 +199,8 @@ export class ImportService {
     const imageUrls: string[] = [];
 
     for (const queryUrl of queryUrls) {
-      const page = await browser.newPage();
-      try {
-        try {
-          await page.goto(queryUrl, { waitUntil: 'networkidle', timeout: 30000 });
-        } catch {
-          await page.goto(queryUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        }
-        this.logger.log({
-          METHOD: this.handleQueryUrls.name,
-          VISITING_QUERY_URL: queryUrl,
-          LEFT_QUERY_URL: queryUrls.length - queryUrls.indexOf(queryUrl),
-        });
-
-        const branchUrls = await this.documentSelectorService.getAnchors(page);
-        const filteredUrls = await this.handleFilter(branchUrls, input.url, input.subDirectory);
-        this.logger.log({
-          METHOD: this.handleQueryUrls.name,
-          filteredUrls,
-        });
-
-        const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
-        this.logger.log({
-          METHOD: this.handleQueryUrls.name,
-          validImageUrls,
-        });
-
-        imageUrls.push(...validImageUrls);
-      } finally {
-        await page.close();
-      }
+      const imageUrls = await this.importBranch(browser, { ...input, url: queryUrl });
+      imageUrls.push(...imageUrls);
     }
 
     return imageUrls;
@@ -225,8 +217,7 @@ export class ImportService {
           LEFT_BRANCH_URL: formattedUrls.length - formattedUrls.indexOf(anchor) + 1,
         });
 
-        const urls = await this.importSingleBranch(browser, { ...input, url: anchor });
-        await this.handleUploadToVault(input.creatorId, anchor, urls);
+        const urls = await this.importPage(browser, { ...input, url: anchor });
         imageUrls.push(...urls);
       } catch {
         this.logger.error({
@@ -240,7 +231,7 @@ export class ImportService {
   }
 
   private async handleUploadToVault(creatorId: string, baseUrl: string, filteredUrls: string[]) {
-    await this.vaultsService.bulkInsert(creatorId, { objects: filteredUrls, baseUrl: baseUrl });
+    await this.vaultsRepository.bulkInsert(creatorId, { objects: filteredUrls, baseUrl: baseUrl });
   }
 
   private async handleFilter(branchUrls: string[], url: string, subDirectory?: string): Promise<string[]> {

@@ -1,4 +1,4 @@
-export enum AssetTypes {
+export enum AssetType {
   PRIVATE = 'private',
   HIDDEN = 'hidden',
   ARCHIVE = 'archive',

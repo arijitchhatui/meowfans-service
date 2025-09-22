@@ -8,11 +8,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { AssetType } from '../../../util/enums';
 import { AssetsEntity } from './assets.entity';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
-import { AssetTypes } from '../../../util/enums';
 
-registerEnumType(AssetTypes, { name: 'AssetTypes' });
+registerEnumType(AssetType, { name: 'AssetType' });
 @ObjectType()
 @Entity({ name: 'creator_assets' })
 export class CreatorAssetsEntity {
@@ -32,9 +32,9 @@ export class CreatorAssetsEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field(() => AssetTypes)
-  @Column({ default: AssetTypes.PRIVATE, nullable: false })
-  type: AssetTypes;
+  @Field(() => AssetType)
+  @Column({ default: AssetType.PRIVATE, nullable: false })
+  type: AssetType;
 
   @Field({ nullable: true })
   @DeleteDateColumn({ nullable: true })

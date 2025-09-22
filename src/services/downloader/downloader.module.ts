@@ -4,9 +4,9 @@ import { QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
 import { AwsS3Module } from '../aws';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
+import { DownloaderConsumerService } from './downloader.consumer.service';
 import { DownloaderResolver } from './downloader.resolver';
 import { DownloaderService } from './downloader.service';
-import { DownloaderConsumerService } from './downloader.consumer.service';
 
 @Module({
   imports: [
@@ -18,7 +18,6 @@ import { DownloaderConsumerService } from './downloader.consumer.service';
         stackTraceLimit: 1,
         removeOnComplete: true,
         removeOnFail: true,
-        timeout: 15000,
       },
     }),
     AwsS3Module,

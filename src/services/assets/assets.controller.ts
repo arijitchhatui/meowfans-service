@@ -1,11 +1,11 @@
 import { Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard, JwtAuthGuard } from '../auth';
 import { AssetsService } from './assets.service';
 import { UploadMediaOutput } from './dto';
 import { UploadMediaInput } from './dto/upload-media.input.dto';
-import { UserRoles } from '../../util/enums';
 
 @Controller('assets')
 export class AssetsController {
@@ -29,6 +29,6 @@ export class AssetsController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: UploadMediaInput,
   ): Promise<UploadMediaOutput> {
-    return this.assetsService.uploadFile(creatorId, file, body.mediaType);
+    return this.assetsService.uploadFile(creatorId, file, body.mediaType, body.assetType);
   }
 }

@@ -15,7 +15,6 @@ import { EntityMaker } from '@app/methods';
         const options: TypeOrmModuleOptions = {
           type: 'postgres',
           url: configService.get('SUPABASE_DB_URL'),
-          logging: configService.get('NODE_ENV') === 'development',
           entities: [__dirname + '/../**/entities/**/*.entity.js'],
           migrations: [__dirname + '/../**/migrations/**/*[!index].js'],
           migrationsRun: !!configService.get('RUN_DB_MIGRATIONS_ON_START'),

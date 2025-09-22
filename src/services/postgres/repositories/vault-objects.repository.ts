@@ -25,13 +25,16 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vault.creatorId = :creatorId', { creatorId: creatorId })
       .andWhere('vault.id = vo.vaultId')
+      .andWhere('vault.status')
       .limit(input.limit)
       .offset(input.offset)
       .orderBy(
         `
         CASE vo.status
-        WHEN 'PENDING' THEN 1
-        WHEN 'FULFILLED' THEN 2
+        WHEN 'PROCESSING' THEN 4
+        WHEN 'REJECTED' THEN 3
+        WHEN 'PENDING' THEN 2
+        WHEN 'FULFILLED' THEN 1
         END
         `,
         input.orderBy,

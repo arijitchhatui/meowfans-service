@@ -8,7 +8,6 @@ import { VaultsService } from '../vaults';
 import { ImportConsumerService } from './import-consumer.service';
 import { ImportResolver } from './import.resolver';
 import { ImportService } from './import.service';
-import { PlaywrightModule } from './playwright.module';
 
 @Module({
   imports: [
@@ -17,13 +16,11 @@ import { PlaywrightModule } from './playwright.module';
       defaultJobOptions: {
         attempts: 2,
         backoff: 5000,
-        timeout: 15000,
         removeOnComplete: true,
         removeOnFail: true,
         stackTraceLimit: 1,
       },
     }),
-    PlaywrightModule,
     AwsS3Module,
   ],
   providers: [

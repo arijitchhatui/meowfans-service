@@ -4,7 +4,7 @@ import { UserRoles } from '../../../src/util/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { CreatorAssetsEntity } from '../postgres/entities';
 import { AssetsService } from './assets.service';
-import { DeleteCreatorAsset } from './dto';
+import { DeleteCreatorAsset, UpdateAssetsInput } from './dto';
 
 @Resolver()
 export class AssetsResolver {
@@ -26,6 +26,15 @@ export class AssetsResolver {
     @Args('input') input: PaginationInput,
   ): Promise<CreatorAssetsEntity[]> {
     return await this.assetsService.getCreatorAssets(creatorId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Mutation(() => [CreatorAssetsEntity])
+  public async updateAssets(
+    @CurrentUser() creatorId: string,
+    @Args('input') input: UpdateAssetsInput,
+  ): Promise<CreatorAssetsEntity[]> {
+    return await this.assetsService.updateAssets(creatorId, input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
