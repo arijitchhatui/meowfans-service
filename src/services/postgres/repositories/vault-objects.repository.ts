@@ -25,7 +25,6 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vault.creatorId = :creatorId', { creatorId: creatorId })
       .andWhere('vault.id = vo.vaultId')
-      .andWhere('vault.status')
       .limit(input.limit)
       .offset(input.offset)
       .orderBy(
