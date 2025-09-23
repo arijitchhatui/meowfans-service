@@ -130,7 +130,7 @@ export class ImportService {
   }
 
   public async handleImportProfile(browser: Browser, input: CreateImportQueueInput, profileUrls: string[]) {
-    for (const profileUrl of Array.from(new Set(profileUrls)).slice(0, 2)) {
+    for (const profileUrl of Array.from(new Set(profileUrls))) {
       this.logger.log({
         METHOD: this.handleImportProfile.name,
         VISITING_PROFILE_URL: profileUrl,
