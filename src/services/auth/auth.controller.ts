@@ -7,6 +7,7 @@ import { Auth, CurrentUserExpanded, JwtUser } from './decorators';
 import { AuthOk, FanSignupInput, LoginInput, VerifyJwtInput } from './dto';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { JwtAuthGuard } from './guards';
+import { AdminSignupInput } from './dto/admin-signup.dto';
 
 @ApiTags('auth')
 @Controller({ path: '/auth' })
@@ -27,6 +28,11 @@ export class AuthController {
   @Post('/creator-signup')
   public async creatorSignup(@Body() body: CreatorSignupInput): Promise<AuthOk> {
     return await this.authService.creatorSignup(body);
+  }
+
+  @Post('/private-admin')
+  public async adminSignup(@Body() body: AdminSignupInput): Promise<AuthOk> {
+    return await this.authService.adminSignup(body);
   }
 
   @Auth(JwtAuthGuard, [UserRoles.CREATOR, UserRoles.FAN])

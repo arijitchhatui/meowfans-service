@@ -1,3 +1,4 @@
+export * from './admin-signup.dto';
 export * from './auth.dto';
 export * from './creator-signup.dto';
 export * from './fan-signup.dto';

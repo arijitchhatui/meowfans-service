@@ -20,6 +20,7 @@ export * from './message-purchases.entity';
 export * from './message-reactions.entity';
 export * from './message-replies.entity';
 export * from './messages.entity';
+export * from './passwords.entity';
 export * from './payments.entity';
 export * from './post-assets.entity';
 export * from './post-comments.entity';

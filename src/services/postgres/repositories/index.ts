@@ -12,6 +12,7 @@ export * from './message-channels.repository';
 export * from './message-reactions.repository';
 export * from './message-replies.repository';
 export * from './messages.repository';
+export * from './passwords.repository';
 export * from './post-assets.repository';
 export * from './post-comments.repository';
 export * from './post-likes.repository';

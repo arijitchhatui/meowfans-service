@@ -28,8 +28,8 @@ export class PaginationInput {
   @Field(() => [PostTypes], { nullable: true })
   postTypes: PostTypes[];
 
-  @Field(() => [DownloadStates], { nullable: true })
-  downloadStatus: DownloadStates[];
+  @Field(() => DownloadStates, { defaultValue: DownloadStates.PENDING })
+  status: DownloadStates;
 
   @Field(() => AssetType, { nullable: true })
   assetType: AssetType;
