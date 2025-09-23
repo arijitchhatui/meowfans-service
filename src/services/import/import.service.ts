@@ -3,10 +3,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Browser, chromium } from '@playwright/test';
 import { Queue } from 'bull';
-import { QueueTypes } from '../../util/enums';
+import { randomUUID } from 'crypto';
+import { QueueTypes, UserRoles } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
+import { AuthService } from '../auth';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
-import { UsersRepository, VaultsRepository } from '../postgres/repositories';
+import { PasswordsRepository, UsersRepository, VaultsRepository } from '../postgres/repositories';
 import { CreateImportInput, CreateImportQueueInput } from './dto/create-import.dto';
 
 @Injectable()
@@ -19,6 +21,8 @@ export class ImportService {
     private usersRepository: UsersRepository,
     private documentSelectorService: DocumentSelectorService,
     private configService: ConfigService,
+    private authservice: AuthService,
+    private passwordsRepository: PasswordsRepository,
     private vaultsRepository: VaultsRepository,
   ) {}
 
@@ -61,6 +65,8 @@ export class ImportService {
           return await this.importBranch(browser, input);
         case ImportTypes.SINGLE:
           return await this.importPage(browser, input);
+        case ImportTypes.PAGE:
+          return await this.importProfiles(browser, input);
         default:
           return;
       }
@@ -70,6 +76,109 @@ export class ImportService {
     } finally {
       this.logger.log({ METHOD: this.handleImport.name, MESSAGE: 'DONE' });
       await browser.close();
+    }
+  }
+
+  public async importProfiles(browser: Browser, input: CreateImportQueueInput) {
+    const isAdmin = await this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.roles && :roles', { roles: [UserRoles.ADMIN] })
+      .getOne();
+    if (!isAdmin) return;
+
+    const { url, start, exclude } = input;
+
+    const page = await browser.newPage();
+    this.logger.log({
+      METHOD: this.importProfiles.name,
+      MESSAGE: 'STARTED IMPORTING PROFILES',
+      url,
+    });
+
+    try {
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        this.logger.warn({
+          METHOD: this.importProfiles.name,
+          NAVIGATION_TIMEOUT_FALLING_BACK_TO_DOM_CONTENT_LOADED_FOR_URL: input.url,
+        });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      }
+
+      const anchorUrls = await this.documentSelectorService.getAnchors(page);
+      const regex = /^https:\/\/coomer\.st\/[^/]+\/user\/[^/]+$/;
+
+      const allQueryUrls = anchorUrls.filter((url) => regex.test(url));
+
+      const queryUrls = Array.from(new Set(allQueryUrls));
+      this.logger.log({
+        METHOD: this.importProfiles.name,
+        queryUrls,
+      });
+
+      const slicedUrls = queryUrls.slice(start, queryUrls.length - exclude);
+      this.logger.log({
+        METHOD: this.importProfile.name,
+        slicedUrls,
+      });
+
+      await this.handleImportProfile(browser, input, slicedUrls);
+    } finally {
+      await page.close();
+    }
+  }
+
+  public async handleImportProfile(browser: Browser, input: CreateImportQueueInput, profileUrls: string[]) {
+    for (const profileUrl of Array.from(new Set(profileUrls)).slice(0, 2)) {
+      this.logger.log({
+        METHOD: this.handleImportProfile.name,
+        VISITING_PROFILE_URL: profileUrl,
+      });
+
+      const username = profileUrl.split('/').filter(Boolean).at(-1);
+      const email = username?.concat(this.configService.getOrThrow<string>('CREATOR_DOMAIN'));
+      const fullName = username?.toUpperCase();
+      const password = randomUUID();
+
+      this.logger.log({
+        username,
+        email,
+        fullName,
+        password,
+      });
+
+      const user = await this.usersRepository.exists({ where: { username: username } });
+
+      if (!user && username && email && fullName) {
+        this.logger.log({
+          METHOD: this.handleImportProfile.name,
+          MESSAGE: 'CREATING NEW USER',
+        });
+
+        const newCreator = await this.authservice.creatorSignup({ email, fullName, password, username });
+        await this.passwordsRepository.save({ userId: newCreator.userId, email: email, password: password });
+
+        this.logger.log({
+          METHOD: this.handleImportProfile.name,
+          NEW_CREATOR_EMAIL: email,
+          MESSAGE: '✅✅✅✅ NEW PROFILE CREATED ✅✅✅✅',
+          CREATED_NEW_CREATOR: newCreator.userId,
+        });
+
+        await this.importProfile(browser, {
+          ...input,
+          creatorId: newCreator.userId,
+          subDirectory: username,
+          url: profileUrl,
+        });
+
+        this.logger.log({
+          METHOD: this.handleImportProfile.name,
+          MESSAGE: '✅✅✅✅ ALL ASSETS IMPORTED',
+          TO: username,
+        });
+      }
     }
   }
 

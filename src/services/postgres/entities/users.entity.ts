@@ -11,11 +11,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserRoles } from '../../../util/enums';
 import type { JwtUser } from '../../auth';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { FanProfilesEntity } from './fan-profiles.entity';
+import { PasswordsEntity } from './passwords.entity';
 import { SessionsEntity } from './sessions.entity';
-import { UserRoles } from '../../../util/enums';
 
 registerEnumType(UserRoles, { name: 'UserRoles' });
 
@@ -83,6 +84,9 @@ export class UsersEntity {
   @Field(() => CreatorProfilesEntity)
   @OneToOne(() => CreatorProfilesEntity, (creatorProfile) => creatorProfile.user, { cascade: true })
   creatorProfile: CreatorProfilesEntity;
+
+  @OneToOne(() => PasswordsEntity, ({ user }) => user, { cascade: true })
+  passwordProfile: PasswordsEntity;
 
   @OneToMany(() => SessionsEntity, ({ user }) => user, { onUpdate: 'CASCADE' })
   sessionUser: SessionsEntity[];

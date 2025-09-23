@@ -1,9 +1,11 @@
+import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
-import { AwsS3Client } from './aws.module';
 import { ImageType, MediaType, ProviderTokens } from '../../util/enums';
+import { AwsS3Client, AwsS3RequestPreSignerClient } from './aws.module';
 
 interface UploadImageInput {
   buffer: Buffer;
@@ -24,6 +26,8 @@ export class AwsS3ClientService {
 
   public constructor(
     @Inject(ProviderTokens.AWS_S3_TOKEN) private awsS3Client: AwsS3Client,
+    @Inject(ProviderTokens.AWS_S3_REQUEST_PRE_SIGNER_TOKEN)
+    private awsS3RequestPreSignerClient: AwsS3RequestPreSignerClient,
     configService: ConfigService,
   ) {
     this.bucketName = configService.getOrThrow('AWS_BUCKET_NAME');
@@ -34,7 +38,7 @@ export class AwsS3ClientService {
 
     const { url, path } = this.getImagePathAndUrl({ url: extendedUrl, imageType: input.imageType });
 
-    await this.awsS3Client.putObject({
+    const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: path,
       ACL: 'public-read',
@@ -43,7 +47,18 @@ export class AwsS3ClientService {
       ContentType: input.mimeType,
     });
 
+    await this.awsS3Client.send(command);
+
     return url;
+  }
+
+  public async generateSignedUrl(key: string): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+
+    return await getSignedUrl(this.awsS3RequestPreSignerClient, command, { expiresIn: 60 });
   }
 
   public generateDefaultFanAvatarUrl(username: string): string {
@@ -55,11 +70,11 @@ export class AwsS3ClientService {
   }
 
   public generateDefaultFanBannerUrl(): string {
-    return `https://picsum.photos/seed/${Math.floor(Math.random() * 1000)}/4096/2160`;
+    return `https://picsum.photos/seed/${Math.floor(Math.random() * 100)}/4096/2160`;
   }
 
   public generateDefaultCreatorBannerUrl(): string {
-    return `https://picsum.photos/seed/${Math.floor(Math.random() * 1000)}/4096/2160`;
+    return `https://picsum.photos/seed/${Math.floor(Math.random() * 100)}/4096/2160`;
   }
 
   public getImagePathAndUrl(input: { url: string; imageType: ImageType }): {

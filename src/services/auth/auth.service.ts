@@ -1,5 +1,6 @@
 import { splitFullName } from '@app/helpers';
 import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
@@ -15,6 +16,7 @@ import {
 } from '../postgres/repositories';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';
+import { AdminSignupInput } from './dto/admin-signup.dto';
 import { AuthOk } from './dto/auth.dto';
 import { CreatorSignupInput } from './dto/creator-signup.dto';
 import { FanSignupInput } from './dto/fan-signup.dto';
@@ -29,6 +31,7 @@ export class AuthService {
     private awsS3ClientService: AwsS3ClientService,
     private usersRepository: UsersRepository,
     private sessionsRepository: SessionsRepository,
+    private configService: ConfigService,
     private fanProfilesRepository: FanProfilesRepository,
     private creatorProfilesRepository: CreatorProfilesRepository,
     @Inject(ProviderTokens.REQUEST_USER_TOKEN) private requestUser: Request,
@@ -61,17 +64,6 @@ export class AuthService {
       user.roles,
       accessTokenPayLoad.jti,
     );
-
-    this.logger.log({
-      ip: this.requestUser.ip,
-      userAgent: this.requestUser.headers['user-agent'],
-      userId: user.id,
-    });
-    await this.sessionsRepository.createSession({
-      ip: this.requestUser.ip,
-      userAgent: this.requestUser.headers['user-agent'],
-      userId: user.id,
-    });
 
     return {
       userId: user.id,
@@ -124,6 +116,33 @@ export class AuthService {
 
     const creator = await this.usersRepository.save(creatorProfileEntity);
     return this.login(creator.id);
+  }
+
+  public async adminSignup(input: AdminSignupInput): Promise<AuthOk> {
+    const { email, fullName, password } = input;
+
+    const adminPassword = this.configService.getOrThrow<string>('ADMIN_PASSWORD');
+    if (adminPassword !== password) return {} as AuthOk;
+
+    await this.scanAvailableEmail(input.email);
+    const username = await this.scanOrCreateUsername(input.username);
+
+    const adminProfileEntity = this.usersRepository.create({
+      username,
+      email,
+      roles: [UserRoles.ADMIN],
+      ...splitFullName(fullName),
+      password: await bcryptjs.hash(password, SALT),
+      avatarUrl: this.awsS3ClientService.generateDefaultCreatorAvatarUrl(fullName),
+      bannerUrl: this.awsS3ClientService.generateDefaultCreatorBannerUrl(),
+
+      creatorProfile: this.creatorProfilesRepository.create({
+        acceptedAt: new Date(),
+      }),
+    });
+
+    const admin = await this.usersRepository.save(adminProfileEntity);
+    return this.login(admin.id);
   }
 
   public async getStatus(jwtUser: JwtUser): Promise<UsersEntity> {

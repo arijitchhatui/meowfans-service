@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { Queue } from 'bull';
 import { Agent } from 'https';
-import { AssetType, MediaType, QueueTypes } from '../../util/enums';
+import { MediaType, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
@@ -70,12 +70,13 @@ export class DownloaderService {
         );
       }),
     );
+
     await this.uploadVaultQueue.add({ creatorId, ...input });
     return 'Job added';
   }
 
   public async handleUpload(input: UploadVaultQueueInput) {
-    const { vaultObjectIds, creatorId } = input;
+    const { vaultObjectIds, creatorId, destination } = input;
     if (!vaultObjectIds.length) return;
     console.log({ vaultObjectIds });
 
@@ -107,7 +108,7 @@ export class DownloaderService {
               MediaType.PROFILE_MEDIA,
               buffer,
               mimeType,
-              AssetType.HIDDEN,
+              destination,
             );
 
             await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });

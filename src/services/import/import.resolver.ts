@@ -8,7 +8,7 @@ import { ImportService } from './import.service';
 export class ImportResolver {
   constructor(private importService: ImportService) {}
 
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.ADMIN])
   @Query(() => String)
   public async initiate(@CurrentUser() creatorId: string, @Args('input') input: CreateImportInput) {
     return await this.importService.initiate(creatorId, input);
