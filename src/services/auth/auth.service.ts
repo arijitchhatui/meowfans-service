@@ -1,19 +1,13 @@
 import { splitFullName } from '@app/helpers';
-import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
-import { Request } from 'express';
-import { ProviderTokens, UserRoles } from '../../util/enums';
+import { UserRoles } from '../../util/enums';
 import { AwsS3ClientService } from '../aws';
 import { UsersEntity } from '../postgres/entities';
-import {
-  CreatorProfilesRepository,
-  FanProfilesRepository,
-  SessionsRepository,
-  UsersRepository,
-} from '../postgres/repositories';
+import { CreatorProfilesRepository, FanProfilesRepository, UsersRepository } from '../postgres/repositories';
 import { JWT_VERSION, REMOVE_SPACE_REGEX, SALT, TokenType, USER_NAME_CASE_REGEX } from './constants';
 import { JwtUser } from './decorators/current-user.decorator';
 import { AdminSignupInput } from './dto/admin-signup.dto';
@@ -26,15 +20,14 @@ import { VerifyJwtInput } from './dto/verify.dto';
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
+
   constructor(
     private jwtService: JwtService,
-    private awsS3ClientService: AwsS3ClientService,
     private usersRepository: UsersRepository,
-    private sessionsRepository: SessionsRepository,
     private configService: ConfigService,
     private fanProfilesRepository: FanProfilesRepository,
+    private awsS3ClientService: AwsS3ClientService,
     private creatorProfilesRepository: CreatorProfilesRepository,
-    @Inject(ProviderTokens.REQUEST_USER_TOKEN) private requestUser: Request,
   ) {}
 
   public async validateUser(input: LoginInput): Promise<{ sub: string }> {

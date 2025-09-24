@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { CreateImportInput } from '../../src/services/import/dto/create-import.dto';
+import { CreateImportInput } from '../../src/services/extractor/dto/create-import.dto';
 
 @Injectable()
 @ValidatorConstraint({ name: 'HasSubdirectoryForBranch', async: true })

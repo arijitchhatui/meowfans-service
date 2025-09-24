@@ -13,8 +13,9 @@ import { CreatorProfilesModule } from './creator-profiles';
 import { CreatorRestrictsModule } from './creator-restricts/creator-restricts.module';
 import { DocumentSelectorModule } from './document-selector/document-selector.module';
 import { DownloaderModule } from './downloader/downloader.module';
+import { ExtractorModule } from './extractor/extractor.module';
 import { FanProfilesModule } from './fan-profiles';
-import { ImportModule } from './import/import.module';
+import { ImportModule } from './import';
 import { MessageChannelParticipantsModule } from './message-channel-participants';
 import { MessageChannelsModule } from './message-channels';
 import { MessagesModule } from './messages';
@@ -70,6 +71,7 @@ import { VaultsModule } from './vaults';
     VaultsModule,
     DownloaderModule,
     DocumentSelectorModule,
+    ExtractorModule,
   ],
   controllers: [],
   providers: [],

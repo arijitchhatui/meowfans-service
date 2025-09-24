@@ -11,8 +11,6 @@ export class DownloaderConsumerService {
 
   constructor(private downloaderService: DownloaderService) {}
 
-  onModuleInit() {}
-
   @Process()
   public async startDownloading(input: Job<UploadVaultQueueInput>) {
     this.logger.log({ JOB_STARTED: 'started downloading' });
