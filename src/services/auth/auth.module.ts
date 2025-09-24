@@ -1,10 +1,7 @@
 import { CryptoService } from '@app/methods';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { REQUEST } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { Request } from 'express';
-import { ProviderTokens } from '../../util/enums';
 import { AwsS3Module } from '../aws';
 import { SessionsService } from '../sessions/sessions.service';
 import { AuthController } from './auth.controller';
@@ -12,6 +9,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UniqueEmailValidator, UniqueUsernameValidator } from './validators';
 
+@Global()
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -23,19 +21,7 @@ import { UniqueEmailValidator, UniqueUsernameValidator } from './validators';
     AwsS3Module,
   ],
   controllers: [AuthController],
-  providers: [
-    JwtStrategy,
-    AuthService,
-    UniqueEmailValidator,
-    UniqueUsernameValidator,
-    CryptoService,
-    SessionsService,
-    {
-      provide: ProviderTokens.REQUEST_USER_TOKEN,
-      inject: [REQUEST],
-      useFactory: (req: Request) => req,
-    },
-  ],
+  providers: [JwtStrategy, AuthService, UniqueEmailValidator, UniqueUsernameValidator, CryptoService, SessionsService],
   exports: [AuthService],
 })
 export class AuthModule {}
