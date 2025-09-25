@@ -33,6 +33,9 @@ export class CreateImportInput {
 
   @Field(() => Int, { defaultValue: 0 })
   exclude: number;
+
+  @Field(() => [String], { nullable: true })
+  exceptions: string[];
 }
 
 export class CreateImportQueueInput extends CreateImportInput {
