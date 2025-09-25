@@ -379,8 +379,8 @@ export class ImportService {
         break;
       }
 
-      const imageUrls = await this.importBranch(browser, { ...input, url: queryUrl });
-      imageUrls.push(...imageUrls);
+      const branchImageUrls = await this.importBranch(browser, { ...input, url: queryUrl });
+      imageUrls.push(...branchImageUrls);
     }
 
     return imageUrls;
