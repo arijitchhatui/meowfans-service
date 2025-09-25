@@ -95,6 +95,8 @@ export class ImportService {
   }
 
   public async handleImportProfile(browser: Browser, input: CreateImportQueueInput, profileUrls: string[]) {
+    const { exceptions } = input;
+
     for (const profileUrl of Array.from(new Set(profileUrls))) {
       console.log({
         METHOD: this.handleImportProfile.name,
@@ -119,7 +121,7 @@ export class ImportService {
         password,
       });
 
-      if (username && email && fullName) {
+      if (username && email && fullName && !exceptions.includes(username)) {
         const user = await this.usersRepository.findOne({ where: { username: username } });
 
         if (user) {
