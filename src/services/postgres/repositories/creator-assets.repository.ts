@@ -44,4 +44,16 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
   private async insertAssetType(assetType?: AssetType | null): Promise<AssetType> {
     return !assetType || !assetType.length ? AssetType.PRIVATE : assetType;
   }
+
+  public async getAllAssets(input: PaginationInput) {
+    return await this.createQueryBuilder('c_asset')
+      .leftJoinAndSelect('c_asset.asset', 'asset')
+      .leftJoinAndSelect('c_asset.creatorProfile', 'creatorProfile')
+      .leftJoinAndSelect('creatorProfile.user', 'user')
+      .where('c_asset.type = :type', { type: input.assetType })
+      .limit(input.limit)
+      .offset(input.offset)
+      .orderBy('asset.createdAt', input.orderBy)
+      .getManyAndCount();
+  }
 }

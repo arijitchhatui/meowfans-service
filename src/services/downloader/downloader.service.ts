@@ -1,9 +1,10 @@
 import { InjectQueue } from '@nestjs/bull';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { Queue } from 'bull';
 import { Agent } from 'https';
-import { MediaType, QueueTypes } from '../../util/enums';
+import Redis from 'ioredis';
+import { MediaType, ProviderTokens, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
@@ -13,6 +14,8 @@ import { UploadVaultInput, UploadVaultQueueInput } from './dto';
 
 @Injectable()
 export class DownloaderService {
+  private isTerminated = false;
+
   private logger = new Logger(DownloaderService.name);
   private readonly agent = new Agent({
     family: 4,
@@ -25,12 +28,20 @@ export class DownloaderService {
     private vaultObjectsRepository: VaultsObjectsRepository,
     private documentSelectorService: DocumentSelectorService,
     private assetsService: AssetsService,
+    @Inject(ProviderTokens.REDIS_TOKEN) private redis: Redis,
   ) {}
 
   onModuleInit() {
     this.uploadVaultQueue.on('active', (e) => console.log('active', e));
     this.uploadVaultQueue.on('error', (e) => console.log('error', e));
     this.uploadVaultQueue.on('failed', (e) => console.log('failed', e));
+  }
+
+  public async terminateDownloading() {
+    this.isTerminated = true;
+
+    this.redis.flushall();
+    this.redis.flushdb();
   }
 
   public async fetch(downloadUrl: string, baseUrl: string): Promise<Buffer | null> {
@@ -71,6 +82,8 @@ export class DownloaderService {
       }),
     );
 
+    if (this.isTerminated) return;
+
     await this.uploadVaultQueue.add({ creatorId, ...input });
     return 'Job added';
   }
@@ -83,6 +96,8 @@ export class DownloaderService {
     try {
       for (const vaultObjectId of Array.from(new Set(vaultObjectIds))) {
         console.log({ before: vaultObjectId });
+
+        if (this.isTerminated) break;
 
         const vaultObject = await this.vaultObjectsRepository.findOneOrFail({
           where: { id: vaultObjectId },

@@ -1,6 +1,6 @@
 import { Field, ID, InputType, Int } from '@nestjs/graphql';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { AssetType, PostTypes, SortOrder } from '../../src/util/enums';
+import { AssetType, PostTypes, SortOrder, UserRoles } from '../../src/util/enums';
 import { DownloadStates } from '../../src/util/enums/download-state';
 
 @InputType()
@@ -33,4 +33,7 @@ export class PaginationInput {
 
   @Field(() => AssetType, { nullable: true })
   assetType: AssetType;
+
+  @Field(() => UserRoles, { nullable: true, defaultValue: UserRoles.CREATOR })
+  role: UserRoles;
 }

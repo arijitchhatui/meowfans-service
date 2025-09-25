@@ -45,6 +45,7 @@ export class VaultsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
+  @Field(() => CreatorProfilesEntity)
   @ManyToOne(() => CreatorProfilesEntity, ({ vaults }) => vaults, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;

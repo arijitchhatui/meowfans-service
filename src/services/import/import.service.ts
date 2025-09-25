@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Browser } from '@playwright/test';
 import { randomUUID } from 'crypto';
-import { UserRoles } from '../../util/enums';
 import { AuthService } from '../auth';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { PasswordsRepository, UsersRepository, VaultsRepository } from '../postgres/repositories';
@@ -27,10 +26,7 @@ export class ImportService {
   }
 
   public async importProfiles(browser: Browser, input: CreateImportQueueInput) {
-    const isAdmin = await this.usersRepository
-      .createQueryBuilder('user')
-      .where('user.roles && :roles', { roles: [UserRoles.ADMIN] })
-      .getOne();
+    const isAdmin = await this.usersRepository.isAdmin(input.creatorId);
     if (!isAdmin) return;
 
     const { url, start, exclude } = input;
@@ -88,7 +84,7 @@ export class ImportService {
         return;
       }
 
-      await this.handleImportProfile(browser, input, slicedUrls);
+      // await this.handleImportProfile(browser, input, slicedUrls);
     } finally {
       await page.close();
     }
