@@ -4,6 +4,8 @@ import { UserRoles } from '../../util/enums';
 import { GetAllAssetsOutput } from '../assets';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { GetAllCreatorsOutput } from '../creator-profiles';
+import { UploadVaultQueueInput } from '../downloader/dto';
+import { CreateImportQueueInput } from '../import/dto';
 import { CreatorAssetsEntity } from '../postgres/entities';
 import { GetAllVaultsOutput, GetCreatorVaultObjectsOutput } from '../vaults/dto';
 import { AdminService } from './admin.service';
@@ -48,6 +50,18 @@ export class AdminResolver {
   @Mutation(() => String)
   public async downloadAllCreatorObjects(@Args('input') input: PaginationInput) {
     return await this.adminService.downloadAllCreatorObjects(input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
+  @Mutation(() => String)
+  public async downloadCreatorObjectsAsBatch(@Args('input') input: UploadVaultQueueInput) {
+    return await this.adminService.downloadCreatorObjectsAsBatch(input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
+  @Mutation(() => String)
+  public async initiateCreatorObjectsImport(@Args('input') input: CreateImportQueueInput) {
+    return await this.adminService.initiateCreatorObjectsImport(input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.ADMIN])

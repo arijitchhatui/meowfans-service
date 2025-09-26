@@ -1,5 +1,5 @@
 import { HasSubdirectoryForBranch } from '@app/validators';
-import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty, Validate } from 'class-validator';
 import { DocumentQualityType, FileType } from '../../../util/enums';
 import { ImportTypes } from '../../../util/enums/import-types';
@@ -38,6 +38,8 @@ export class CreateImportInput {
   exceptions: string[];
 }
 
+@InputType()
 export class CreateImportQueueInput extends CreateImportInput {
+  @Field(() => String)
   creatorId: string;
 }

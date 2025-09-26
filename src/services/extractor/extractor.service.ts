@@ -62,6 +62,7 @@ export class ExtractorService {
 
   public async handleImport(input: CreateImportQueueInput) {
     this.isTerminated = false;
+    this.importService.initiateAllJobs();
 
     const { importType } = input;
     const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
@@ -70,6 +71,7 @@ export class ExtractorService {
       METHOD: this.handleImport.name,
       BROWSER_INITIATE_MESSAGE: 'Browser is initialized',
       BROWSER_VERSION: browser.version(),
+      hasTerminated: this.isTerminated,
     });
 
     if (this.isTerminated) {

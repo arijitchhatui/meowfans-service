@@ -48,6 +48,10 @@ export class DownloaderService {
     this.logger.log({ message: 'Terminated downloading', method: this.terminateDownloading.name });
   }
 
+  public async startDownloading() {
+    this.isTerminated = false;
+  }
+
   public async fetch(downloadUrl: string, baseUrl: string): Promise<Buffer | null> {
     this.logger.log('PROCESSING REQUEST THROUGH AXIOS 🚀🚀🚀🚀');
     this.logger.log({ downloadUrl, baseUrl });
@@ -75,6 +79,7 @@ export class DownloaderService {
 
   public async uploadVault(creatorId: string, input: UploadVaultInput) {
     this.isTerminated = false;
+    this.startDownloading();
 
     this.logger.log({
       method: this.uploadVault.name,

@@ -19,6 +19,6 @@ import { ExtractorService } from './extractor.service';
       },
     }),
   ],
-  exports: [],
+  exports: [ExtractorService],
 })
 export class ExtractorModule {}
