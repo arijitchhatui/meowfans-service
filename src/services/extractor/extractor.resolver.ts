@@ -14,7 +14,7 @@ export class ExtractorResolver {
     return await this.extractorService.initiate(creatorId, input);
   }
 
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.ADMIN])
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
   @Mutation(() => Boolean)
   public async terminate(@CurrentUser() userId: string) {
     return await this.extractorService.terminateAllJobs(userId);

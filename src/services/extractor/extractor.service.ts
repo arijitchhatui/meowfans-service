@@ -28,7 +28,7 @@ export class ExtractorService {
     const { url, fileType, totalContent, qualityType, subDirectory, importType, exclude, start } = input;
     const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
 
-    console.log({
+    this.logger.log({
       message: 'Importing started',
       url,
       creatorId: creator.id,
@@ -46,8 +46,8 @@ export class ExtractorService {
   }
 
   public async terminateAllJobs(userId: string) {
-    const user = await this.usersRepository.findOneOrFail({ where: { id: userId } });
-    if (!user) return false;
+    const isAdmin = await this.usersRepository.isAdmin(userId);
+    if (!isAdmin) return false;
 
     this.redis.flushall();
     this.redis.flushdb();
@@ -55,22 +55,24 @@ export class ExtractorService {
     this.isTerminated = true;
 
     await this.importService.terminateAllJobs();
-    console.warn({ message: `All jobs terminated`, status: this.isTerminated });
+    this.logger.warn({ message: `All jobs terminated`, status: this.isTerminated });
     return true;
   }
 
   public async handleImport(input: CreateImportQueueInput) {
+    this.isTerminated = false;
+
     const { importType, creatorId } = input;
     const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
 
-    console.log({
+    this.logger.log({
       METHOD: this.handleImport.name,
       BROWSER_INITIATE_MESSAGE: 'Browser is initialized',
       BROWSER_VERSION: browser.version(),
     });
 
     if (this.isTerminated) {
-      console.log({ message: '⚠️⚠️⚠️ TERMINATED EARLIER BEFORE EXECUTION HAS STARTED ⚠️⚠️⚠️ ' });
+      this.logger.log({ message: '⚠️⚠️⚠️ TERMINATED EARLIER BEFORE EXECUTION HAS STARTED ⚠️⚠️⚠️ ' });
       return;
     }
 
@@ -88,10 +90,10 @@ export class ExtractorService {
           return;
       }
     } catch (error: unknown) {
-      console.error({ METHOD: this.handleImport.name, IMPORT_FAILED: error });
+      this.logger.error({ METHOD: this.handleImport.name, IMPORT_FAILED: error });
       throw error;
     } finally {
-      console.log({
+      this.logger.log({
         METHOD: this.handleImport.name,
         MESSAGE: this.isTerminated
           ? '🛑⚠️⚠️ TERMINATED IMPORT OPERATION, CHECK FOR LOGS ⚠️⚠️🛑'

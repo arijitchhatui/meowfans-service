@@ -1,13 +1,14 @@
 import { PaginationInput } from '@app/helpers';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AssetType } from '../../util/enums';
+import { GetAllCreatorsOutput } from '../creator-profiles';
 import { DownloaderService } from '../downloader/downloader.service';
 import { CreatorAssetsRepository, UsersRepository, VaultsObjectsRepository } from '../postgres/repositories';
 import { GetCreatorVaultObjectsOutput } from '../vaults/dto';
 
 @Injectable()
 export class AdminService {
-  private isTerminated = false;
+  private logger = new Logger(AdminService.name);
 
   constructor(
     private downloaderService: DownloaderService,
@@ -16,18 +17,32 @@ export class AdminService {
     private creatorAssetsRepository: CreatorAssetsRepository,
   ) {}
 
-  public async getAllCreators(input: PaginationInput) {
-    const [creators, count] = await this.usersRepository.getAllCreators(input);
+  public async getAllCreators(input: PaginationInput): Promise<GetAllCreatorsOutput> {
+    const [users, count] = await this.usersRepository.getAllCreators(input);
+
+    const creators = await Promise.all(
+      users.map(async (creator) => {
+        return {
+          ...creator,
+          vaultCount: await this.vaultObjectsRepository.getCreatorTotalVaultObjectsCount(creator.id, input),
+        };
+      }),
+    );
+
     return { creators, count };
   }
 
   public async getCreatorVaultObjects(input: PaginationInput) {
     const { relatedUserId } = input;
+
+    this.logger.log('by admin');
+
     if (!relatedUserId) return {} as GetCreatorVaultObjectsOutput;
 
-    const creatorVaultObject = await this.vaultObjectsRepository.getCreatorVaultObjects(relatedUserId, input);
+    const [vaultObjects, count] = await this.vaultObjectsRepository
+      .getCreatorVaultObjects(relatedUserId, input)
+      .getManyAndCount();
 
-    const [vaultObjects, count] = await creatorVaultObject.getManyAndCount();
     return { vaultObjects, count };
   }
 
@@ -52,19 +67,22 @@ export class AdminService {
   public async downloadAllCreatorObjects(input: PaginationInput) {
     if (!input.relatedUserId) return;
 
-    const objects = await this.vaultObjectsRepository.getTotalObjects(input.relatedUserId, input);
+    this.logger.log({ MESSAGE: 'STARTED DOWNLOADING ALL OBJECTS OF A CREATOR', CREATOR_ID: input.relatedUserId });
+
+    const objects = await this.vaultObjectsRepository.getTotalPendingObjectsOfACreator(input.relatedUserId);
     const vaultObjectIds = objects.map((vaultObject) => vaultObject.id);
 
     await this.downloaderService.uploadVault(input.relatedUserId, {
       destination: AssetType.PRIVATE,
       vaultObjectIds: vaultObjectIds,
     });
+    return 'Downloading is initiated';
   }
 
   public async terminateDownloading(adminId: string) {
     const exists = await this.usersRepository.isAdmin(adminId);
     if (exists) this.downloaderService.terminateDownloading();
 
-    return 'Stopped downloading';
+    return 'Downloading is terminated!!!';
   }
 }

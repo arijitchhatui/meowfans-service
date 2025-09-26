@@ -76,7 +76,7 @@ export class AssetsService {
   ): Promise<UploadMediaOutput> {
     const uploaded = await this.uploadImageToCloud(creatorId, mediaType, buffer, originalFileName, mimeType);
     const asset = await this.injectAsset(creatorId, uploaded, assetType);
-    console.log('UPLOADED TO S3');
+    this.logger.log('UPLOADED TO S3');
     return { ...uploaded, assetId: asset.id };
   }
 
