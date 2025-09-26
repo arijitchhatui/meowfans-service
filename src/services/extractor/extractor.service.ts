@@ -52,7 +52,8 @@ export class ExtractorService {
     this.redis.flushall();
     this.redis.flushdb();
 
-    this.isTerminated = true;
+    if (this.isTerminated) this.isTerminated = false;
+    else this.isTerminated = true;
 
     await this.importService.terminateAllJobs();
     this.logger.warn({ message: `All jobs terminated`, status: this.isTerminated });
@@ -62,7 +63,7 @@ export class ExtractorService {
   public async handleImport(input: CreateImportQueueInput) {
     this.isTerminated = false;
 
-    const { importType, creatorId } = input;
+    const { importType } = input;
     const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
 
     this.logger.log({
@@ -100,7 +101,6 @@ export class ExtractorService {
           : '✅✅✅ IMPORT OPERATION EXECUTED SUCCESSFULLY ✅✅✅',
       });
       await browser.close();
-      this.terminateAllJobs(creatorId);
       this.isTerminated = false;
     }
   }

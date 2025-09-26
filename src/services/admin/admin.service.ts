@@ -25,6 +25,7 @@ export class AdminService {
         return {
           ...creator,
           vaultCount: await this.vaultObjectsRepository.getCreatorTotalVaultObjectsCount(creator.id, input),
+          assetCount: await this.creatorAssetsRepository.getCreatorsAssetsCount(creator.id, input),
         };
       }),
     );

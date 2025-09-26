@@ -16,6 +16,8 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {
     return await this.createQueryBuilder('ca')
       .leftJoinAndSelect('ca.asset', 'asset')
+      .leftJoinAndSelect('ca.creatorProfile', 'creatorProfile')
+      .leftJoinAndSelect('creatorProfile.user', 'user')
       .where('ca.creatorId = :creatorId', { creatorId: creatorId })
       .andWhere('ca.type = :type', { type: await this.insertAssetType(input.assetType) })
       .orderBy('ca.createdAt', input.orderBy)
@@ -55,5 +57,12 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
       .offset(input.offset)
       .orderBy('asset.createdAt', input.orderBy)
       .getManyAndCount();
+  }
+
+  public async getCreatorsAssetsCount(creatorId: string, input: PaginationInput) {
+    return await this.createQueryBuilder('ca')
+      .where('ca.type = :type', { type: input.assetType })
+      .andWhere('ca.creatorId = :creatorId', { creatorId: creatorId })
+      .getCount();
   }
 }

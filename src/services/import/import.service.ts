@@ -22,7 +22,8 @@ export class ImportService {
   ) {}
 
   public async terminateAllJobs() {
-    this.isTerminated = true;
+    if (this.isTerminated) this.isTerminated = true;
+    else this.isTerminated = false;
   }
 
   public async importProfiles(browser: Browser, input: CreateImportQueueInput) {

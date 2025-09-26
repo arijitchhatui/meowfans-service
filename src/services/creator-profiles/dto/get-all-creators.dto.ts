@@ -5,6 +5,9 @@ import { UsersEntity } from '../../postgres/entities';
 export class ExtendedUsersEntity extends UsersEntity {
   @Field(() => Int)
   vaultCount: number;
+
+  @Field(() => Int)
+  assetCount: number;
 }
 
 @ObjectType()
