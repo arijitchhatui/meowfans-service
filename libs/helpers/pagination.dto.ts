@@ -31,7 +31,7 @@ export class PaginationInput {
   @Field(() => DownloadStates, { defaultValue: DownloadStates.PENDING })
   status: DownloadStates;
 
-  @Field(() => AssetType, { nullable: true })
+  @Field(() => AssetType, { nullable: true, defaultValue: AssetType.PRIVATE })
   assetType: AssetType;
 
   @Field(() => UserRoles, { nullable: true, defaultValue: UserRoles.CREATOR })

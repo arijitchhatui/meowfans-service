@@ -32,12 +32,12 @@ export class ImportService {
     const { url, start, exclude } = input;
 
     if (this.isTerminated) {
-      console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return;
     }
 
     const page = await browser.newPage();
-    console.log({
+    this.logger.log({
       METHOD: this.importProfiles.name,
       MESSAGE: 'STARTED IMPORTING PROFILES',
       url,
@@ -47,14 +47,14 @@ export class ImportService {
       try {
         await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       } catch {
-        console.warn({
+        this.logger.warn({
           METHOD: this.importProfiles.name,
           NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
         });
         try {
           await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
         } catch {
-          console.warn({
+          this.logger.warn({
             METHOD: this.importProfiles.name,
             NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
           });
@@ -68,23 +68,23 @@ export class ImportService {
       const allQueryUrls = anchorUrls.filter((url) => regex.test(url));
 
       const queryUrls = Array.from(new Set(allQueryUrls));
-      console.log({
+      this.logger.log({
         METHOD: this.importProfiles.name,
         queryUrls,
       });
 
       const slicedUrls = queryUrls.slice(start, queryUrls.length - exclude);
-      console.log({
+      this.logger.log({
         METHOD: this.importProfile.name,
         slicedUrls,
       });
 
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         return;
       }
 
-      // await this.handleImportProfile(browser, input, slicedUrls);
+      await this.handleImportProfile(browser, input, slicedUrls);
     } finally {
       await page.close();
     }
@@ -94,14 +94,14 @@ export class ImportService {
     const { exceptions } = input;
 
     for (const profileUrl of Array.from(new Set(profileUrls))) {
-      console.log({
+      this.logger.log({
         METHOD: this.handleImportProfile.name,
         VISITING_PROFILE_URL: profileUrl,
         hasTerminated: this.isTerminated,
       });
 
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         break;
       }
 
@@ -110,7 +110,7 @@ export class ImportService {
       const fullName = username?.toUpperCase();
       const password = randomUUID();
 
-      console.log({
+      this.logger.log({
         username,
         email,
         fullName,
@@ -121,13 +121,13 @@ export class ImportService {
         const user = await this.usersRepository.findOne({ where: { username: username } });
 
         if (user) {
-          console.log({
+          this.logger.log({
             METHOD: this.handleImportProfile.name,
             MESSAGE: 'IMPORTING INTO EXISTING USER',
           });
 
           if (this.isTerminated) {
-            console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+            this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
             return;
           }
 
@@ -138,20 +138,20 @@ export class ImportService {
             url: profileUrl,
           });
         } else {
-          console.log({
+          this.logger.log({
             METHOD: this.handleImportProfile.name,
             MESSAGE: 'CREATING NEW USER',
           });
 
           if (this.isTerminated) {
-            console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+            this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
             return;
           }
 
           const newCreator = await this.authservice.creatorSignup({ email, fullName, password, username });
           await this.passwordsRepository.save({ userId: newCreator.userId, email: email, password: password });
 
-          console.log({
+          this.logger.log({
             METHOD: this.handleImportProfile.name,
             NEW_CREATOR_EMAIL: email,
             MESSAGE: '✅✅✅✅ NEW PROFILE CREATED ✅✅✅✅',
@@ -166,7 +166,7 @@ export class ImportService {
           });
         }
 
-        console.log({
+        this.logger.log({
           METHOD: this.handleImportProfile.name,
           MESSAGE: '✅✅✅✅ ALL ASSETS IMPORTED',
           TO: username,
@@ -179,12 +179,12 @@ export class ImportService {
     const { url, subDirectory, start, exclude } = input;
 
     if (this.isTerminated) {
-      console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return;
     }
 
     const page = await browser.newPage();
-    console.log({
+    this.logger.log({
       METHOD: this.importProfile.name,
       MESSAGE: 'STARTED IMPORTING PROFILE',
       url,
@@ -194,7 +194,7 @@ export class ImportService {
       try {
         await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       } catch {
-        console.warn({
+        this.logger.warn({
           METHOD: this.importProfile.name,
           NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
         });
@@ -213,7 +213,7 @@ export class ImportService {
       const allQueryUrls = anchorUrls.filter((url) => url.includes(`/user/${subDirectory}?o=`));
 
       const queryUrls = Array.from(new Set(allQueryUrls));
-      console.log({
+      this.logger.log({
         METHOD: this.importProfile.name,
         queryUrls,
       });
@@ -228,23 +228,23 @@ export class ImportService {
       const formattedUrls = Array.from({ length: (max - min) / 50 + 1 }, (_, i) => `${url}?o=${min + i * 50}`);
       const implementedUrls = [url, ...formattedUrls];
 
-      console.log({
+      this.logger.log({
         METHOD: this.importProfile.name,
         implementedUrls,
       });
 
       const toBeImportedUrls = implementedUrls.slice(start, implementedUrls.length - exclude);
 
-      console.log({ toBeImportedUrls });
+      this.logger.log({ toBeImportedUrls });
 
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         return;
       }
 
       const imageUrls = await this.handleQueryUrls(browser, input, toBeImportedUrls);
 
-      console.log({
+      this.logger.log({
         METHOD: this.importProfile.name,
         imageUrls,
       });
@@ -257,7 +257,7 @@ export class ImportService {
     const imageUrls: string[] = [];
 
     if (this.isTerminated) {
-      console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return [];
     }
 
@@ -266,7 +266,7 @@ export class ImportService {
       try {
         await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
       } catch {
-        console.warn({
+        this.logger.warn({
           METHOD: this.importBranch.name,
           NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
         });
@@ -277,25 +277,25 @@ export class ImportService {
         }
       }
 
-      console.log({
+      this.logger.log({
         METHOD: this.importBranch.name,
         VISITING_QUERY_URL: input.url,
       });
 
       const branchUrls = await this.documentSelectorService.getAnchors(page);
       const filteredUrls = await this.handleFilter(branchUrls, input.url, input.subDirectory);
-      console.log({
+      this.logger.log({
         METHOD: this.importBranch.name,
         filteredUrls,
       });
 
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         return [];
       }
 
       const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
-      console.log({
+      this.logger.log({
         METHOD: this.importBranch.name,
         validImageUrls,
       });
@@ -311,7 +311,7 @@ export class ImportService {
     const { url, qualityType } = input;
 
     if (this.isTerminated) {
-      console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return [];
     }
 
@@ -320,7 +320,7 @@ export class ImportService {
       try {
         await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       } catch {
-        console.warn({
+        this.logger.warn({
           METHOD: this.importPage.name,
           NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: url,
         });
@@ -331,26 +331,26 @@ export class ImportService {
         }
       }
 
-      console.log({
+      this.logger.log({
         METHOD: this.importPage.name,
         VISITING_SINGLE_BRANCH_URL: url,
       });
 
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         return [];
       }
 
       const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
       const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
 
-      console.log({
+      this.logger.log({
         METHOD: this.importPage.name,
         FILTERED_IMAGES_COUNT: filteredUrls.length,
       });
 
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         return [];
       }
       await this.handleUploadToVault(input.creatorId, url, filteredUrls);
@@ -365,13 +365,13 @@ export class ImportService {
     const imageUrls: string[] = [];
 
     if (this.isTerminated) {
-      console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return;
     }
 
     for (const queryUrl of Array.from(new Set(queryUrls))) {
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         break;
       }
 
@@ -385,36 +385,36 @@ export class ImportService {
   private async handleBranchUrls(browser: Browser, input: CreateImportQueueInput, formattedUrls: string[]) {
     const imageUrls: string[] = [];
 
-    console.log({ status: this.isTerminated });
+    this.logger.log({ status: this.isTerminated });
     if (this.isTerminated) {
-      console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return [];
     }
 
     for (const anchor of formattedUrls) {
       if (this.isTerminated) {
-        console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         break;
       }
 
-      console.log({ status: this.isTerminated });
+      this.logger.log({ status: this.isTerminated });
 
       try {
-        console.log({
+        this.logger.log({
           METHOD: this.handleBranchUrls.name,
           VISITING_BRANCH_URL: anchor,
           LEFT_BRANCH_URL: formattedUrls.length - formattedUrls.indexOf(anchor) + 1,
         });
 
         if (this.isTerminated) {
-          console.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+          this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
           break;
         }
 
         const urls = await this.importPage(browser, { ...input, url: anchor });
         imageUrls.push(...urls);
       } catch {
-        console.error({
+        this.logger.error({
           METHOD: this.handleBranchUrls.name,
           ERROR_WHILE_PROCESSING: anchor,
         });

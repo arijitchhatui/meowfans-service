@@ -27,7 +27,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .getCount();
   }
 
-  public async creatorVaultObjects(creatorId: string, input: PaginationInput) {
+  public creatorVaultObjects(creatorId: string, input: PaginationInput) {
     return this.createQueryBuilder('vo')
       .leftJoinAndSelect('vo.vault', 'vault')
       .leftJoinAndSelect('vault.creatorProfile', 'creatorProfile')
@@ -50,11 +50,11 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       );
   }
 
-  public async getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
-    return await this.creatorVaultObjects(creatorId, input);
+  public getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
+    return this.creatorVaultObjects(creatorId, input);
   }
 
-  public async getTotalVaultObjectsCount(creatorId: string, input: PaginationInput) {
+  public async getCreatorTotalVaultObjectsCount(creatorId: string, input: PaginationInput) {
     return await this.createQueryBuilder('vo')
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vo.status = :status', { status: input.status })
@@ -62,10 +62,10 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .getCount();
   }
 
-  public async getTotalObjects(creatorId: string, input: PaginationInput) {
+  public async getTotalPendingObjectsOfACreator(creatorId: string) {
     return await this.createQueryBuilder('vo')
       .leftJoinAndSelect('vo.vault', 'vault')
-      .where('vo.status = :status', { status: input.status })
+      .where('vo.status IN (:...status)', { status: [DownloadStates.PENDING, DownloadStates.PROCESSING] })
       .andWhere('vault.creatorId = :creatorId', { creatorId: creatorId })
       .getMany();
   }
