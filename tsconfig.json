@@ -24,7 +24,9 @@
       "@app/methods": ["./libs/methods"],
       "@app/pipes": ["./libs/pipes"],
       "@app/validation": ["./libs/validation"],
-      "@app/validators": ["./libs/validators"]
+      "@app/validators": ["./libs/validators"],
+      "@app/middleware": ["./libs/middleware"]
+
     },
   }
 }

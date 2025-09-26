@@ -38,6 +38,8 @@ export class CreateImportInput {
   exceptions: string[];
 }
 
+@InputType()
 export class CreateImportQueueInput extends CreateImportInput {
+  @Field(() => String)
   creatorId: string;
 }

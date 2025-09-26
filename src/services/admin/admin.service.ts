@@ -3,6 +3,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AssetType } from '../../util/enums';
 import { GetAllCreatorsOutput } from '../creator-profiles';
 import { DownloaderService } from '../downloader/downloader.service';
+import { UploadVaultQueueInput } from '../downloader/dto';
+import { ExtractorService } from '../extractor/extractor.service';
+import { CreateImportQueueInput } from '../import/dto';
 import { CreatorAssetsRepository, UsersRepository, VaultsObjectsRepository } from '../postgres/repositories';
 import { GetCreatorVaultObjectsOutput } from '../vaults/dto';
 
@@ -15,6 +18,7 @@ export class AdminService {
     private usersRepository: UsersRepository,
     private vaultObjectsRepository: VaultsObjectsRepository,
     private creatorAssetsRepository: CreatorAssetsRepository,
+    private extractorService: ExtractorService,
   ) {}
 
   public async getAllCreators(input: PaginationInput): Promise<GetAllCreatorsOutput> {
@@ -78,6 +82,16 @@ export class AdminService {
       vaultObjectIds: vaultObjectIds,
     });
     return 'Downloading is initiated';
+  }
+
+  public async downloadCreatorObjectsAsBatch(input: UploadVaultQueueInput) {
+    await this.downloaderService.uploadVault(input.creatorId, input);
+    return 'Creator batch import has started';
+  }
+
+  public async initiateCreatorObjectsImport(input: CreateImportQueueInput) {
+    await this.extractorService.initiate(input.creatorId, input);
+    return 'Creator Objects import started';
   }
 
   public async terminateDownloading(adminId: string) {

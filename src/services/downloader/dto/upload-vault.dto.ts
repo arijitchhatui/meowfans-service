@@ -10,6 +10,8 @@ export class UploadVaultInput {
   destination: AssetType;
 }
 
+@InputType()
 export class UploadVaultQueueInput extends UploadVaultInput {
+  @Field(() => String)
   creatorId: string;
 }
