@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { shake } from 'radash';
-import {
-  AssetsRepository,
-  CreatorAssetsRepository,
-  CreatorProfilesRepository,
-  PostAssetsRepository,
-  UsersRepository,
-} from '../postgres/repositories';
+import { CreatorProfilesRepository, UsersRepository } from '../postgres/repositories';
 import { UpdateCreatorProfileInput } from './dto';
 
 @Injectable()
@@ -14,9 +8,6 @@ export class CreatorProfilesService {
   public constructor(
     private creatorProfilesRepository: CreatorProfilesRepository,
     private usersRepository: UsersRepository,
-    private postAssetsRepository: PostAssetsRepository,
-    private assetsRepository: AssetsRepository,
-    private creatorAssetsRepository: CreatorAssetsRepository,
   ) {}
 
   public async getCreatorProfile(creatorId: string) {

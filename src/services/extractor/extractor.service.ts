@@ -60,7 +60,7 @@ export class ExtractorService {
   }
 
   public async handleImport(input: CreateImportQueueInput) {
-    const { importType } = input;
+    const { importType, creatorId } = input;
     const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
 
     console.log({
@@ -97,8 +97,9 @@ export class ExtractorService {
           ? '🛑⚠️⚠️ TERMINATED IMPORT OPERATION, CHECK FOR LOGS ⚠️⚠️🛑'
           : '✅✅✅ IMPORT OPERATION EXECUTED SUCCESSFULLY ✅✅✅',
       });
-
       await browser.close();
+      this.terminateAllJobs(creatorId);
+      this.isTerminated = false;
     }
   }
 }

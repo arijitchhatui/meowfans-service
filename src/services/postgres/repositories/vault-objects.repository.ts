@@ -20,9 +20,18 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
     await this.update({ objectUrl: url }, { status: DownloadStates.PENDING });
   }
 
-  public async getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
+  public async getCreatorVaultObjectsCount(creatorId: string) {
     return await this.createQueryBuilder('vo')
       .leftJoinAndSelect('vo.vault', 'vault')
+      .where('vault.creatorId =: creatorId', { creatorId: creatorId })
+      .getCount();
+  }
+
+  public async creatorVaultObjects(creatorId: string, input: PaginationInput) {
+    return this.createQueryBuilder('vo')
+      .leftJoinAndSelect('vo.vault', 'vault')
+      .leftJoinAndSelect('vault.creatorProfile', 'creatorProfile')
+      .leftJoinAndSelect('creatorProfile.user', 'user')
       .where('vault.creatorId = :creatorId', { creatorId: creatorId })
       .andWhere('vault.id = vo.vaultId')
       .andWhere('vo.status = :status', { status: input.status })
@@ -38,7 +47,36 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
         END
         `,
         input.orderBy,
-      )
+      );
+  }
+
+  public async getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
+    return await this.creatorVaultObjects(creatorId, input);
+  }
+
+  public async getTotalVaultObjectsCount(creatorId: string, input: PaginationInput) {
+    return await this.createQueryBuilder('vo')
+      .leftJoinAndSelect('vo.vault', 'vault')
+      .where('vo.status = :status', { status: input.status })
+      .andWhere('vault.creatorId = :creatorId', { creatorId: creatorId })
+      .getCount();
+  }
+
+  public async getTotalObjects(creatorId: string, input: PaginationInput) {
+    return await this.createQueryBuilder('vo')
+      .leftJoinAndSelect('vo.vault', 'vault')
+      .where('vo.status = :status', { status: input.status })
+      .andWhere('vault.creatorId = :creatorId', { creatorId: creatorId })
       .getMany();
+  }
+
+  public async getAllVaults(input: PaginationInput) {
+    return await this.createQueryBuilder('vo')
+      .leftJoinAndSelect('vo.vault', 'vault')
+      .where('vo.status = :status', { status: input.status })
+      .limit(input.limit)
+      .offset(input.offset)
+      .orderBy('vault.createdAt', input.orderBy)
+      .getManyAndCount();
   }
 }

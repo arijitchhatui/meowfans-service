@@ -3,7 +3,6 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import * as path from 'path';
 import { ImageType, MediaType, ProviderTokens } from '../../util/enums';
 import { AwsS3Client, AwsS3RequestPreSignerClient } from './aws.module';
 
@@ -34,7 +33,7 @@ export class AwsS3ClientService {
   }
 
   public async uploadR2Object(input: UploadImageInput): Promise<string> {
-    const extendedUrl = this.createUrl(input.originalFileName, input.mediaType, input.userId);
+    const extendedUrl = this.createUrl(input.mediaType, input.userId);
 
     const { url, path } = this.getImagePathAndUrl({ url: extendedUrl, imageType: input.imageType });
 
@@ -44,7 +43,7 @@ export class AwsS3ClientService {
       ACL: 'public-read',
       Body: input.buffer,
       Metadata: input.metaData,
-      ContentType: input.mimeType,
+      ContentType: 'image/webp',
     });
 
     await this.awsS3Client.send(command);
@@ -85,7 +84,7 @@ export class AwsS3ClientService {
 
     const uri = new URL(input.url);
 
-    const imageTypeWithExtension = `_${imageType}.jpg`;
+    const imageTypeWithExtension = `_${imageType}.webp`;
 
     if (!url) return { url: '', path: '' };
 
@@ -97,10 +96,8 @@ export class AwsS3ClientService {
     };
   }
 
-  public createUrl(originalFileName: string, mediaType: MediaType, userId: string): string {
-    const extension = path.extname(originalFileName).substring(1);
-
-    const rawFileName = `${mediaType}/${userId}/${randomUUID()}/_original.${extension}`;
+  public createUrl(mediaType: MediaType, userId: string): string {
+    const rawFileName = `${mediaType}/${userId}/${randomUUID()}/_original.webp`;
 
     return `${process.env.AWS_BUCKET_URL}/${rawFileName}`;
   }

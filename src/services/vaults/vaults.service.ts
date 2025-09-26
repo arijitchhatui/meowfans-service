@@ -27,6 +27,7 @@ export class VaultsService {
 
   public async getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
     await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
-    return await this.vaultObjectsRepository.getCreatorVaultObjects(creatorId, input);
+    const creatorVaultObject = await this.vaultObjectsRepository.getCreatorVaultObjects(creatorId, input);
+    return creatorVaultObject.getMany();
   }
 }

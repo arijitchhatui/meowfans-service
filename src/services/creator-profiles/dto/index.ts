@@ -1,6 +1,7 @@
 export * from './block-fan.dto';
 export * from './create-update-social-accounts.dto';
 export * from './delete-follower.dto';
+export * from './get-all-creators.dto';
 export * from './get-blocked-users.out.dto';
 export * from './get-followers.out.dto';
 export * from './get-following-users.out.dto';
