@@ -84,7 +84,7 @@ export class ImportService {
         return;
       }
 
-      await this.handleImportProfile(browser, input, slicedUrls);
+      await this.handleImportProfile(browser, { ...input, start: 0, exclude: 0 }, slicedUrls);
     } finally {
       await page.close();
     }
