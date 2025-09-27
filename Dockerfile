@@ -4,6 +4,10 @@ WORKDIR /app
 
 FROM nodejs AS installer
 
+RUN npm install -g pnpm
+
+FROM installer AS builder
+
 COPY package.json pnpm-*.yaml ./
 
 RUN pnpm install
@@ -16,7 +20,7 @@ FROM nodejs AS pruner
 
 COPY package*.json ./
 
-RUN pnpm install --only=prod
+RUN pnpm install --prod
 
 FROM nodejs
 
