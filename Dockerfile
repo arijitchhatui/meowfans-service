@@ -24,7 +24,7 @@ RUN pnpm install --prod
 
 FROM nodejs
 
-COPY --from=installer /app/dist ./dist
+COPY --from=builder /app/dist ./dist
 COPY --from=pruner /app/node_modules ./node_modules
 COPY --from=pruner /app/package.json ./package.json
 
