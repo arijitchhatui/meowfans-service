@@ -29,13 +29,13 @@ export class ImportService {
     this.isTerminated = false;
   }
 
-  private async scanOrCreateNewProfile(input: CreateImportQueueInput): Promise<{ userId: string; username: string }> {
-    const username = input.url.split('/').filter(Boolean).at(-1);
+  private async scanOrCreateNewProfile(profileUrl: string): Promise<{ userId: string; username: string }> {
+    const username = profileUrl.split('/').filter(Boolean).at(-1);
     const email = username?.concat(this.configService.getOrThrow<string>('CREATOR_DOMAIN'));
     const fullName = username?.toUpperCase();
     const password = randomUUID();
 
-    const user = await this.usersRepository.findOne({ where: { id: input.creatorId } });
+    const user = await this.usersRepository.findOne({ where: { username: username } });
 
     if (username && email && fullName && !user) {
       const newCreator = await this.authservice.creatorSignup({ email, fullName, password, username });
@@ -52,7 +52,7 @@ export class ImportService {
 
     this.logger.log({
       METHOD: this.handleImportProfile.name,
-      MESSAGE: 'IMPORTING INTO EXISTING NEW USER',
+      MESSAGE: 'IMPORTING INTO EXISTING USER',
     });
 
     return { userId: user!.id, username: user!.username };
@@ -131,6 +131,7 @@ export class ImportService {
         METHOD: this.handleImportProfile.name,
         VISITING_PROFILE_URL: profileUrl,
         hasTerminated: this.isTerminated,
+        input,
       });
 
       if (this.isTerminated) {
@@ -140,7 +141,7 @@ export class ImportService {
 
       const user_name = profileUrl.split('/').filter(Boolean).at(-1);
       if (user_name && !exceptions.includes(user_name)) {
-        const { userId, username } = await this.scanOrCreateNewProfile(input);
+        const { userId, username } = await this.scanOrCreateNewProfile(profileUrl);
 
         await this.importProfile(browser, {
           ...input,
@@ -169,7 +170,7 @@ export class ImportService {
     this.logger.log({
       METHOD: this.importProfile.name,
       MESSAGE: 'STARTED IMPORTING PROFILE',
-      url,
+      input,
     });
 
     try {
@@ -178,7 +179,7 @@ export class ImportService {
       } catch {
         this.logger.warn({
           METHOD: this.importProfile.name,
-          NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
+          NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: url,
         });
         try {
           await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
@@ -193,6 +194,8 @@ export class ImportService {
 
       const anchorUrls = await this.documentSelectorService.getAnchors(page);
       const allQueryUrls = anchorUrls.filter((url) => url.includes(`/user/${subDirectory}?o=`));
+
+      this.logger.log({ allQueryUrls });
 
       const queryUrls = Array.from(new Set(allQueryUrls));
       this.logger.log({
@@ -226,7 +229,7 @@ export class ImportService {
 
       let imageUrls: string[] | undefined = [];
       if (input.isNewCreator) {
-        const { userId } = await this.scanOrCreateNewProfile({ ...input, creatorId: '' });
+        const { userId } = await this.scanOrCreateNewProfile(url);
         imageUrls = await this.handleQueryUrls(browser, { ...input, creatorId: userId }, toBeImportedUrls);
       } else imageUrls = await this.handleQueryUrls(browser, input, toBeImportedUrls);
 
