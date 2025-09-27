@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { CreateImportQueueInput } from './dto/create-import.dto';
@@ -9,8 +9,8 @@ export class ExtractorResolver {
   constructor(private extractorService: ExtractorService) {}
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.ADMIN])
-  @Query(() => String)
-  public async initiate(@CurrentUser() creatorId: string, @Args('input') input: CreateImportQueueInput) {
+  @Mutation(() => String)
+  public async initiate(@Args('input') input: CreateImportQueueInput) {
     return await this.extractorService.initiate(input);
   }
 
