@@ -16,7 +16,7 @@ COPY . .
 
 RUN pnpm run build
 
-FROM nodejs AS pruner
+FROM installer AS pruner
 
 COPY package*.json ./
 
