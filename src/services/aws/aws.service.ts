@@ -24,12 +24,12 @@ export class AwsS3ClientService {
   private bucketName: string;
 
   public constructor(
-    @Inject(ProviderTokens.AWS_S3_TOKEN) private awsS3Client: AwsS3Client,
+    @Inject(ProviderTokens.DO_S3_TOKEN) private awsS3Client: AwsS3Client,
     @Inject(ProviderTokens.AWS_S3_REQUEST_PRE_SIGNER_TOKEN)
     private awsS3RequestPreSignerClient: AwsS3RequestPreSignerClient,
     configService: ConfigService,
   ) {
-    this.bucketName = configService.getOrThrow('AWS_BUCKET_NAME');
+    this.bucketName = configService.getOrThrow('DO_BUCKET_NAME');
   }
 
   public async uploadR2Object(input: UploadImageInput): Promise<string> {
@@ -99,6 +99,6 @@ export class AwsS3ClientService {
   public createUrl(mediaType: MediaType, userId: string): string {
     const rawFileName = `${mediaType}/${userId}/${randomUUID()}/_original.webp`;
 
-    return `${process.env.AWS_BUCKET_URL}/${rawFileName}`;
+    return `${process.env.DO_BUCKET_URL}/${rawFileName}`;
   }
 }

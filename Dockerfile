@@ -4,23 +4,27 @@ WORKDIR /app
 
 FROM nodejs AS installer
 
-COPY package*.json ./
+RUN npm install -g pnpm
 
-RUN npm install
+FROM installer AS builder
+
+COPY package.json pnpm-*.yaml ./
+
+RUN pnpm install
 
 COPY . .
 
-RUN npm run build
+RUN pnpm run build
 
-FROM nodejs AS pruner
+FROM installer AS pruner
 
 COPY package*.json ./
 
-RUN npm install --only=prod
+RUN pnpm install --prod
 
 FROM nodejs
 
-COPY --from=installer /app/dist ./dist
+COPY --from=builder /app/dist ./dist
 COPY --from=pruner /app/node_modules ./node_modules
 COPY --from=pruner /app/package.json ./package.json
 

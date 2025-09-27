@@ -8,7 +8,7 @@ import { ProviderTokens, QueueTypes } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
 import { ImportService } from '../import';
 import { UsersRepository } from '../postgres/repositories';
-import { CreateImportInput, CreateImportQueueInput } from './dto/create-import.dto';
+import { CreateImportQueueInput } from './dto/create-import.dto';
 
 @Injectable()
 export class ExtractorService {
@@ -24,9 +24,9 @@ export class ExtractorService {
     @Inject(ProviderTokens.REDIS_TOKEN) private redis: Redis,
   ) {}
 
-  public async initiate(creatorId: string, input: CreateImportInput): Promise<string> {
+  public async initiate(input: CreateImportQueueInput): Promise<string> {
     const { url, fileType, totalContent, qualityType, subDirectory, importType, exclude, start } = input;
-    const creator = await this.usersRepository.findOneOrFail({ where: { id: creatorId } });
+    const creator = await this.usersRepository.findOneOrFail({ where: { id: input.creatorId } });
 
     this.logger.log({
       message: 'Importing started',
@@ -41,7 +41,7 @@ export class ExtractorService {
       start,
     });
 
-    await this.uploadQueue.add({ creatorId, ...input });
+    await this.uploadQueue.add(input);
     return 'Added job';
   }
 

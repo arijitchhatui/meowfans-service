@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { CreateImportInput } from './dto/create-import.dto';
+import { CreateImportQueueInput } from './dto/create-import.dto';
 import { ExtractorService } from './extractor.service';
 
 @Resolver()
@@ -10,8 +10,8 @@ export class ExtractorResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.ADMIN])
   @Query(() => String)
-  public async initiate(@CurrentUser() creatorId: string, @Args('input') input: CreateImportInput) {
-    return await this.extractorService.initiate(creatorId, input);
+  public async initiate(@CurrentUser() creatorId: string, @Args('input') input: CreateImportQueueInput) {
+    return await this.extractorService.initiate(input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.ADMIN])

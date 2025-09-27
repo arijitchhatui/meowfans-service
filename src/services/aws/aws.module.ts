@@ -24,6 +24,20 @@ export type AwsS3RequestPreSignerClient = AWS.S3Client;
       },
     },
     {
+      provide: ProviderTokens.DO_S3_TOKEN,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): AwsS3Client => {
+        return new AWS.S3({
+          region: 'auto',
+          endpoint: configService.getOrThrow<string>('DO_S3_ENDPOINT'),
+          credentials: {
+            secretAccessKey: configService.getOrThrow<string>('DO_SECRET_ACCESS_KEY'),
+            accessKeyId: configService.getOrThrow<string>('DO_ACCESS_KEY_ID'),
+          },
+        });
+      },
+    },
+    {
       provide: ProviderTokens.AWS_S3_REQUEST_PRE_SIGNER_TOKEN,
       inject: [ConfigService],
       useFactory: (configService: ConfigService): AwsS3RequestPreSignerClient => {

@@ -90,7 +90,7 @@ export class AdminService {
   }
 
   public async initiateCreatorObjectsImport(input: CreateImportQueueInput) {
-    await this.extractorService.initiate(input.creatorId, input);
+    await this.extractorService.initiate(input);
     return 'Creator Objects import started';
   }
 
