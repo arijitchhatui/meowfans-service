@@ -1,6 +1,7 @@
 import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger } from '@nestjs/common';
 import { AssetType } from '../../util/enums';
+import { DownloadStates } from '../../util/enums/download-state';
 import { GetAllCreatorsOutput } from '../creator-profiles';
 import { DownloaderService } from '../downloader/downloader.service';
 import { UploadVaultQueueInput } from '../downloader/dto';
@@ -30,6 +31,18 @@ export class AdminService {
           ...creator,
           vaultCount: await this.vaultObjectsRepository.getCreatorTotalVaultObjectsCount(creator.id, input),
           assetCount: await this.creatorAssetsRepository.getCreatorsAssetsCount(creator.id, input),
+          fulfilledObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
+            creator.id,
+            DownloadStates.FULFILLED,
+          ),
+          pendingObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
+            creator.id,
+            DownloadStates.PENDING,
+          ),
+          processingObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
+            creator.id,
+            DownloadStates.PROCESSING,
+          ),
         };
       }),
     );

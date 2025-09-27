@@ -52,8 +52,7 @@ export class ExtractorService {
     this.redis.flushall();
     this.redis.flushdb();
 
-    if (this.isTerminated) this.isTerminated = false;
-    else this.isTerminated = true;
+    this.isTerminated = true;
 
     await this.importService.terminateAllJobs();
     this.logger.warn({ message: `All jobs terminated`, status: this.isTerminated });

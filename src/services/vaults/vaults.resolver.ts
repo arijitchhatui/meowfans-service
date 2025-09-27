@@ -1,5 +1,5 @@
 import { PaginationInput } from '@app/helpers';
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { VaultObjectsEntity, VaultsEntity } from '../postgres/entities';
@@ -25,5 +25,11 @@ export class VaultsResolver {
     @Args('input') input: PaginationInput,
   ): Promise<VaultObjectsEntity[]> {
     return await this.vaultsService.getCreatorVaultObjects(creatorId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.ADMIN])
+  @Query(() => Int)
+  public async getTotalObjectsAsType(@Args('input') input: PaginationInput): Promise<number> {
+    return await this.vaultsService.getTotalObjectsAsType(input);
   }
 }

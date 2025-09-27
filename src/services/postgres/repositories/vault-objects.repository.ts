@@ -50,6 +50,18 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       );
   }
 
+  public async getTotalStatsOfObjectsOfACreator(creatorId: string, status: DownloadStates) {
+    return await this.createQueryBuilder('vo')
+      .leftJoinAndSelect('vo.vault', 'vault')
+      .where('vault.creatorId = :creatorId', { creatorId: creatorId })
+      .andWhere('vo.status = :status', { status: status })
+      .getCount();
+  }
+
+  public async getTotalVaultObjectsAsType(status: DownloadStates) {
+    return await this.createQueryBuilder('vo').where('vo.status = :status', { status: status }).getCount();
+  }
+
   public getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
     return this.creatorVaultObjects(creatorId, input);
   }
