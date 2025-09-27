@@ -29,6 +29,35 @@ export class ImportService {
     this.isTerminated = false;
   }
 
+  private async scanOrCreateNewProfile(input: CreateImportQueueInput): Promise<{ userId: string; username: string }> {
+    const username = input.url.split('/').filter(Boolean).at(-1);
+    const email = username?.concat(this.configService.getOrThrow<string>('CREATOR_DOMAIN'));
+    const fullName = username?.toUpperCase();
+    const password = randomUUID();
+
+    const user = await this.usersRepository.findOne({ where: { id: input.creatorId } });
+
+    if (username && email && fullName && !user) {
+      const newCreator = await this.authservice.creatorSignup({ email, fullName, password, username });
+      await this.passwordsRepository.save({ userId: newCreator.userId, email: email, password: password });
+
+      this.logger.log({
+        METHOD: this.handleImportProfile.name,
+        MESSAGE: '✅✅✅✅ NEW PROFILE CREATED ✅✅✅✅',
+        CREATED_NEW_CREATOR: newCreator.userId,
+      });
+
+      return { userId: newCreator.userId, username: username };
+    }
+
+    this.logger.log({
+      METHOD: this.handleImportProfile.name,
+      MESSAGE: 'IMPORTING INTO EXISTING NEW USER',
+    });
+
+    return { userId: user!.id, username: user!.username };
+  }
+
   public async importProfiles(browser: Browser, input: CreateImportQueueInput) {
     const isAdmin = await this.usersRepository.isAdmin(input.creatorId);
     if (!isAdmin) return;
@@ -109,67 +138,16 @@ export class ImportService {
         break;
       }
 
-      const username = profileUrl.split('/').filter(Boolean).at(-1);
-      const email = username?.concat(this.configService.getOrThrow<string>('CREATOR_DOMAIN'));
-      const fullName = username?.toUpperCase();
-      const password = randomUUID();
+      const user_name = profileUrl.split('/').filter(Boolean).at(-1);
+      if (user_name && !exceptions.includes(user_name)) {
+        const { userId, username } = await this.scanOrCreateNewProfile(input);
 
-      this.logger.log({
-        username,
-        email,
-        fullName,
-        password,
-      });
-
-      if (username && email && fullName && !exceptions.includes(username)) {
-        const user = await this.usersRepository.findOne({ where: { username: username } });
-
-        if (user) {
-          this.logger.log({
-            METHOD: this.handleImportProfile.name,
-            MESSAGE: 'IMPORTING INTO EXISTING USER',
-          });
-
-          if (this.isTerminated) {
-            this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-            return;
-          }
-
-          await this.importProfile(browser, {
-            ...input,
-            creatorId: user.id,
-            subDirectory: user.username,
-            url: profileUrl,
-          });
-        } else {
-          this.logger.log({
-            METHOD: this.handleImportProfile.name,
-            MESSAGE: 'CREATING NEW USER',
-          });
-
-          if (this.isTerminated) {
-            this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-            return;
-          }
-
-          const newCreator = await this.authservice.creatorSignup({ email, fullName, password, username });
-          await this.passwordsRepository.save({ userId: newCreator.userId, email: email, password: password });
-
-          this.logger.log({
-            METHOD: this.handleImportProfile.name,
-            NEW_CREATOR_EMAIL: email,
-            MESSAGE: '✅✅✅✅ NEW PROFILE CREATED ✅✅✅✅',
-            CREATED_NEW_CREATOR: newCreator.userId,
-          });
-
-          await this.importProfile(browser, {
-            ...input,
-            creatorId: newCreator.userId,
-            subDirectory: username,
-            url: profileUrl,
-          });
-        }
-
+        await this.importProfile(browser, {
+          ...input,
+          creatorId: userId,
+          subDirectory: username,
+          url: profileUrl,
+        });
         this.logger.log({
           METHOD: this.handleImportProfile.name,
           MESSAGE: '✅✅✅✅ ALL ASSETS IMPORTED',
@@ -246,7 +224,11 @@ export class ImportService {
         return;
       }
 
-      const imageUrls = await this.handleQueryUrls(browser, input, toBeImportedUrls);
+      let imageUrls: string[] | undefined = [];
+      if (input.isNewCreator) {
+        const { userId } = await this.scanOrCreateNewProfile({ ...input, creatorId: '' });
+        imageUrls = await this.handleQueryUrls(browser, { ...input, creatorId: userId }, toBeImportedUrls);
+      } else imageUrls = await this.handleQueryUrls(browser, input, toBeImportedUrls);
 
       this.logger.log({
         METHOD: this.importProfile.name,

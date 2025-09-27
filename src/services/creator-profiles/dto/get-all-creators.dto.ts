@@ -8,6 +8,15 @@ export class ExtendedUsersEntity extends UsersEntity {
 
   @Field(() => Int)
   assetCount: number;
+
+  @Field(() => Int)
+  pendingObjectCount: number;
+
+  @Field(() => Int)
+  processingObjectCount: number;
+
+  @Field(() => Int)
+  fulfilledObjectCount: number;
 }
 
 @ObjectType()

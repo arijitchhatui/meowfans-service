@@ -36,6 +36,9 @@ export class CreateImportInput {
 
   @Field(() => [String], { nullable: true })
   exceptions: string[];
+
+  @Field(() => Boolean, { defaultValue: false })
+  isNewCreator: boolean;
 }
 
 @InputType()

@@ -40,7 +40,6 @@ export class DownloaderService {
   }
 
   public async terminateDownloading() {
-    if (this.isTerminated) return;
     this.isTerminated = true;
 
     this.redis.flushall();

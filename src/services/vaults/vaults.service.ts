@@ -29,4 +29,8 @@ export class VaultsService {
     await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
     return await this.vaultObjectsRepository.getCreatorVaultObjects(creatorId, input).getMany();
   }
+
+  public async getTotalObjectsAsType(input: PaginationInput) {
+    return await this.vaultObjectsRepository.getTotalVaultObjectsAsType(input.status);
+  }
 }
