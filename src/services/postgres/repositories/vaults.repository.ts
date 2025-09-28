@@ -1,6 +1,7 @@
 import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { FileType } from '../../../util/enums';
 import { BulkInsertVaultInput } from '../../vaults/dto';
 import { VaultsEntity } from '../entities/vaults.entity';
 import { CreatorProfilesRepository } from './creator-profiles.repository';
@@ -46,7 +47,12 @@ export class VaultsRepository extends Repository<VaultsEntity> {
     for (const objectUrl of objects) {
       const exists = await this.vaultObjectsRepository.findOne({ where: { objectUrl: objectUrl } });
       if (!exists) {
-        await this.vaultObjectsRepository.save({ vault: vault, objectUrl: objectUrl });
+        const isImage = /\.(jpg|jpeg|png|gif|webp|avif)$/i.test(objectUrl);
+        await this.vaultObjectsRepository.save({
+          vault: vault,
+          objectUrl: objectUrl,
+          fileType: isImage ? FileType.IMAGE : FileType.VIDEO,
+        });
         this.logger.log('VAULT OBJECT INSERTED✅✅✅✅');
       }
     }

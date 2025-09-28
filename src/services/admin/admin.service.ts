@@ -2,7 +2,7 @@ import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger } from '@nestjs/common';
 import { AssetType } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
-import { GetAllCreatorsOutput } from '../creator-profiles';
+import { CreatorProfilesService, ExtendedUpdateCreatorProfileInput, GetAllCreatorsOutput } from '../creator-profiles';
 import { DownloaderService } from '../downloader/downloader.service';
 import { UploadVaultQueueInput } from '../downloader/dto';
 import { ExtractorService } from '../extractor/extractor.service';
@@ -20,6 +20,7 @@ export class AdminService {
     private vaultObjectsRepository: VaultsObjectsRepository,
     private creatorAssetsRepository: CreatorAssetsRepository,
     private extractorService: ExtractorService,
+    private creatorProfilesServices: CreatorProfilesService,
   ) {}
 
   public async getAllCreators(input: PaginationInput): Promise<GetAllCreatorsOutput> {
@@ -42,6 +43,10 @@ export class AdminService {
           processingObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
             creator.id,
             DownloadStates.PROCESSING,
+          ),
+          rejectedObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
+            creator.id,
+            DownloadStates.REJECTED,
           ),
         };
       }),
@@ -112,5 +117,13 @@ export class AdminService {
     if (exists) this.downloaderService.terminateDownloading();
 
     return 'Downloading is terminated!!!';
+  }
+
+  public async updateCreatorProfileByAdmin(adminId: string, input: ExtendedUpdateCreatorProfileInput) {
+    return await this.creatorProfilesServices.updateCreatorProfile(input.creatorId, input);
+  }
+
+  public async getCreatorProfileByAdmin(adminId: string, creatorId: string) {
+    return await this.creatorProfilesServices.getCreatorProfile(creatorId);
   }
 }

@@ -71,7 +71,7 @@ export class DownloaderService {
       this.logger.log(`✅ GOT THE DATA: ${data.data.length} bytes`);
       return data.data;
     } catch (err) {
-      this.logger.error('❌ Axios fetch error', err);
+      this.logger.error('❌ Axios fetch error', err.message);
       return null;
     }
   }

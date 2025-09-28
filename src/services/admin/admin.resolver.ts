@@ -3,10 +3,10 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { GetAllAssetsOutput } from '../assets';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { GetAllCreatorsOutput } from '../creator-profiles';
+import { ExtendedUpdateCreatorProfileInput, GetAllCreatorsOutput } from '../creator-profiles';
 import { UploadVaultQueueInput } from '../downloader/dto';
 import { CreateImportQueueInput } from '../import/dto';
-import { CreatorAssetsEntity } from '../postgres/entities';
+import { CreatorAssetsEntity, CreatorProfilesEntity } from '../postgres/entities';
 import { GetAllVaultsOutput, GetCreatorVaultObjectsOutput } from '../vaults/dto';
 import { AdminService } from './admin.service';
 
@@ -47,6 +47,15 @@ export class AdminResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.ADMIN])
+  @Query(() => CreatorProfilesEntity)
+  public async getCreatorProfileByAdmin(
+    @CurrentUser() adminId: string,
+    @Args('creatorId') creatorId: string,
+  ): Promise<CreatorProfilesEntity> {
+    return await this.adminService.getCreatorProfileByAdmin(adminId, creatorId);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
   @Mutation(() => String)
   public async downloadAllCreatorObjects(@Args('input') input: PaginationInput) {
     return await this.adminService.downloadAllCreatorObjects(input);
@@ -68,5 +77,14 @@ export class AdminResolver {
   @Mutation(() => String)
   public async terminateDownloading(@CurrentUser() adminId: string) {
     return await this.adminService.terminateDownloading(adminId);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
+  @Mutation(() => CreatorProfilesEntity)
+  public async updateCreatorProfileByAdmin(
+    @CurrentUser() adminId: string,
+    @Args('input') input: ExtendedUpdateCreatorProfileInput,
+  ) {
+    return await this.adminService.updateCreatorProfileByAdmin(adminId, input);
   }
 }

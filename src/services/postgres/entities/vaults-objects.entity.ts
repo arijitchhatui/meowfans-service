@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { FileType } from '../../../util/enums';
 import { DownloadStates } from '../../../util/enums/download-state';
 import { VaultsEntity } from './vaults.entity';
 
@@ -33,6 +34,10 @@ export class VaultObjectsEntity {
   @Field(() => DownloadStates)
   @Column({ type: 'enum', enum: DownloadStates, enumName: 'DownloadStates', default: DownloadStates.PENDING })
   status: DownloadStates;
+
+  @Field(() => FileType)
+  @Column({ type: 'enum', enum: FileType, enumName: 'FileType', default: FileType.IMAGE })
+  fileType: FileType;
 
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp' })

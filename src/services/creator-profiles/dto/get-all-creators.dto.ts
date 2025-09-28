@@ -17,6 +17,9 @@ export class ExtendedUsersEntity extends UsersEntity {
 
   @Field(() => Int)
   fulfilledObjectCount: number;
+
+  @Field(() => Int)
+  rejectedObjectCount: number;
 }
 
 @ObjectType()
