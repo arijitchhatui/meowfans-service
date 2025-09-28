@@ -28,7 +28,7 @@ export const BANNER_COLORS = [
   '#cb5aff',
 ];
 
-export const ExtensionTypes = ['.jpg', '.jpeg', '.webp', '.webm', '.png'];
+export const ExtensionTypes = ['.jpg', '.jpeg', '.webp', '.webm', '.png', '.mp4'];
 
 export const DEFAULT_POST_PRICE = 500;
 

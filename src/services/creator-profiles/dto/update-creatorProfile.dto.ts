@@ -37,3 +37,9 @@ export class UpdateCreatorProfileInput {
   @Field({ nullable: true })
   displayTotalSubscriber: boolean;
 }
+
+@InputType()
+export class ExtendedUpdateCreatorProfileInput extends UpdateCreatorProfileInput {
+  @Field(() => String)
+  creatorId: string;
+}

@@ -1,6 +1,7 @@
 import { PaginationInput } from '@app/helpers';
 import { Injectable, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { FileType } from '../../../util/enums';
 import { DownloadStates } from '../../../util/enums/download-state';
 import { VaultObjectsEntity } from '../entities';
 
@@ -24,6 +25,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
     return await this.createQueryBuilder('vo')
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vault.creatorId =: creatorId', { creatorId: creatorId })
+      .andWhere('vo.fileType = :fileType', { fileType: FileType.IMAGE })
       .getCount();
   }
 
@@ -35,6 +37,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .where('vault.creatorId = :creatorId', { creatorId: creatorId })
       .andWhere('vault.id = vo.vaultId')
       .andWhere('vo.status = :status', { status: input.status })
+      .andWhere('vo.fileType = :fileType', { fileType: FileType.IMAGE })
       .limit(input.limit)
       .offset(input.offset)
       .orderBy(
@@ -55,6 +58,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vault.creatorId = :creatorId', { creatorId: creatorId })
       .andWhere('vo.status = :status', { status: status })
+      .andWhere('vo.fileType = :fileType', { fileType: FileType.IMAGE })
       .getCount();
   }
 
@@ -71,6 +75,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vo.status = :status', { status: input.status })
       .andWhere('vault.creatorId = :creatorId', { creatorId: creatorId })
+      .andWhere('vo.fileType = :fileType', { fileType: FileType.IMAGE })
       .getCount();
   }
 
@@ -79,6 +84,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vo.status IN (:...status)', { status: [DownloadStates.PENDING, DownloadStates.PROCESSING] })
       .andWhere('vault.creatorId = :creatorId', { creatorId: creatorId })
+      .andWhere('vo.fileType = :fileType', { fileType: FileType.IMAGE })
       .getMany();
   }
 
@@ -86,6 +92,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
     return await this.createQueryBuilder('vo')
       .leftJoinAndSelect('vo.vault', 'vault')
       .where('vo.status = :status', { status: input.status })
+      .andWhere('vo.fileType = :fileType', { fileType: FileType.IMAGE })
       .limit(input.limit)
       .offset(input.offset)
       .orderBy('vault.createdAt', input.orderBy)
