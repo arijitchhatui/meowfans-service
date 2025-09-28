@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Browser } from '@playwright/test';
+import { Browser, Page } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { cluster } from 'radash';
 import { AuthService } from '../auth';
@@ -112,7 +112,7 @@ export class ImportService {
   }
 
   public async handleImportProfile(browser: Browser, input: CreateImportQueueInput) {
-    if (!this.isTerminated) return;
+    if (this.isTerminated) return;
 
     const user_name = input.url.split('/').filter(Boolean).at(-1);
     if (user_name && !input.exceptions.includes(user_name)) {
@@ -141,43 +141,34 @@ export class ImportService {
     }
 
     const page = await browser.newPage();
-    this.logger.log({
-      METHOD: this.importProfile.name,
-      MESSAGE: 'STARTED IMPORTING PROFILE',
-      input,
-    });
+    this.logger.log({ METHOD: this.importProfile.name, MESSAGE: 'STARTED IMPORTING PROFILE', input });
 
     try {
       await this.safeGoto(page, url, this.importProfile.name);
 
       const anchorUrls = await this.documentSelectorService.getAnchors(page);
       const allQueryUrls = anchorUrls.filter((url) => url.includes(`/user/${subDirectory}?o=`));
-
-      this.logger.log({ allQueryUrls });
-
       const queryUrls = Array.from(new Set(allQueryUrls));
-      this.logger.log({
-        METHOD: this.importProfile.name,
-        queryUrls,
-      });
+
+      this.logger.log({ METHOD: this.importProfile.name, anchorUrls, allQueryUrls, queryUrls });
 
       const numbers = queryUrls
         .map((url) => Number(new URL(url).searchParams.get('o')))
         .filter((num) => Number(num) > 0);
 
-      const min = Math.min(...numbers);
-      const max = Math.max(...numbers);
-
-      const formattedUrls = Array.from({ length: (max - min) / 50 + 1 }, (_, i) => `${url}?o=${min + i * 50}`);
+      let formattedUrls: string[] = [];
+      if (numbers.length > 0) {
+        const min = Math.min(...numbers);
+        const max = Math.max(...numbers);
+        const pagesCount = Math.max(0, Math.floor((max - min) / 50)) + 1;
+        formattedUrls = Array.from({ length: pagesCount }, (_, i) => `${url}?o=${min + i * 50}`);
+      } else {
+        formattedUrls = [];
+      }
       const implementedUrls = [url, ...formattedUrls];
-
-      this.logger.log({
-        METHOD: this.importProfile.name,
-        implementedUrls,
-      });
-
       const toBeImportedUrls = implementedUrls.slice(start, implementedUrls.length - exclude);
 
+      this.logger.log({ METHOD: this.importProfile.name, implementedUrls });
       this.logger.log({ toBeImportedUrls });
 
       if (this.isTerminated) {
@@ -336,7 +327,7 @@ export class ImportService {
     return Array.from(new Set(filteredUrls));
   }
 
-  private async safeGoto(page: any, url: string, method: string) {
+  private async safeGoto(page: Page, url: string, method: string) {
     const attempts = [30000, 30000, 45000];
     for (const timeout of attempts) {
       try {
