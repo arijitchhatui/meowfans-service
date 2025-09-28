@@ -11,13 +11,13 @@ export class DownloaderConsumerService {
 
   constructor(private downloaderService: DownloaderService) {}
 
-  @Process({ concurrency: 5 })
+  @Process({ concurrency: 10 })
   public async startDownloading(input: Job<UploadVaultQueueInput>) {
-    this.logger.log({ JOB_STARTED: 'started downloading' });
+    this.logger.log({ JOB_STARTED: 'Started downloading' });
     try {
       await this.downloaderService.handleUpload(input.data);
     } catch (error) {
-      console.log('consumer error 2', error);
+      console.log('Consumer error while downloading', error);
     }
   }
 }

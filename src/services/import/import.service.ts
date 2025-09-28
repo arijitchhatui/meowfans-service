@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Browser } from '@playwright/test';
 import { randomUUID } from 'crypto';
+import { cluster } from 'radash';
 import { AuthService } from '../auth';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { PasswordsRepository, UsersRepository, VaultsRepository } from '../postgres/repositories';
@@ -13,19 +14,19 @@ export class ImportService {
   private isTerminated = false;
 
   constructor(
-    private usersRepository: UsersRepository,
-    private documentSelectorService: DocumentSelectorService,
-    private configService: ConfigService,
-    private authservice: AuthService,
-    private passwordsRepository: PasswordsRepository,
-    private vaultsRepository: VaultsRepository,
+    private readonly usersRepository: UsersRepository,
+    private readonly documentSelectorService: DocumentSelectorService,
+    private readonly configService: ConfigService,
+    private readonly authservice: AuthService,
+    private readonly passwordsRepository: PasswordsRepository,
+    private readonly vaultsRepository: VaultsRepository,
   ) {}
 
-  public async terminateAllJobs() {
+  public terminateAllJobs() {
     this.isTerminated = true;
   }
 
-  public async initiateAllJobs() {
+  public initiateAllJobs() {
     this.isTerminated = false;
   }
 
@@ -35,14 +36,14 @@ export class ImportService {
     const fullName = username?.toUpperCase();
     const password = randomUUID();
 
-    const user = await this.usersRepository.findOne({ where: { username: username } });
+    const user = await this.usersRepository.findOne({ where: { username } });
 
     if (username && email && fullName && !user) {
       const newCreator = await this.authservice.creatorSignup({ email, fullName, password, username });
-      await this.passwordsRepository.save({ userId: newCreator.userId, email: email, password: password });
+      await this.passwordsRepository.save({ userId: newCreator.userId, email, password });
 
       this.logger.log({
-        METHOD: this.handleImportProfile.name,
+        METHOD: this.scanOrCreateNewProfile.name,
         MESSAGE: '✅✅✅✅ NEW PROFILE CREATED ✅✅✅✅',
         CREATED_NEW_CREATOR: newCreator.userId,
       });
@@ -51,7 +52,7 @@ export class ImportService {
     }
 
     this.logger.log({
-      METHOD: this.handleImportProfile.name,
+      METHOD: this.scanOrCreateNewProfile.name,
       MESSAGE: 'IMPORTING INTO EXISTING USER',
     });
 
@@ -77,87 +78,60 @@ export class ImportService {
     });
 
     try {
-      try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-      } catch {
-        this.logger.warn({
-          METHOD: this.importProfiles.name,
-          NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
-        });
-        try {
-          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-        } catch {
-          this.logger.warn({
-            METHOD: this.importProfiles.name,
-            NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
-          });
-          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-        }
-      }
+      await this.safeGoto(page, url, this.importProfiles.name);
 
       const anchorUrls = await this.documentSelectorService.getAnchors(page);
       const regex = /^https:\/\/coomer\.st\/[^/]+\/user\/[^/]+$/;
-
       const allQueryUrls = anchorUrls.filter((url) => regex.test(url));
 
       const queryUrls = Array.from(new Set(allQueryUrls));
-      this.logger.log({
-        METHOD: this.importProfiles.name,
-        queryUrls,
-      });
-
       const slicedUrls = queryUrls.slice(start, queryUrls.length - exclude);
-      this.logger.log({
-        METHOD: this.importProfile.name,
-        slicedUrls,
-      });
+
+      this.logger.log({ METHOD: this.importProfiles.name, allQueryUrls, queryUrls, slicedUrls });
 
       if (this.isTerminated) {
         this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         return;
       }
 
-      await this.handleImportProfile(browser, { ...input, start: 0, exclude: 0 }, slicedUrls);
+      await this.handleImportProfiles(browser, { ...input, start: 0, exclude: 0 }, slicedUrls);
     } finally {
       await page.close();
     }
   }
 
-  public async handleImportProfile(browser: Browser, input: CreateImportQueueInput, profileUrls: string[]) {
-    const { exceptions } = input;
-
-    for (const profileUrl of Array.from(new Set(profileUrls))) {
-      this.logger.log({
-        METHOD: this.handleImportProfile.name,
-        VISITING_PROFILE_URL: profileUrl,
-        hasTerminated: this.isTerminated,
-        input,
-      });
-
-      if (this.isTerminated) {
-        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-        break;
-      }
-
-      const user_name = profileUrl.split('/').filter(Boolean).at(-1);
-      if (user_name && !exceptions.includes(user_name)) {
-        const { userId, username } = await this.scanOrCreateNewProfile(profileUrl);
-
-        await this.importProfile(browser, {
-          ...input,
-          creatorId: userId,
-          subDirectory: username,
-          url: profileUrl,
-        });
-        this.logger.log({
-          METHOD: this.handleImportProfile.name,
-          MESSAGE: '✅✅✅✅ ALL ASSETS IMPORTED',
-          TO: username,
-        });
-      }
+  public async handleImportProfiles(browser: Browser, input: CreateImportQueueInput, profileUrls: string[]) {
+    for (const chunk of cluster(Array.from(new Set(profileUrls)), 2)) {
+      if (this.isTerminated) return;
+      await Promise.all(
+        chunk.map(async (profileUrl) => {
+          await this.handleImportProfile(browser, { ...input, url: profileUrl });
+        }),
+      );
     }
   }
 
+  public async handleImportProfile(browser: Browser, input: CreateImportQueueInput) {
+    if (!this.isTerminated) return;
+
+    const user_name = input.url.split('/').filter(Boolean).at(-1);
+    if (user_name && !input.exceptions.includes(user_name)) {
+      const { userId, username } = await this.scanOrCreateNewProfile(input.url);
+
+      await this.importProfile(browser, {
+        ...input,
+        creatorId: userId,
+        subDirectory: username,
+        url: input.url,
+      });
+
+      this.logger.log({
+        METHOD: this.handleImportProfiles.name,
+        MESSAGE: '✅✅✅✅ ALL ASSETS IMPORTED',
+        TO: username,
+      });
+    }
+  }
   public async importProfile(browser: Browser, input: CreateImportQueueInput) {
     const { url, subDirectory, start, exclude } = input;
 
@@ -174,23 +148,7 @@ export class ImportService {
     });
 
     try {
-      try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-      } catch {
-        this.logger.warn({
-          METHOD: this.importProfile.name,
-          NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: url,
-        });
-        try {
-          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-        } catch {
-          try {
-            await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-          } catch {
-            await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-          }
-        }
-      }
+      await this.safeGoto(page, url, this.importProfile.name);
 
       const anchorUrls = await this.documentSelectorService.getAnchors(page);
       const allQueryUrls = anchorUrls.filter((url) => url.includes(`/user/${subDirectory}?o=`));
@@ -227,16 +185,13 @@ export class ImportService {
         return;
       }
 
-      let imageUrls: string[] | undefined = [];
-      if (input.isNewCreator) {
-        const { userId } = await this.scanOrCreateNewProfile(url);
-        imageUrls = await this.handleQueryUrls(browser, { ...input, creatorId: userId }, toBeImportedUrls);
-      } else imageUrls = await this.handleQueryUrls(browser, input, toBeImportedUrls);
+      const imageUrls = await this.handleQueryUrls(
+        browser,
+        input.isNewCreator ? { ...input, creatorId: (await this.scanOrCreateNewProfile(url)).userId } : input,
+        toBeImportedUrls,
+      );
 
-      this.logger.log({
-        METHOD: this.importProfile.name,
-        imageUrls,
-      });
+      this.logger.log({ METHOD: this.importProfile.name, imageUrls });
     } finally {
       await page.close();
     }
@@ -252,35 +207,18 @@ export class ImportService {
 
     const page = await browser.newPage();
     try {
-      try {
-        await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
-      } catch {
-        this.logger.warn({
-          METHOD: this.importBranch.name,
-          NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: input.url,
-        });
-        try {
-          await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
-        } catch {
-          await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
-        }
-      }
+      await this.safeGoto(page, input.url, this.importPage.name);
 
-      this.logger.log({
-        METHOD: this.importBranch.name,
-        VISITING_QUERY_URL: input.url,
-      });
+      this.logger.log({ METHOD: this.importBranch.name, VISITING_QUERY_URL: input.url });
 
       const branchUrls = await this.documentSelectorService.getAnchors(page);
       const filteredUrls = await this.handleFilter(branchUrls, input.url, input.subDirectory);
-      this.logger.log({
-        METHOD: this.importBranch.name,
-        filteredUrls,
-      });
+
+      this.logger.log({ METHOD: this.importBranch.name, filteredUrls });
 
       if (this.isTerminated) {
         this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-        return [];
+        return imageUrls;
       }
 
       const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
@@ -297,52 +235,27 @@ export class ImportService {
   }
 
   public async importPage(browser: Browser, input: CreateImportQueueInput) {
-    const { url, qualityType } = input;
-
     if (this.isTerminated) {
       this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return [];
     }
 
+    const { url, qualityType } = input;
     const page = await browser.newPage();
+
     try {
-      try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-      } catch {
-        this.logger.warn({
-          METHOD: this.importPage.name,
-          NAVIGATION_TIMEOUT_FALLING_BACK_AGAIN_TO_NETWORK_IDLE_FOR_URL: url,
-        });
-        try {
-          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-        } catch {
-          await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
-        }
-      }
+      await this.safeGoto(page, url, this.importPage.name);
 
-      this.logger.log({
-        METHOD: this.importPage.name,
-        VISITING_SINGLE_BRANCH_URL: url,
-      });
-
-      if (this.isTerminated) {
-        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-        return [];
-      }
+      this.logger.log({ METHOD: this.importPage.name, VISITING_SINGLE_BRANCH_URL: url });
 
       const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
       const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
 
-      this.logger.log({
-        METHOD: this.importPage.name,
-        FILTERED_IMAGES_COUNT: filteredUrls.length,
-      });
+      this.logger.log({ METHOD: this.importPage.name, FILTERED_IMAGES_COUNT: filteredUrls.length });
 
-      if (this.isTerminated) {
-        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-        return [];
+      if (filteredUrls.length > 0 && !this.isTerminated) {
+        await this.handleUploadToVault(input.creatorId, input.url, filteredUrls);
       }
-      await this.handleUploadToVault(input.creatorId, url, filteredUrls);
 
       return filteredUrls;
     } finally {
@@ -358,15 +271,26 @@ export class ImportService {
       return;
     }
 
-    for (const queryUrl of Array.from(new Set(queryUrls))) {
-      if (this.isTerminated) {
-        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-        break;
+    for (const chunk of cluster(Array.from(new Set(queryUrls)), 3)) {
+      if (!this.isTerminated) {
+        await Promise.all(
+          chunk.map(async (queryUrl) => {
+            const branchImageUrls = await this.handleQueryUrl(browser, { ...input, url: queryUrl });
+            imageUrls.push(...branchImageUrls);
+          }),
+        );
       }
-
-      const branchImageUrls = await this.importBranch(browser, { ...input, url: queryUrl });
-      imageUrls.push(...branchImageUrls);
     }
+
+    return imageUrls;
+  }
+
+  private async handleQueryUrl(browser: Browser, input: CreateImportQueueInput) {
+    const imageUrls: string[] = [];
+    if (this.isTerminated) return imageUrls;
+
+    const branchUrls = await this.importBranch(browser, input);
+    imageUrls.push(...branchUrls);
 
     return imageUrls;
   }
@@ -374,42 +298,32 @@ export class ImportService {
   private async handleBranchUrls(browser: Browser, input: CreateImportQueueInput, formattedUrls: string[]) {
     const imageUrls: string[] = [];
 
-    this.logger.log({ status: this.isTerminated });
-    if (this.isTerminated) {
-      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-      return [];
+    for (const chunk of cluster(formattedUrls, 5)) {
+      if (!this.isTerminated) {
+        await Promise.all(
+          chunk.map(async (anchor) => {
+            const branchUrls = await this.handleBranchUrl(browser, { ...input, url: anchor });
+            imageUrls.push(...branchUrls);
+          }),
+        );
+      }
     }
 
-    for (const anchor of formattedUrls) {
-      if (this.isTerminated) {
-        this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-        break;
-      }
+    return imageUrls;
+  }
 
-      this.logger.log({ status: this.isTerminated });
-
+  private async handleBranchUrl(browser: Browser, input: CreateImportQueueInput) {
+    const imageUrls: string[] = [];
+    if (!this.isTerminated) {
       try {
-        this.logger.log({
-          METHOD: this.handleBranchUrls.name,
-          VISITING_BRANCH_URL: anchor,
-          LEFT_BRANCH_URL: formattedUrls.length - formattedUrls.indexOf(anchor) + 1,
-        });
+        this.logger.log({ METHOD: this.handleBranchUrl.name, VISITING_BRANCH_URL: input.url });
 
-        if (this.isTerminated) {
-          this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-          break;
-        }
-
-        const urls = await this.importPage(browser, { ...input, url: anchor });
-        imageUrls.push(...urls);
+        const pageUrls = await this.importPage(browser, { ...input, url: input.url });
+        imageUrls.push(...pageUrls);
       } catch {
-        this.logger.error({
-          METHOD: this.handleBranchUrls.name,
-          ERROR_WHILE_PROCESSING: anchor,
-        });
+        this.logger.error({ METHOD: this.handleBranchUrl.name, ERROR_WHILE_PROCESSING: input.url });
       }
     }
-
     return imageUrls;
   }
 
@@ -420,5 +334,18 @@ export class ImportService {
   private async handleFilter(branchUrls: string[], url: string, subDirectory?: string): Promise<string[]> {
     const filteredUrls = await this.documentSelectorService.getAnchorsBasedOnHostName(branchUrls, url, subDirectory);
     return Array.from(new Set(filteredUrls));
+  }
+
+  private async safeGoto(page: any, url: string, method: string) {
+    const attempts = [30000, 30000, 45000];
+    for (const timeout of attempts) {
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout });
+        return;
+      } catch {
+        this.logger.warn({ METHOD: method, NAVIGATION_TIMEOUT: url, TIMEOUT: timeout });
+      }
+    }
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
   }
 }

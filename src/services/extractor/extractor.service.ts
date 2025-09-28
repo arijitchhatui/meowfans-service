@@ -54,7 +54,7 @@ export class ExtractorService {
 
     this.isTerminated = true;
 
-    await this.importService.terminateAllJobs();
+    this.importService.terminateAllJobs();
     this.logger.warn({ message: `All jobs terminated`, status: this.isTerminated });
     return true;
   }

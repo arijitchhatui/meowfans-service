@@ -26,7 +26,6 @@
       "@app/validation": ["./libs/validation"],
       "@app/validators": ["./libs/validators"],
       "@app/middleware": ["./libs/middleware"]
-
-    },
+    }
   }
 }
