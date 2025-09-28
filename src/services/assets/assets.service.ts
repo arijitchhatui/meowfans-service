@@ -1,6 +1,6 @@
 import { PaginationInput } from '@app/helpers';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { AssetType, FileType, ImageType, MediaType } from '../../util/enums';
 import { AwsS3ClientService } from '../aws';
 import { AssetsEntity } from '../postgres/entities';
