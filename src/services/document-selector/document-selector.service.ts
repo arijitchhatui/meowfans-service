@@ -29,7 +29,28 @@ export class DocumentSelectorService {
           message: 'Collecting LOW_DEFINITION :: IMAGE',
         });
 
-        return await page.evaluate(() => Array.from(document.querySelectorAll('img')).map((img) => img.src));
+        return await page.evaluate(() =>
+          Array.from(document.querySelectorAll('img'))
+            .map(
+              (img) =>
+                img.src ||
+                img.getAttribute('data-src') ||
+                img.getAttribute('data-lazy') ||
+                img.getAttribute('data-original'),
+            )
+            .filter((src): src is string => !!src),
+        );
+
+      case DocumentQualityType.DIV_DEFINITION:
+        this.logger.log({
+          METHOD: this.getContentUrls.name,
+          message: 'Collecting LOW_DEFINITION :: IMAGE',
+        });
+        return await page.evaluate(() =>
+          Array.from(document.querySelectorAll('div'))
+            .map((div) => div.getAttribute('href'))
+            .filter((href): href is string => !!href),
+        );
 
       default:
         this.logger.log({

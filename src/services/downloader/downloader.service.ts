@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Queue } from 'bull';
 import { Agent } from 'https';
 import Redis from 'ioredis';
+import { cluster } from 'radash';
 import { In } from 'typeorm';
 import { MediaType, ProviderTokens, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
@@ -21,7 +22,7 @@ export class DownloaderService {
   private readonly agent = new Agent({
     family: 4,
     keepAlive: true,
-    maxSockets: 10,
+    maxSockets: 50,
   });
 
   constructor(
@@ -62,11 +63,6 @@ export class DownloaderService {
         httpsAgent: this.agent,
         headers: this.getRandomHeaders(baseUrl),
       });
-
-      if (data.status !== 200) {
-        this.logger.error(`Axios fetch failed with status: ${data.status}`);
-        return null;
-      }
 
       this.logger.log(`✅ GOT THE DATA: ${data.data.length} bytes`);
       return data.data;
@@ -110,7 +106,7 @@ export class DownloaderService {
   }
 
   public async handleUpload(input: UploadVaultQueueInput) {
-    const { vaultObjectIds, creatorId, destination } = input;
+    const { vaultObjectIds } = input;
     if (!vaultObjectIds.length) return;
 
     this.logger.log({
@@ -119,12 +115,7 @@ export class DownloaderService {
     });
 
     try {
-      for (const vaultObjectId of Array.from(new Set(vaultObjectIds))) {
-        this.logger.log({
-          method: this.handleUpload.name,
-          before: vaultObjectId,
-        });
-
+      for (const chunk of cluster(Array.from(new Set(vaultObjectIds)), 5)) {
         if (this.isTerminated) {
           const terminatedResult = await this.vaultObjectsRepository.update(
             { id: In(vaultObjectIds), status: DownloadStates.PROCESSING },
@@ -134,49 +125,11 @@ export class DownloaderService {
           break;
         }
 
-        const vaultObject = await this.vaultObjectsRepository.findOneOrFail({
-          where: { id: vaultObjectId },
-          relations: { vault: true },
-        });
-
-        this.logger.log({ method: this.handleUpload.name, status_before: vaultObject.status });
-        this.logger.log({ method: this.handleUpload.name, after: vaultObjectId });
-
-        if (vaultObject.status !== DownloadStates.FULFILLED) {
-          this.logger.log({ method: this.handleUpload.name, PROCESSING_URL: vaultObject.vault.url });
-          this.logger.log({ method: this.handleUpload.name, status_after: vaultObject.status });
-
-          try {
-            const buffer = await this.fetch(vaultObject.objectUrl, vaultObject.vault.url);
-            const mimeType = this.documentSelectorService.resolveMimeType(vaultObject.objectUrl);
-
-            if (!buffer) throw new Error('AXIOS ERROR :: RETURNING');
-
-            await this.assetsService.uploadFileV2(
-              creatorId,
-              vaultObject.objectUrl,
-              MediaType.PROFILE_MEDIA,
-              buffer,
-              mimeType,
-              destination,
-            );
-
-            await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
-
-            this.logger.log({
-              'method': this.handleUpload.name,
-              '✅ DOWNLOADED & UPLOADED': `${vaultObject.objectUrl}`,
-            });
-          } catch (err) {
-            this.logger.error({
-              message: '❌ FAILED TO SAVE!',
-              url: vaultObject.objectUrl,
-              method: this.handleUpload.name,
-            });
-            this.logger.error(err);
-            await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
-          }
-        }
+        await Promise.all(
+          chunk.map(async (vaultObjectId) => {
+            await this.handleChunkUpload(vaultObjectId, input);
+          }),
+        );
       }
     } finally {
       this.logger.log({
@@ -185,6 +138,40 @@ export class DownloaderService {
           : 'ALL OBJECTS DOWNLOADED',
       });
       this.isTerminated = false;
+    }
+  }
+
+  private async handleChunkUpload(vaultObjectId: string, input: UploadVaultQueueInput) {
+    const { creatorId, destination } = input;
+    const vaultObject = await this.vaultObjectsRepository.findOneOrFail({
+      where: { id: vaultObjectId },
+      relations: { vault: true },
+    });
+
+    if (this.isTerminated) return;
+
+    if (vaultObject.status !== DownloadStates.FULFILLED) {
+      try {
+        const buffer = await this.fetch(vaultObject.objectUrl, vaultObject.vault.url);
+        const mimeType = this.documentSelectorService.resolveMimeType(vaultObject.objectUrl);
+
+        if (buffer !== null) {
+          await this.assetsService.uploadFileV2(
+            creatorId,
+            vaultObject.objectUrl,
+            MediaType.PROFILE_MEDIA,
+            buffer,
+            mimeType,
+            destination,
+          );
+          await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
+          this.logger.log({ method: this.handleUpload.name, DOWNLOADED_AND_UPLOADED: vaultObject.objectUrl });
+        }
+      } catch (err) {
+        this.logger.error({ message: '❌ FAILED TO SAVE!', url: vaultObject.objectUrl });
+        this.logger.error(err);
+        await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
+      }
     }
   }
 

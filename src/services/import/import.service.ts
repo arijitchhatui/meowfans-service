@@ -78,7 +78,16 @@ export class ImportService {
     });
 
     try {
-      await this.safeGoto(page, url, this.importProfiles.name);
+      try {
+        await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        try {
+          await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
+          this.logger.warn({ METHOD: this.importBranch.name, NAVIGATION_TIMEOUT: input.url });
+        } catch {
+          await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
+        }
+      }
 
       const anchorUrls = await this.documentSelectorService.getAnchors(page);
       const regex = /^https:\/\/coomer\.st\/[^/]+\/user\/[^/]+$/;
@@ -144,7 +153,16 @@ export class ImportService {
     this.logger.log({ METHOD: this.importProfile.name, MESSAGE: 'STARTED IMPORTING PROFILE', input });
 
     try {
-      await this.safeGoto(page, url, this.importProfile.name);
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        try {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+          this.logger.warn({ METHOD: this.importBranch.name, NAVIGATION_TIMEOUT: url });
+        } catch {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        }
+      }
 
       const anchorUrls = await this.documentSelectorService.getAnchors(page);
       const allQueryUrls = anchorUrls.filter((url) => url.includes(`/user/${subDirectory}?o=`));
@@ -198,7 +216,16 @@ export class ImportService {
 
     const page = await browser.newPage();
     try {
-      await this.safeGoto(page, input.url, this.importPage.name);
+      try {
+        await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        try {
+          await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
+          this.logger.warn({ METHOD: this.importBranch.name, NAVIGATION_TIMEOUT: input.url });
+        } catch {
+          await page.goto(input.url, { waitUntil: 'networkidle', timeout: 30000 });
+        }
+      }
 
       this.logger.log({ METHOD: this.importBranch.name, VISITING_QUERY_URL: input.url });
 
@@ -235,7 +262,16 @@ export class ImportService {
     const page = await browser.newPage();
 
     try {
-      await this.safeGoto(page, url, this.importPage.name);
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        try {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+          this.logger.warn({ METHOD: this.importPage.name, NAVIGATION_TIMEOUT: url });
+        } catch {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        }
+      }
 
       this.logger.log({ METHOD: this.importPage.name, VISITING_SINGLE_BRANCH_URL: url });
 
