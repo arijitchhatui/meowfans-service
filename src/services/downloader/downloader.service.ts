@@ -173,8 +173,6 @@ export class DownloaderService {
           await this.markAsFulfilled(creatorId, vaultObjectId);
           this.logger.log({ method: this.handleUpload.name, DOWNLOADED_AND_UPLOADED: vaultObject.objectUrl });
         } else await this.markAsRejected(creatorId, vaultObjectId);
-
-        await this.markAsFulfilled(creatorId, vaultObjectId);
       } catch {
         this.logger.error({ message: '❌ FAILED TO SAVE!', url: vaultObject.objectUrl });
         await this.markAsRejected(creatorId, vaultObjectId);
