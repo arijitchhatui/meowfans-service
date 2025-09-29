@@ -126,4 +126,9 @@ export class AdminService {
   public async getCreatorProfileByAdmin(adminId: string, creatorId: string) {
     return await this.creatorProfilesServices.getCreatorProfile(creatorId);
   }
+
+  public async cleanUpVaultObjectsOfACreator(adminId: string, creatorId: string) {
+    const result = await this.vaultObjectsRepository.cleanUpVaultObjectsOfACreator(creatorId);
+    return result.affected;
+  }
 }

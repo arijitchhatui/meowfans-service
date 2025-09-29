@@ -4,6 +4,7 @@ import { QueueTypes } from '../../util/enums';
 import { AssetsService } from '../assets';
 import { AwsS3Module } from '../aws';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
+import { SSEModule } from '../sse/sse.module';
 import { DownloaderConsumerService } from './downloader.consumer.service';
 import { DownloaderResolver } from './downloader.resolver';
 import { DownloaderService } from './downloader.service';
@@ -21,6 +22,7 @@ import { DownloaderService } from './downloader.service';
       },
     }),
     AwsS3Module,
+    SSEModule,
   ],
   providers: [DownloaderService, DocumentSelectorService, AssetsService, DownloaderResolver, DownloaderConsumerService],
   exports: [DownloaderService],
