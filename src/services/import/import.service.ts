@@ -278,7 +278,7 @@ export class ImportService {
       const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
       const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
 
-      this.logger.log({ METHOD: this.importPage.name, FILTERED_IMAGES_COUNT: filteredUrls.length });
+      this.logger.log({ METHOD: this.importPage.name, urls, filteredUrls, FILTERED_IMAGES_COUNT: filteredUrls.length });
 
       if (filteredUrls.length > 0 && !this.isTerminated) {
         await this.handleUploadToVault(input.creatorId, input.url, filteredUrls);

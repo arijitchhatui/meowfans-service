@@ -98,4 +98,18 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       .orderBy('vault.createdAt', input.orderBy)
       .getManyAndCount();
   }
+
+  public async cleanUpVaultObjectsOfACreator(creatorId: string) {
+    return await this.createQueryBuilder()
+      .update(VaultObjectsEntity)
+      .set({ status: DownloadStates.REJECTED })
+      .where('status = :status', { status: DownloadStates.PROCESSING })
+      .andWhere(
+        `"vault_id" IN (
+         SELECT v.id FROM vaults v WHERE v.creator_id = :creatorId
+       )`,
+        { creatorId },
+      )
+      .execute();
+  }
 }

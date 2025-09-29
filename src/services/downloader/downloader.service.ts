@@ -12,6 +12,7 @@ import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { VaultsObjectsRepository } from '../postgres/repositories';
 import { headerPools } from '../service.constants';
+import { SSEService } from '../sse/sse.service';
 import { UploadVaultInput, UploadVaultQueueInput } from './dto';
 
 @Injectable()
@@ -27,11 +28,12 @@ export class DownloaderService {
 
   constructor(
     @InjectQueue(QueueTypes.UPLOAD_VAULT_QUEUE)
-    private uploadVaultQueue: Queue<UploadVaultQueueInput>,
-    private vaultObjectsRepository: VaultsObjectsRepository,
-    private documentSelectorService: DocumentSelectorService,
-    private assetsService: AssetsService,
-    @Inject(ProviderTokens.REDIS_TOKEN) private redis: Redis,
+    private readonly uploadVaultQueue: Queue<UploadVaultQueueInput>,
+    private readonly vaultObjectsRepository: VaultsObjectsRepository,
+    private readonly documentSelectorService: DocumentSelectorService,
+    private readonly assetsService: AssetsService,
+    @Inject(ProviderTokens.REDIS_TOKEN) private readonly redis: Redis,
+    private readonly sseService: SSEService,
   ) {}
 
   onModuleInit() {
@@ -137,6 +139,10 @@ export class DownloaderService {
           ? '⚠️⚠️⚠️ THE DOWNLOADING PROCESS IS TERMINATED FORCEFULLY ⚠️⚠️⚠️'
           : 'ALL OBJECTS DOWNLOADED',
       });
+      await this.vaultObjectsRepository.update(
+        { id: In(vaultObjectIds), status: DownloadStates.PROCESSING },
+        { status: DownloadStates.REJECTED },
+      );
       this.isTerminated = false;
     }
   }
@@ -164,13 +170,14 @@ export class DownloaderService {
             mimeType,
             destination,
           );
-          await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
+          await this.markAsFulfilled(creatorId, vaultObjectId);
           this.logger.log({ method: this.handleUpload.name, DOWNLOADED_AND_UPLOADED: vaultObject.objectUrl });
-        }
-      } catch (err) {
+        } else await this.markAsRejected(creatorId, vaultObjectId);
+
+        await this.markAsFulfilled(creatorId, vaultObjectId);
+      } catch {
         this.logger.error({ message: '❌ FAILED TO SAVE!', url: vaultObject.objectUrl });
-        this.logger.error(err);
-        await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
+        await this.markAsRejected(creatorId, vaultObjectId);
       }
     }
   }
@@ -178,5 +185,29 @@ export class DownloaderService {
   private getRandomHeaders(baseUrl: string) {
     const header = headerPools[Math.floor(Math.random() * headerPools.length)];
     return Object.fromEntries(Object.entries({ ...header, Referer: baseUrl }));
+  }
+
+  private async markAsProcessing(creatorId: string, vaultObjectId: string) {
+    await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.PROCESSING });
+
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PROCESSING });
+  }
+
+  private async markAsFulfilled(creatorId: string, vaultObjectId: string) {
+    await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
+
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.FULFILLED });
+  }
+
+  private async markAsPending(creatorId: string, vaultObjectId: string) {
+    await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.PENDING });
+
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PENDING });
+  }
+
+  private async markAsRejected(creatorId: string, vaultObjectId: string) {
+    await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
+
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.REJECTED });
   }
 }

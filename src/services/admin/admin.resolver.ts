@@ -7,7 +7,7 @@ import { ExtendedUpdateCreatorProfileInput, GetAllCreatorsOutput } from '../crea
 import { UploadVaultQueueInput } from '../downloader/dto';
 import { CreateImportQueueInput } from '../import/dto';
 import { CreatorAssetsEntity, CreatorProfilesEntity } from '../postgres/entities';
-import { GetAllVaultsOutput, GetCreatorVaultObjectsOutput } from '../vaults/dto';
+import { CleanUpVaultInput, GetAllVaultsOutput, GetCreatorVaultObjectsOutput } from '../vaults/dto';
 import { AdminService } from './admin.service';
 
 @Resolver()
@@ -86,5 +86,11 @@ export class AdminResolver {
     @Args('input') input: ExtendedUpdateCreatorProfileInput,
   ) {
     return await this.adminService.updateCreatorProfileByAdmin(adminId, input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
+  @Mutation(() => Number)
+  public async cleanUpVaultObjectsOfACreator(@CurrentUser() adminId: string, @Args('input') input: CleanUpVaultInput) {
+    return await this.adminService.cleanUpVaultObjectsOfACreator(adminId, input.creatorId);
   }
 }

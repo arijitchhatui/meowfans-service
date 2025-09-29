@@ -13,8 +13,22 @@ import { ProviderTokens } from '../../util/enums';
         return new Redis(configService.getOrThrow<string>('REDIS_URL'));
       },
     },
+    {
+      provide: ProviderTokens.REDIS_PUB_TOKEN,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): Redis => {
+        return new Redis(configService.getOrThrow<string>('REDIS_URL'));
+      },
+    },
+    {
+      provide: ProviderTokens.REDIS_SUB_TOKEN,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): Redis => {
+        return new Redis(configService.getOrThrow<string>('REDIS_URL'));
+      },
+    },
   ],
-  exports: [ProviderTokens.REDIS_TOKEN],
+  exports: [ProviderTokens.REDIS_TOKEN, ProviderTokens.REDIS_PUB_TOKEN, ProviderTokens.REDIS_SUB_TOKEN],
 })
 export class RedisModule {
   private logger = new Logger(RedisModule.name);
