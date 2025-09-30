@@ -1,11 +1,15 @@
+import { profanity } from '@2toad/profanity';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Browser, Page } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { cluster } from 'radash';
+import { OK_URI } from '../../util/constants';
+import { ContentType, DocumentQualityType } from '../../util/enums';
 import { AuthService } from '../auth';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
-import { PasswordsRepository, UsersRepository, VaultsRepository } from '../postgres/repositories';
+import { PasswordsRepository, UsersRepository } from '../postgres/repositories';
+import { VaultsService } from '../vaults';
 import { CreateImportQueueInput } from './dto';
 
 @Injectable()
@@ -19,7 +23,7 @@ export class ImportService {
     private readonly configService: ConfigService,
     private readonly authservice: AuthService,
     private readonly passwordsRepository: PasswordsRepository,
-    private readonly vaultsRepository: VaultsRepository,
+    private readonly vaultsService: VaultsService,
   ) {}
 
   public terminateAllJobs() {
@@ -46,6 +50,10 @@ export class ImportService {
         METHOD: this.scanOrCreateNewProfile.name,
         MESSAGE: '✅✅✅✅ NEW PROFILE CREATED ✅✅✅✅',
         CREATED_NEW_CREATOR: newCreator.userId,
+        username,
+        email,
+        fullName,
+        password,
       });
 
       return { userId: newCreator.userId, username: username };
@@ -258,7 +266,7 @@ export class ImportService {
       return [];
     }
 
-    const { url, qualityType } = input;
+    const { url, qualityType, creatorId } = input;
     const page = await browser.newPage();
 
     try {
@@ -281,7 +289,82 @@ export class ImportService {
       this.logger.log({ METHOD: this.importPage.name, urls, filteredUrls, FILTERED_IMAGES_COUNT: filteredUrls.length });
 
       if (filteredUrls.length > 0 && !this.isTerminated) {
-        await this.handleUploadToVault(input.creatorId, input.url, filteredUrls);
+        await this.handleUploadToVault(creatorId, input.url, filteredUrls, ContentType.SFW);
+      }
+
+      return filteredUrls;
+    } finally {
+      await page.close();
+    }
+  }
+
+  public async importOKPage(browser: Browser, input: CreateImportQueueInput) {
+    const { start, exclude } = input;
+    if (this.isTerminated) {
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      return [];
+    }
+    const span = exclude;
+
+    this.logger.log({ METHOD: this.importOKPage.name, ...input, span });
+
+    const okUrls = Array.from({ length: span }, (_, i) => `${OK_URI}${start + i + 100000}/`);
+
+    this.logger.log({ okUrls });
+
+    for (const chunk of cluster(Array.from(new Set(okUrls)), 3)) {
+      await Promise.all(
+        chunk.map(async (okUrl) => {
+          await this.handleImportOKPage(browser, { ...input, url: okUrl });
+        }),
+      );
+    }
+  }
+
+  private async handleImportOKPage(browser: Browser, input: CreateImportQueueInput) {
+    const { url } = input;
+    const page = await browser.newPage();
+
+    try {
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        try {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+          this.logger.warn({ METHOD: this.importPage.name, NAVIGATION_TIMEOUT: url });
+        } catch {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        }
+      }
+
+      const title = await page.title();
+
+      const handles = title
+        .split(' ')
+        .filter(Boolean)
+        .map((t) => t.replace(/[^A-Za-z]/g, '').toLowerCase())
+        .slice(0, 2);
+
+      const userName = handles.some((handle) => profanity.exists(handle)) ? handles[0] : handles.join('');
+      const profileUrl = OK_URI.concat(userName);
+
+      this.logger.log({
+        METHOD: this.importPage.name,
+        VISITING_SINGLE_BRANCH_URL: url,
+        title,
+        handles,
+        userName,
+        profileUrl,
+      });
+
+      const urls = await this.documentSelectorService.getContentUrls(page, DocumentQualityType.DIV_DEFINITION);
+      const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
+
+      this.logger.log({ METHOD: this.importPage.name, urls, filteredUrls, FILTERED_IMAGES_COUNT: filteredUrls.length });
+
+      if (filteredUrls.length > 1 && !this.isTerminated) {
+        const { userId } = await this.scanOrCreateNewProfile(profileUrl);
+        await this.handleUploadToVault(userId, url, filteredUrls, ContentType.NSFW);
       }
 
       return filteredUrls;
@@ -354,8 +437,13 @@ export class ImportService {
     return imageUrls;
   }
 
-  private async handleUploadToVault(creatorId: string, baseUrl: string, filteredUrls: string[]) {
-    await this.vaultsRepository.bulkInsert(creatorId, { objects: filteredUrls, baseUrl: baseUrl });
+  private async handleUploadToVault(
+    creatorId: string,
+    baseUrl: string,
+    filteredUrls: string[],
+    contentType: ContentType,
+  ) {
+    await this.vaultsService.bulkInsert(creatorId, { objects: filteredUrls, baseUrl: baseUrl, contentType });
   }
 
   private async handleFilter(branchUrls: string[], url: string, subDirectory?: string): Promise<string[]> {

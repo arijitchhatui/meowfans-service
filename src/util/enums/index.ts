@@ -1,4 +1,6 @@
 export * from './asset-type';
+export * from './content-type';
+export * from './event-types';
 export * from './file-type';
 export * from './graphql-error-code';
 export * from './host-names';

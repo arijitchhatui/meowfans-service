@@ -1,8 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
-import { filter, fromEvent, Observable } from 'rxjs';
-import { EventTypes } from '../../util/constants';
-import { ProviderTokens } from '../../util/enums';
+import { fromEvent, Observable } from 'rxjs';
+import { EventTypes, ProviderTokens } from '../../util/enums';
 
 @Injectable()
 export class SSEService {
@@ -13,17 +12,22 @@ export class SSEService {
     @Inject(ProviderTokens.REDIS_SUB_TOKEN) private readonly subscriber: Redis,
   ) {}
 
-  public async subscribe(): Promise<Observable<string>> {
-    await this.subscriber.subscribe(EventTypes.VaultDownload);
+  public async subscribe(): Promise<Observable<{ type: string; data: string }>> {
+    await this.subscriber.subscribe(
+      EventTypes.VaultDownload,
+      EventTypes.VaultDownload,
+      EventTypes.ImportCompleted,
+      EventTypes.VaultDownloadCompleted,
+    );
 
-    return fromEvent(this.subscriber, 'message', (channel, message) => {
-      return channel === EventTypes.VaultDownload ? message : null;
-    }).pipe(filter((message): message is string => message !== null));
+    return fromEvent(this.subscriber, 'message', (channel: string, message: string) => {
+      return { type: channel, data: message };
+    });
   }
 
-  public async publish(creatorId: string, data: Record<string, unknown>) {
+  public async publish(creatorId: string, data: Record<string, unknown>, type: EventTypes) {
     try {
-      await this.publisher.publish(EventTypes.VaultDownload, JSON.stringify({ creatorId, data }));
+      await this.publisher.publish(type, JSON.stringify({ creatorId, data }));
     } catch {
       this.logger.error('error streaming');
     }

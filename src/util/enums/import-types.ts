@@ -3,4 +3,5 @@ export enum ImportTypes {
   BRANCH = 'BRANCH',
   SINGLE = 'SINGLE',
   PAGE = 'PAGE',
+  OK = 'OK',
 }

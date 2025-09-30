@@ -44,7 +44,7 @@ export class DocumentSelectorService {
       case DocumentQualityType.DIV_DEFINITION:
         this.logger.log({
           METHOD: this.getContentUrls.name,
-          message: 'Collecting LOW_DEFINITION :: IMAGE',
+          message: 'Collecting DIV_DEFINITION :: IMAGE',
         });
         return await page.evaluate(() =>
           Array.from(document.querySelectorAll('div'))
@@ -79,6 +79,14 @@ export class DocumentSelectorService {
         this.logger.log({
           METHOD: this.getAnchorsBasedOnHostName.name,
           TARGET_HOST_URL: 'COOMER',
+        });
+
+        return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));
+
+      case HostNames.KEMONO:
+        this.logger.log({
+          METHOD: this.getAnchorsBasedOnHostName.name,
+          TARGET_HOST_URL: 'KEMONO',
         });
 
         return anchors.filter((anchor) => anchor.includes(`/${subDirectory}/post`));

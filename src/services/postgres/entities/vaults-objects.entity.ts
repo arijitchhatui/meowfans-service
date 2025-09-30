@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -10,9 +10,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FileType } from '../../../util/enums';
+import { ContentType, FileType } from '../../../util/enums';
 import { DownloadStates } from '../../../util/enums/download-state';
 import { VaultsEntity } from './vaults.entity';
+
+registerEnumType(ContentType, { name: 'ContentType' });
 
 @ObjectType()
 @Entity({ name: 'vault_objects' })
@@ -38,6 +40,10 @@ export class VaultObjectsEntity {
   @Field(() => FileType)
   @Column({ type: 'enum', enum: FileType, enumName: 'FileType', default: FileType.IMAGE })
   fileType: FileType;
+
+  @Field(() => ContentType)
+  @Column({ type: 'enum', enum: ContentType, enumName: 'ContentType', default: ContentType.SFW })
+  contentType: ContentType;
 
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp' })
