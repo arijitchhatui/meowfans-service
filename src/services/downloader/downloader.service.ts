@@ -6,7 +6,7 @@ import { Agent } from 'https';
 import Redis from 'ioredis';
 import { cluster } from 'radash';
 import { In } from 'typeorm';
-import { MediaType, ProviderTokens, QueueTypes } from '../../util/enums';
+import { EventTypes, MediaType, ProviderTokens, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
@@ -77,15 +77,9 @@ export class DownloaderService {
   public async uploadVault(creatorId: string, input: UploadVaultInput) {
     this.isTerminated = false;
     this.startDownloading();
-
-    this.logger.log({
-      method: this.uploadVault.name,
-      creatorId,
-      ...input,
-    });
-
     if (!input.vaultObjectIds.length) return;
 
+    this.logger.log({ method: this.uploadVault.name, creatorId, ...input });
     this.logger.log({ vaultObjectIds: input.vaultObjectIds });
 
     const validObjectIds = await this.vaultObjectsRepository.find({
@@ -115,6 +109,9 @@ export class DownloaderService {
       method: this.handleUpload.name,
       vaultObjectIds,
     });
+    const finalMessage = this.isTerminated
+      ? '⚠️⚠️⚠️ THE DOWNLOADING PROCESS IS TERMINATED FORCEFULLY ⚠️⚠️⚠️'
+      : 'ALL OBJECTS DOWNLOADED';
 
     try {
       for (const chunk of cluster(Array.from(new Set(vaultObjectIds)), 5)) {
@@ -134,11 +131,9 @@ export class DownloaderService {
         );
       }
     } finally {
-      this.logger.log({
-        MESSAGE: this.isTerminated
-          ? '⚠️⚠️⚠️ THE DOWNLOADING PROCESS IS TERMINATED FORCEFULLY ⚠️⚠️⚠️'
-          : 'ALL OBJECTS DOWNLOADED',
-      });
+      this.logger.log({ MESSAGE: finalMessage });
+      this.sseService.publish(input.creatorId, { finalMessage }, EventTypes.VaultDownloadCompleted);
+
       await this.vaultObjectsRepository.update(
         { id: In(vaultObjectIds), status: DownloadStates.PROCESSING },
         { status: DownloadStates.REJECTED },
@@ -171,7 +166,7 @@ export class DownloaderService {
             destination,
           );
           await this.markAsFulfilled(creatorId, vaultObjectId);
-          this.logger.log({ method: this.handleUpload.name, DOWNLOADED_AND_UPLOADED: vaultObject.objectUrl });
+          this.logger.log({ METHOD: this.handleUpload.name, DOWNLOADED_AND_UPLOADED: vaultObject.objectUrl });
         } else await this.markAsRejected(creatorId, vaultObjectId);
       } catch {
         this.logger.error({ message: '❌ FAILED TO SAVE!', url: vaultObject.objectUrl });
@@ -188,24 +183,24 @@ export class DownloaderService {
   private async markAsProcessing(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.PROCESSING });
 
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PROCESSING });
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PROCESSING }, EventTypes.VaultDownload);
   }
 
   private async markAsFulfilled(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
 
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.FULFILLED });
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.FULFILLED }, EventTypes.VaultDownload);
   }
 
   private async markAsPending(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.PENDING });
 
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PENDING });
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PENDING }, EventTypes.VaultDownload);
   }
 
   private async markAsRejected(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
 
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.REJECTED });
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.REJECTED }, EventTypes.VaultDownload);
   }
 }

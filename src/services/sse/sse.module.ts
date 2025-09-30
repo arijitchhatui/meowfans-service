@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { ProviderTokens } from '../../util/enums';
 import { SSEController } from './sse.controller';
 import { SSEService } from './sse.service';
 
+@Global()
 @Module({
   providers: [
     SSEService,

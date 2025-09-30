@@ -4,10 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import { chromium } from '@playwright/test';
 import { Queue } from 'bull';
 import Redis from 'ioredis';
-import { ProviderTokens, QueueTypes } from '../../util/enums';
+import { EventTypes, ProviderTokens, QueueTypes } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
 import { ImportService } from '../import';
 import { UsersRepository } from '../postgres/repositories';
+import { SSEService } from '../sse/sse.service';
 import { CreateImportQueueInput } from './dto/create-import.dto';
 
 @Injectable()
@@ -17,11 +18,12 @@ export class ExtractorService {
 
   public constructor(
     @InjectQueue(QueueTypes.UPLOAD_QUEUE)
-    private uploadQueue: Queue<CreateImportQueueInput>,
-    private usersRepository: UsersRepository,
-    private configService: ConfigService,
-    private importService: ImportService,
-    @Inject(ProviderTokens.REDIS_TOKEN) private redis: Redis,
+    private readonly uploadQueue: Queue<CreateImportQueueInput>,
+    private readonly usersRepository: UsersRepository,
+    private readonly configService: ConfigService,
+    private readonly importService: ImportService,
+    @Inject(ProviderTokens.REDIS_TOKEN) private readonly redis: Redis,
+    private readonly sseService: SSEService,
   ) {}
 
   public async initiate(input: CreateImportQueueInput): Promise<string> {
@@ -77,6 +79,9 @@ export class ExtractorService {
       this.logger.log({ message: '⚠️⚠️⚠️ TERMINATED EARLIER BEFORE EXECUTION HAS STARTED ⚠️⚠️⚠️ ' });
       return;
     }
+    const finalMessage = this.isTerminated
+      ? '🛑⚠️⚠️ TERMINATED IMPORT OPERATION, CHECK FOR LOGS ⚠️⚠️🛑'
+      : '✅✅✅ IMPORT OPERATION EXECUTED SUCCESSFULLY ✅✅✅';
 
     try {
       switch (importType) {
@@ -88,6 +93,8 @@ export class ExtractorService {
           return await this.importService.importBranch(browser, input);
         case ImportTypes.SINGLE:
           return await this.importService.importPage(browser, input);
+        case ImportTypes.OK:
+          return await this.importService.importOKPage(browser, input);
         default:
           return;
       }
@@ -97,10 +104,9 @@ export class ExtractorService {
     } finally {
       this.logger.log({
         METHOD: this.handleImport.name,
-        MESSAGE: this.isTerminated
-          ? '🛑⚠️⚠️ TERMINATED IMPORT OPERATION, CHECK FOR LOGS ⚠️⚠️🛑'
-          : '✅✅✅ IMPORT OPERATION EXECUTED SUCCESSFULLY ✅✅✅',
+        MESSAGE: finalMessage,
       });
+      this.sseService.publish(input.creatorId, { finalMessage }, EventTypes.ImportCompleted);
       await browser.close();
       this.isTerminated = false;
     }
