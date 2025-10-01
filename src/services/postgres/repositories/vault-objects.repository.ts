@@ -3,6 +3,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
 import { FileType } from '../../../util/enums';
 import { DownloadStates } from '../../../util/enums/download-state';
+import { GetAllObjectsCountOutput } from '../../vaults/dto';
 import { VaultObjectsEntity } from '../entities';
 
 @Injectable()
@@ -68,6 +69,17 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
 
   public getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
     return this.creatorVaultObjects(creatorId, input);
+  }
+
+  public async getCountOfObjectsOfEachType() {
+    return await this.createQueryBuilder('vault')
+      .select([
+        `COUNT(*) FILTER (WHERE vault.status = 'PENDING') AS pending`,
+        `COUNT(*) FILTER (WHERE vault.status = 'PROCESSING') AS processing`,
+        `COUNT(*) FILTER (WHERE vault.status = 'REJECTED') AS rejected`,
+        `COUNT(*) FILTER (WHERE vault.status = 'FULFILLED') AS fulfilled`,
+      ])
+      .getRawOne<GetAllObjectsCountOutput>();
   }
 
   public async getCreatorTotalVaultObjectsCount(creatorId: string, input: PaginationInput) {

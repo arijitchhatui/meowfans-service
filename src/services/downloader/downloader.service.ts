@@ -190,6 +190,7 @@ export class DownloaderService {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
 
     this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.FULFILLED }, EventTypes.VaultDownload);
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.FULFILLED }, EventTypes.ImportObject);
   }
 
   private async markAsPending(creatorId: string, vaultObjectId: string) {
@@ -202,5 +203,6 @@ export class DownloaderService {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
 
     this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.REJECTED }, EventTypes.VaultDownload);
+    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.REJECTED }, EventTypes.ImportObject);
   }
 }

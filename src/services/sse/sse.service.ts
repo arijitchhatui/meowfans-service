@@ -18,6 +18,7 @@ export class SSEService {
       EventTypes.VaultDownload,
       EventTypes.ImportCompleted,
       EventTypes.VaultDownloadCompleted,
+      EventTypes.ImportObject,
     );
 
     return fromEvent(this.subscriber, 'message', (channel: string, message: string) => {

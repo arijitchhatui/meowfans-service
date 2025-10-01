@@ -3,6 +3,7 @@ import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { VaultObjectsEntity, VaultsEntity } from '../postgres/entities';
+import { GetAllObjectsCountOutput } from './dto';
 import { VaultsService } from './vaults.service';
 
 @Resolver()
@@ -31,5 +32,11 @@ export class VaultsResolver {
   @Query(() => Int)
   public async getTotalObjectsAsType(@Args('input') input: PaginationInput): Promise<number> {
     return await this.vaultsService.getTotalObjectsAsType(input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
+  @Query(() => GetAllObjectsCountOutput)
+  public async getCountOfObjectsOfEachType(): Promise<GetAllObjectsCountOutput> {
+    return await this.vaultsService.getCountOfObjectsOfEachType();
   }
 }
