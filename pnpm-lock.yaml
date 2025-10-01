@@ -14,6 +14,9 @@ importers:
       '@apollo/server':
         specifier: ^4.12.0
         version: 4.12.2(graphql@16.11.0)
+      '@as-integrations/express5':
+        specifier: ^1.1.2
+        version: 1.1.2(@apollo/server@4.12.2(graphql@16.11.0))(express@5.1.0)
       '@aws-sdk/client-s3':
         specifier: ^3.894.0
         version: 3.894.0
@@ -146,9 +149,6 @@ importers:
       typesense:
         specifier: ^2.1.0
         version: 2.1.0(@babel/runtime@7.28.4)
-      undici:
-        specifier: ^7.16.0
-        version: 7.16.0
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.2.0
@@ -356,6 +356,13 @@ packages:
 
   '@apollographql/graphql-playground-html@1.6.29':
     resolution: {integrity: sha512-xCcXpoz52rI4ksJSdOCxeOCn2DLocxwHf9dVT/Q90Pte1LX+LY+91SFtJF3KXVHH8kEin+g1KKCQPKBjZJfWNA==}
+
+  '@as-integrations/express5@1.1.2':
+    resolution: {integrity: sha512-BxfwtcWNf2CELDkuPQxi5Zl3WqY/dQVJYafeCBOGoFQjv5M0fjhxmAFZ9vKx/5YKKNeok4UY6PkFbHzmQrdxIA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@apollo/server': ^4.0.0 || ^5.0.0
+      express: ^5.0.0
 
   '@aws-crypto/crc32@5.2.0':
     resolution: {integrity: sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg==}
@@ -5316,10 +5323,6 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  undici@7.16.0:
-    resolution: {integrity: sha512-QEg3HPMll0o3t2ourKwOeUAZ159Kn9mx5pnzHRQO8+Wixmh88YdZRiIwat0iNzNNXn0yoEtXJqFpyW7eM8BV7g==}
-    engines: {node: '>=20.18.1'}
-
   universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
@@ -5677,6 +5680,11 @@ snapshots:
   '@apollographql/graphql-playground-html@1.6.29':
     dependencies:
       xss: 1.0.15
+
+  '@as-integrations/express5@1.1.2(@apollo/server@4.12.2(graphql@16.11.0))(express@5.1.0)':
+    dependencies:
+      '@apollo/server': 4.12.2(graphql@16.11.0)
+      express: 5.1.0
 
   '@aws-crypto/crc32@5.2.0':
     dependencies:
@@ -11631,8 +11639,6 @@ snapshots:
       through: 2.3.8
 
   undici-types@6.21.0: {}
-
-  undici@7.16.0: {}
 
   universalify@2.0.1: {}
 
