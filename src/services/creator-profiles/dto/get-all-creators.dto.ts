@@ -29,4 +29,13 @@ export class GetAllCreatorsOutput {
 
   @Field(() => Int)
   count: number;
+
+  @Field(() => Int)
+  totalPages: number;
+
+  @Field(() => Boolean)
+  hasPrev: boolean;
+
+  @Field(() => Boolean)
+  hasNext: boolean;
 }

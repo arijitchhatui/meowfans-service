@@ -24,7 +24,12 @@ export class AdminService {
   ) {}
 
   public async getAllCreators(input: PaginationInput): Promise<GetAllCreatorsOutput> {
-    const [users, count] = await this.usersRepository.getAllCreators(input);
+    const { pageNumber, take } = input;
+    const skip = (pageNumber - 1) * take;
+    const [users, count] = await this.usersRepository.getAllCreators({ ...input, skip });
+    const totalPages = Math.ceil(count / take);
+    const hasPrev = pageNumber > 1;
+    const hasNext = pageNumber < totalPages;
 
     const creators = await Promise.all(
       users.map(async (creator) => {
@@ -52,7 +57,7 @@ export class AdminService {
       }),
     );
 
-    return { creators, count };
+    return { creators, count, totalPages, hasNext, hasPrev };
   }
 
   public async getCreatorVaultObjects(input: PaginationInput) {

@@ -37,4 +37,13 @@ export class PaginationInput {
 
   @Field(() => UserRoles, { nullable: true, defaultValue: UserRoles.CREATOR })
   role: UserRoles;
+
+  @Field(() => Int, { defaultValue: 1 })
+  pageNumber: number;
+
+  @Field(() => Int, { nullable: true, defaultValue: 0 })
+  skip: number;
+
+  @Field(() => Int, { defaultValue: 30, nullable: true })
+  take: number;
 }

@@ -41,8 +41,8 @@ export class UsersRepository extends Repository<UsersEntity> {
     return await this.createQueryBuilder('user')
       .leftJoinAndSelect('user.creatorProfile', 'creator')
       .andWhere('user.roles && :roles', { roles: [input.role] })
-      .limit(input.limit)
-      .offset(input.offset)
+      .skip(input.skip)
+      .take(input.take)
       .orderBy('user.createdAt', input.orderBy)
       .getManyAndCount();
   }
