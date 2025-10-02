@@ -4,4 +4,5 @@ export enum QueueTypes {
   PROFILE_QUEUE = 'profile_queue',
   BRANCH_QUEUE = 'branch_queue',
   PAGE_QUEUE = 'page_queue',
+  CREATOR_UPDATE_QUEUE = 'creator_update_queue',
 }

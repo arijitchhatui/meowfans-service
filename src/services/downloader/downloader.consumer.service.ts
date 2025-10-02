@@ -11,7 +11,7 @@ export class DownloaderConsumerService {
 
   constructor(private downloaderService: DownloaderService) {}
 
-  @Process({ concurrency: 10 })
+  @Process({ concurrency: 7 })
   public async startDownloading(input: Job<UploadVaultQueueInput>) {
     this.logger.log({ JOB_STARTED: 'Started downloading' });
     try {
