@@ -313,7 +313,7 @@ export class ImportService {
 
     this.logger.log({ okUrls });
 
-    for (const chunk of cluster(Array.from(new Set(okUrls)), 3)) {
+    for (const chunk of cluster(Array.from(new Set(okUrls)), 5)) {
       await Promise.all(
         chunk.map(async (okUrl) => {
           await this.handleImportOKPage(browser, { ...input, url: okUrl });
