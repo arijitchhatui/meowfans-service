@@ -8,7 +8,7 @@ import { UploadVaultQueueInput } from '../downloader/dto';
 import { ExtractorService } from '../extractor/extractor.service';
 import { CreateImportQueueInput } from '../import/dto';
 import { CreatorAssetsRepository, UsersRepository, VaultsObjectsRepository } from '../postgres/repositories';
-import { GetCreatorVaultObjectsOutput } from '../vaults/dto';
+import { DownloadAllCreatorObjectsAsBatchInput, GetCreatorVaultObjectsOutput } from '../vaults/dto';
 
 @Injectable()
 export class AdminService {
@@ -92,18 +92,21 @@ export class AdminService {
     return { assets, count };
   }
 
-  public async downloadAllCreatorObjects(input: PaginationInput) {
-    if (!input.relatedUserId) return;
+  public async downloadAllCreatorObjects(input: DownloadAllCreatorObjectsAsBatchInput) {
+    if (!input.creatorIds.length) return;
 
-    this.logger.log({ MESSAGE: 'STARTED DOWNLOADING ALL OBJECTS OF A CREATOR', CREATOR_ID: input.relatedUserId });
+    this.logger.log({ MESSAGE: 'STARTED DOWNLOADING ALL OBJECTS OF CREATORS', CREATOR_IDS: input.creatorIds });
 
-    const objects = await this.vaultObjectsRepository.getTotalPendingObjectsOfACreator(input.relatedUserId);
-    const vaultObjectIds = objects.map((vaultObject) => vaultObject.id);
+    for (const creatorId of input.creatorIds) {
+      const objects = await this.vaultObjectsRepository.getTotalPendingObjectsOfACreator(creatorId);
+      const vaultObjectIds = objects.map((vaultObject) => vaultObject.id);
 
-    await this.downloaderService.uploadVault(input.relatedUserId, {
-      destination: AssetType.PRIVATE,
-      vaultObjectIds: vaultObjectIds,
-    });
+      await this.downloaderService.uploadVault(creatorId, {
+        destination: AssetType.PRIVATE,
+        vaultObjectIds: vaultObjectIds,
+      });
+    }
+
     return 'Downloading is initiated';
   }
 

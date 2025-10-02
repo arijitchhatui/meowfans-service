@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { cluster } from 'radash';
 import { OK_URI } from '../../util/constants';
 import { ContentType, DocumentQualityType } from '../../util/enums';
+import { ImportTypes } from '../../util/enums/import-types';
 import { AuthService } from '../auth';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { PasswordsRepository, UsersRepository } from '../postgres/repositories';
@@ -266,7 +267,7 @@ export class ImportService {
       return [];
     }
 
-    const { url, qualityType, creatorId } = input;
+    const { url, qualityType, creatorId, importType } = input;
     const page = await browser.newPage();
 
     try {
@@ -289,7 +290,7 @@ export class ImportService {
       this.logger.log({ METHOD: this.importPage.name, urls, filteredUrls, FILTERED_IMAGES_COUNT: filteredUrls.length });
 
       if (filteredUrls.length > 0 && !this.isTerminated) {
-        await this.handleUploadToVault(creatorId, input.url, filteredUrls, ContentType.SFW);
+        await this.handleUploadToVault(creatorId, input.url, filteredUrls, ContentType.SFW, importType);
       }
 
       return filteredUrls;
@@ -308,7 +309,7 @@ export class ImportService {
 
     this.logger.log({ METHOD: this.importOKPage.name, ...input, span });
 
-    const okUrls = Array.from({ length: span }, (_, i) => `${OK_URI}${start + i + 100000}/`);
+    const okUrls = Array.from({ length: span }, (_, i) => `${OK_URI}${start + i + 5}/`);
 
     this.logger.log({ okUrls });
 
@@ -322,7 +323,7 @@ export class ImportService {
   }
 
   private async handleImportOKPage(browser: Browser, input: CreateImportQueueInput) {
-    const { url } = input;
+    const { url, importType } = input;
     const page = await browser.newPage();
 
     try {
@@ -364,7 +365,7 @@ export class ImportService {
 
       if (filteredUrls.length > 1 && !this.isTerminated) {
         const { userId } = await this.scanOrCreateNewProfile(profileUrl);
-        await this.handleUploadToVault(userId, url, filteredUrls, ContentType.NSFW);
+        await this.handleUploadToVault(userId, url, filteredUrls, ContentType.NSFW, importType);
       }
 
       return filteredUrls;
@@ -442,8 +443,14 @@ export class ImportService {
     baseUrl: string,
     filteredUrls: string[],
     contentType: ContentType,
+    importType: ImportTypes,
   ) {
-    await this.vaultsService.bulkInsert(creatorId, { objects: filteredUrls, baseUrl: baseUrl, contentType });
+    await this.vaultsService.bulkInsert(creatorId, {
+      objects: filteredUrls,
+      baseUrl: baseUrl,
+      contentType,
+      importType,
+    });
   }
 
   private async handleFilter(branchUrls: string[], url: string, subDirectory?: string): Promise<string[]> {

@@ -7,11 +7,13 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ContentType, FileType } from '../../../util/enums';
 import { DownloadStates } from '../../../util/enums/download-state';
+import { AssetsEntity } from './assets.entity';
 import { VaultsEntity } from './vaults.entity';
 
 registerEnumType(ContentType, { name: 'ContentType' });
@@ -32,6 +34,10 @@ export class VaultObjectsEntity {
   @Field()
   @Column()
   vaultId: string;
+
+  @Field(() => Number)
+  @Column({ type: 'bigint', nullable: true })
+  suffix: number | null;
 
   @Field(() => DownloadStates)
   @Column({ type: 'enum', enum: DownloadStates, enumName: 'DownloadStates', default: DownloadStates.PENDING })
@@ -56,6 +62,9 @@ export class VaultObjectsEntity {
   @Field(() => Date, { nullable: true })
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
+
+  @OneToOne(() => AssetsEntity, (asset) => asset.vaultObject, { nullable: true })
+  asset?: AssetsEntity | null;
 
   @Field(() => VaultsEntity)
   @ManyToOne(() => VaultsEntity, ({ vaultObjects }) => vaultObjects, { onDelete: 'CASCADE' })

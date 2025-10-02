@@ -7,7 +7,12 @@ import { ExtendedUpdateCreatorProfileInput, GetAllCreatorsOutput } from '../crea
 import { UploadVaultQueueInput } from '../downloader/dto';
 import { CreateImportQueueInput } from '../import/dto';
 import { CreatorAssetsEntity, CreatorProfilesEntity } from '../postgres/entities';
-import { CleanUpVaultInput, GetAllVaultsOutput, GetCreatorVaultObjectsOutput } from '../vaults/dto';
+import {
+  CleanUpVaultInput,
+  DownloadAllCreatorObjectsAsBatchInput,
+  GetAllVaultsOutput,
+  GetCreatorVaultObjectsOutput,
+} from '../vaults/dto';
 import { AdminService } from './admin.service';
 
 @Resolver()
@@ -57,7 +62,7 @@ export class AdminResolver {
 
   @Auth(GqlAuthGuard, [UserRoles.ADMIN])
   @Mutation(() => String)
-  public async downloadAllCreatorObjects(@Args('input') input: PaginationInput) {
+  public async downloadAllCreatorObjects(@Args('input') input: DownloadAllCreatorObjectsAsBatchInput) {
     return await this.adminService.downloadAllCreatorObjects(input);
   }
 

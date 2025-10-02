@@ -4,7 +4,12 @@ import * as sharp from 'sharp';
 import { AssetType, FileType, ImageType, MediaType } from '../../util/enums';
 import { AwsS3ClientService } from '../aws';
 import { AssetsEntity } from '../postgres/entities';
-import { AssetsRepository, CreatorAssetsRepository, CreatorProfilesRepository } from '../postgres/repositories';
+import {
+  AssetsRepository,
+  CreatorAssetsRepository,
+  CreatorProfilesRepository,
+  VaultsObjectsRepository,
+} from '../postgres/repositories';
 import { DeleteCreatorAsset, UpdateAssetsInput } from './dto';
 import { UploadMediaOutput } from './dto/upload-media.output.dto';
 
@@ -23,6 +28,7 @@ export class AssetsService {
     private creatorAssetsRepository: CreatorAssetsRepository,
     private assetsRepository: AssetsRepository,
     private uploadsService: AwsS3ClientService,
+    private vaultObjectsRepository: VaultsObjectsRepository,
   ) {}
 
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {
@@ -73,9 +79,10 @@ export class AssetsService {
     buffer: Buffer,
     mimeType: string,
     assetType: AssetType,
+    vaultObjectId: string,
   ): Promise<UploadMediaOutput> {
     const uploaded = await this.uploadImageToCloud(creatorId, mediaType, buffer, originalFileName, mimeType);
-    const asset = await this.injectAsset(creatorId, uploaded, assetType);
+    const asset = await this.injectAsset(creatorId, uploaded, assetType, vaultObjectId);
     this.logger.log('UPLOADED TO S3');
     return { ...uploaded, assetId: asset.id };
   }
@@ -145,9 +152,10 @@ export class AssetsService {
     creatorId: string,
     assetPayload: UploadMediaOutput,
     assetType: AssetType,
+    vaultObjectId?: string,
   ): Promise<AssetsEntity> {
     const creatorProfile = await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId } });
-    const asset = this.assetsRepository.create({ ...assetPayload, creatorProfile });
+    const asset = this.assetsRepository.create({ ...assetPayload, vaultObjectId, creatorProfile });
 
     const newAsset = await this.assetsRepository.save(asset);
     await this.creatorAssetsRepository.insert({ creatorProfile, asset, type: assetType });
