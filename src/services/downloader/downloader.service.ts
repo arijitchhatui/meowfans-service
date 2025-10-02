@@ -163,14 +163,15 @@ export class DownloaderService {
           await this.assetsService.uploadFileV2(
             creatorId,
             vaultObject.objectUrl,
-            MediaType.PROFILE_MEDIA,
+            MediaType.POST_MEDIA,
             buffer,
             mimeType,
             destination,
+            vaultObject.id,
           );
-          await this.markAsFulfilled(creatorId, vaultObjectId);
+          await this.markAsFulfilled(creatorId, vaultObject.id);
           this.logger.log({ METHOD: this.handleUpload.name, DOWNLOADED_AND_UPLOADED: vaultObject.objectUrl });
-        } else await this.markAsRejected(creatorId, vaultObjectId);
+        } else await this.markAsRejected(creatorId, vaultObject.id);
       } catch {
         this.logger.error({ message: '❌ FAILED TO SAVE!', url: vaultObject.objectUrl });
         await this.markAsRejected(creatorId, vaultObjectId);

@@ -16,11 +16,12 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {
     return await this.createQueryBuilder('ca')
       .leftJoinAndSelect('ca.asset', 'asset')
+      .leftJoinAndSelect('asset.vaultObject', 'vaultObject')
       .leftJoinAndSelect('ca.creatorProfile', 'creatorProfile')
       .leftJoinAndSelect('creatorProfile.user', 'user')
       .where('ca.creatorId = :creatorId', { creatorId: creatorId })
       .andWhere('ca.type = :type', { type: await this.insertAssetType(input.assetType) })
-      .orderBy('ca.createdAt', input.orderBy)
+      .orderBy('vaultObject', input.orderBy)
       .limit(input.limit)
       .offset(input.offset)
       .getMany();
