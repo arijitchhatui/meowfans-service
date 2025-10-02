@@ -86,7 +86,10 @@ export class DownloaderService {
       where: { id: In(input.vaultObjectIds), status: In([DownloadStates.PENDING, DownloadStates.REJECTED]) },
     });
 
-    const toBeDownloadedIds = validObjectIds.map((validObject) => validObject.id);
+    const toBeDownloadedIds = validObjectIds.map((validObject) => {
+      this.sseService.publish(creatorId, { status: DownloadStates.PROCESSING }, EventTypes.VaultDownload);
+      return validObject.id;
+    });
 
     this.logger.log({ toBeDownloadedIds });
 
