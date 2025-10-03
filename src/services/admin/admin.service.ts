@@ -97,10 +97,15 @@ export class AdminService {
   }
 
   public async downloadAllCreatorObjects(input: DownloadAllCreatorObjectsAsBatchInput) {
-    if (!input.creatorIds.length) return;
+    if (!input.creatorIds.length) return 'failed ';
 
     this.logger.log({ MESSAGE: 'STARTED DOWNLOADING ALL OBJECTS OF CREATORS', CREATOR_IDS: input.creatorIds });
-    await this.batchUploadVaultQueue.add(input);
+    try {
+      await this.batchUploadVaultQueue.add(input);
+    } catch (error) {
+      console.log(error.message);
+    }
+    console.log('Done');
 
     return 'Downloading is initiated';
   }

@@ -19,6 +19,7 @@ import { AdminService } from './admin.service';
       defaultJobOptions: {
         attempts: 2,
         backoff: 5000,
+        delay: 1000,
         removeOnComplete: true,
         removeOnFail: true,
         stackTraceLimit: 1,

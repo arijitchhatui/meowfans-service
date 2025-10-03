@@ -202,16 +202,27 @@ export class ImportService {
         this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
         return;
       }
+      const newInput = input.isNewCreator
+        ? { ...input, creatorId: (await this.scanOrCreateNewProfile(url)).userId }
+        : input;
 
-      const imageUrls = await this.handleQueryUrls(
-        browser,
-        input.isNewCreator ? { ...input, creatorId: (await this.scanOrCreateNewProfile(url)).userId } : input,
-        toBeImportedUrls,
-      );
+      const postUrls = await this.handleQueryUrls(browser, newInput, toBeImportedUrls);
 
-      this.logger.log({ METHOD: this.importProfile.name, imageUrls });
+      await this.handleImportPages(browser, newInput, postUrls);
+
+      this.logger.log({ METHOD: this.importProfile.name, postUrls });
     } finally {
       await page.close();
+    }
+  }
+
+  public async handleImportPages(browser: Browser, input: CreateImportQueueInput, postUrls: string[]) {
+    for (const chunk of cluster(Array.from(new Set(postUrls)), 3)) {
+      await Promise.all(
+        chunk.map(async (postUrl) => {
+          await this.importPage(browser, { ...input, url: postUrl });
+        }),
+      );
     }
   }
 
@@ -248,13 +259,13 @@ export class ImportService {
         return imageUrls;
       }
 
-      const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
-      this.logger.log({
-        METHOD: this.importBranch.name,
-        validImageUrls,
-      });
+      // const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
+      // this.logger.log({
+      //   METHOD: this.importBranch.name,
+      //   validImageUrls,
+      // });
 
-      imageUrls.push(...validImageUrls);
+      imageUrls.push(...filteredUrls);
     } finally {
       await page.close();
     }
@@ -387,7 +398,7 @@ export class ImportService {
 
     if (this.isTerminated) {
       this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
-      return;
+      return imageUrls;
     }
 
     for (const chunk of cluster(Array.from(new Set(queryUrls)), 3)) {

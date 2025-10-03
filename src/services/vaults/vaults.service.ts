@@ -1,7 +1,6 @@
 import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger } from '@nestjs/common';
-import { EventTypes, FileType } from '../../util/enums';
-import { DownloadStates } from '../../util/enums/download-state';
+import { FileType } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
 import { CreatorProfilesRepository, VaultsRepository } from '../postgres/repositories';
 import { VaultsObjectsRepository } from '../postgres/repositories/vault-objects.repository';
@@ -47,7 +46,7 @@ export class VaultsService {
   public async bulkInsert(creatorId: string, input: BulkInsertVaultInput) {
     const { objects, baseUrl, contentType, importType } = input;
 
-    if (!objects.length) return;
+    if (!objects.length && importType.includes(ImportTypes.OK)) return;
 
     await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
     let vault = await this.vaultsRepository.findOne({ where: { url: baseUrl, creatorId: creatorId } });
@@ -72,7 +71,6 @@ export class VaultsService {
             ? Number(objectUrl.split('/').filter(Boolean).pop()!.split('.')[0])
             : null,
         });
-        this.sseService.publish(creatorId, { status: DownloadStates.PENDING }, EventTypes.ImportObject);
         this.logger.log('VAULT OBJECT INSERTED✅✅✅✅');
       }
     }

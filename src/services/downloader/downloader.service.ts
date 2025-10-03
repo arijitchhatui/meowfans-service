@@ -37,9 +37,9 @@ export class DownloaderService {
   ) {}
 
   onModuleInit() {
-    this.uploadVaultQueue.on('active', (e) => this.logger.log('active', e));
-    this.uploadVaultQueue.on('error', (e) => this.logger.log('error', e));
-    this.uploadVaultQueue.on('failed', (e) => this.logger.log('failed', e));
+    // this.uploadVaultQueue.on('active', (e) => this.logger.log('active', e));
+    // this.uploadVaultQueue.on('error', (e) => this.logger.log('error', e));
+    // this.uploadVaultQueue.on('failed', (e) => this.logger.log('failed', e));
   }
 
   public async terminateDownloading() {
@@ -135,7 +135,6 @@ export class DownloaderService {
       }
     } finally {
       this.logger.log({ MESSAGE: finalMessage });
-      this.sseService.publish(input.creatorId, { finalMessage }, EventTypes.VaultDownloadCompleted);
 
       await this.vaultObjectsRepository.update(
         { id: In(vaultObjectIds), status: DownloadStates.PROCESSING },
@@ -192,9 +191,6 @@ export class DownloaderService {
 
   private async markAsFulfilled(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.FULFILLED });
-
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.FULFILLED }, EventTypes.VaultDownload);
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.FULFILLED }, EventTypes.ImportObject);
   }
 
   private async markAsPending(creatorId: string, vaultObjectId: string) {
@@ -205,8 +201,5 @@ export class DownloaderService {
 
   private async markAsRejected(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.REJECTED });
-
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.REJECTED }, EventTypes.VaultDownload);
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.REJECTED }, EventTypes.ImportObject);
   }
 }
