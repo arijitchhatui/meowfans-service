@@ -1,4 +1,3 @@
-import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
@@ -39,13 +38,13 @@ import { VaultsModule } from './vaults';
       imports: [],
       driver: ApolloDriver,
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async () => ({
         autoSchemaFile: true,
         sortSchema: true,
         persistedQueries: false,
-        plugins: configService.get('ENABLE_DEV_TOOLS', false) ? [ApolloServerPluginLandingPageLocalDefault()] : [],
+        plugins: [],
         playground: false,
-        introspection: configService.get('ENABLE_DEV_TOOLS', false),
+        introspection: false,
       }),
     }),
     BullModule.forRootAsync({
