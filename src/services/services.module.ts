@@ -4,8 +4,6 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AdminModule } from './admin/admin.module';
-import { AdminResolver } from './admin/admin.resolver';
-import { AdminService } from './admin/admin.service';
 import { AssetsModule } from './assets';
 import { AuthModule } from './auth';
 import { AwsS3Module } from './aws';
@@ -76,7 +74,5 @@ import { VaultsModule } from './vaults';
     ExtractorModule,
     AdminModule,
   ],
-  controllers: [],
-  providers: [AdminService, AdminResolver],
 })
 export class ServicesModule {}

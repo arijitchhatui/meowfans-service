@@ -6,7 +6,7 @@ export class UploadMediaOutput {
   rawUrl: string;
 
   @ApiProperty({ nullable: false, default: 'string' })
-  blurredUrl: string;
+  blurredUrl: string | null;
 
   @ApiProperty({ nullable: false })
   mimeType: string;

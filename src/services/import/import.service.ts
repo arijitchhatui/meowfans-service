@@ -331,11 +331,11 @@ export class ImportService {
 
     try {
       try {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       } catch {
         try {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-          this.logger.warn({ METHOD: this.importPage.name, NAVIGATION_TIMEOUT: url });
+          this.logger.warn({ METHOD: this.handleImportOKPage.name, NAVIGATION_TIMEOUT: url });
         } catch {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
         }
@@ -353,7 +353,7 @@ export class ImportService {
       const profileUrl = OK_URI.concat(userName);
 
       this.logger.log({
-        METHOD: this.importPage.name,
+        METHOD: this.handleImportOKPage.name,
         VISITING_SINGLE_BRANCH_URL: url,
         title,
         handles,
@@ -364,7 +364,12 @@ export class ImportService {
       const urls = await this.documentSelectorService.getContentUrls(page, DocumentQualityType.DIV_DEFINITION);
       const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
 
-      this.logger.log({ METHOD: this.importPage.name, urls, filteredUrls, FILTERED_IMAGES_COUNT: filteredUrls.length });
+      this.logger.log({
+        METHOD: this.handleImportOKPage.name,
+        urls,
+        filteredUrls,
+        FILTERED_IMAGES_COUNT: filteredUrls.length,
+      });
 
       if (filteredUrls.length > 1 && !this.isTerminated) {
         const { userId } = await this.scanOrCreateNewProfile(profileUrl);

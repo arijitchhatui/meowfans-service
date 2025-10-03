@@ -7,12 +7,7 @@ export class SSEController {
   constructor(private readonly sseService: SSEService) {}
 
   @Sse('/stream')
-  public async subscribe(): Promise<Observable<{ type: string; data: string }>> {
-    return (await this.sseService.subscribe()).pipe(
-      map(({ type, data }) => ({
-        type,
-        data,
-      })),
-    );
+  public async subscribe(): Promise<Observable<{ data: string }>> {
+    return (await this.sseService.subscribe()).pipe(map(({ data }) => ({ data })));
   }
 }

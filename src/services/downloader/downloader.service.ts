@@ -114,7 +114,7 @@ export class DownloaderService {
     });
     const finalMessage = this.isTerminated
       ? '⚠️⚠️⚠️ THE DOWNLOADING PROCESS IS TERMINATED FORCEFULLY ⚠️⚠️⚠️'
-      : 'ALL OBJECTS DOWNLOADED';
+      : `ALL OBJECTS DOWNLOADED FOR ${input.creatorId}`;
 
     try {
       for (const chunk of cluster(Array.from(new Set(vaultObjectIds)), 5)) {
