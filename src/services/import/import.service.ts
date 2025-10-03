@@ -331,7 +331,7 @@ export class ImportService {
 
     try {
       try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 5000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
       } catch {
         try {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
