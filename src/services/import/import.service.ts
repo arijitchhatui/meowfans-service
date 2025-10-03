@@ -314,6 +314,7 @@ export class ImportService {
     this.logger.log({ okUrls });
 
     for (const chunk of cluster(Array.from(new Set(okUrls)), 5)) {
+      if (this.isTerminated) return;
       await Promise.all(
         chunk.map(async (okUrl) => {
           await this.handleImportOKPage(browser, { ...input, url: okUrl });
@@ -330,10 +331,10 @@ export class ImportService {
 
     try {
       try {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 5000 });
       } catch {
         try {
-          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
           this.logger.warn({ METHOD: this.importPage.name, NAVIGATION_TIMEOUT: url });
         } catch {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
