@@ -1,6 +1,8 @@
 import { PaginationInput } from '@app/helpers';
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
-import { AssetType } from '../../util/enums';
+import { Queue } from 'bull';
+import { AssetType, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
 import { CreatorProfilesService, ExtendedUpdateCreatorProfileInput, GetAllCreatorsOutput } from '../creator-profiles';
 import { DownloaderService } from '../downloader/downloader.service';
@@ -21,6 +23,8 @@ export class AdminService {
     private creatorAssetsRepository: CreatorAssetsRepository,
     private extractorService: ExtractorService,
     private creatorProfilesServices: CreatorProfilesService,
+    @InjectQueue(QueueTypes.BATCH_UPLOAD_VAULT_QUEUE)
+    private batchUploadVaultQueue: Queue<DownloadAllCreatorObjectsAsBatchInput>,
   ) {}
 
   public async getAllCreators(input: PaginationInput): Promise<GetAllCreatorsOutput> {
@@ -96,7 +100,12 @@ export class AdminService {
     if (!input.creatorIds.length) return;
 
     this.logger.log({ MESSAGE: 'STARTED DOWNLOADING ALL OBJECTS OF CREATORS', CREATOR_IDS: input.creatorIds });
+    await this.batchUploadVaultQueue.add(input);
 
+    return 'Downloading is initiated';
+  }
+
+  public async handleDownloadAllCreatorObjects(input: DownloadAllCreatorObjectsAsBatchInput) {
     for (const creatorId of input.creatorIds) {
       const objects = await this.vaultObjectsRepository.getTotalPendingObjectsOfACreator(creatorId);
       const vaultObjectIds = objects.map((vaultObject) => vaultObject.id);
@@ -106,8 +115,6 @@ export class AdminService {
         vaultObjectIds: vaultObjectIds,
       });
     }
-
-    return 'Downloading is initiated';
   }
 
   public async downloadCreatorObjectsAsBatch(input: UploadVaultQueueInput) {

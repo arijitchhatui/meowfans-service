@@ -5,4 +5,5 @@ export enum QueueTypes {
   BRANCH_QUEUE = 'branch_queue',
   PAGE_QUEUE = 'page_queue',
   CREATOR_UPDATE_QUEUE = 'creator_update_queue',
+  BATCH_UPLOAD_VAULT_QUEUE = 'batch_upload_vault_queue',
 }

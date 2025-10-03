@@ -32,9 +32,9 @@ export class AssetsEntity {
   @Column()
   rawUrl: string;
 
-  @Field()
-  @Column()
-  blurredUrl: string;
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true, type: 'varchar' })
+  blurredUrl: string | null;
 
   @Field()
   @Column({ type: 'uuid' })

@@ -39,6 +39,10 @@ export class VaultObjectsEntity {
   @Column({ type: 'bigint', nullable: true })
   suffix: number | null;
 
+  @Field(() => Date, { nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
+  importedAt: Date | null;
+
   @Field(() => DownloadStates)
   @Column({ type: 'enum', enum: DownloadStates, enumName: 'DownloadStates', default: DownloadStates.PENDING })
   status: DownloadStates;

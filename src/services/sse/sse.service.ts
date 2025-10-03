@@ -26,9 +26,21 @@ export class SSEService {
     });
   }
 
+  async onModuleInit() {
+    // setInterval(() => this.ping(), 5000);
+  }
+
+  ping() {
+    this.logger.log('ping');
+    this.publisher.publish(
+      EventTypes.VaultDownloadCompleted,
+      JSON.stringify({ type: EventTypes.VaultDownloadCompleted, data: { message: '\nping\n' }, id: new Date() }),
+    );
+  }
+
   public async publish(creatorId: string, data: Record<string, unknown>, type: EventTypes) {
     try {
-      await this.publisher.publish(type, JSON.stringify({ creatorId, data }));
+      await this.publisher.publish(type, JSON.stringify({ creatorId, data, type }));
     } catch {
       this.logger.error('error streaming');
     }

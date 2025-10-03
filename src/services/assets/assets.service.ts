@@ -81,7 +81,7 @@ export class AssetsService {
     assetType: AssetType,
     vaultObjectId: string,
   ): Promise<UploadMediaOutput> {
-    const uploaded = await this.uploadImageToCloud(creatorId, mediaType, buffer, originalFileName, mimeType);
+    const uploaded = await this.uploadImageToCloud(creatorId, mediaType, buffer, originalFileName, mimeType, true);
     const asset = await this.injectAsset(creatorId, uploaded, assetType, vaultObjectId);
     this.logger.log('UPLOADED TO S3');
     return { ...uploaded, assetId: asset.id };
@@ -108,7 +108,7 @@ export class AssetsService {
     mediaType: MediaType,
     file: Express.Multer.File,
   ): Promise<UploadMediaOutput> {
-    return await this.uploadImageToCloud(creatorId, mediaType, file.buffer, file.originalname, file.mimetype);
+    return await this.uploadImageToCloud(creatorId, mediaType, file.buffer, file.originalname, file.mimetype, false);
   }
 
   private async uploadImageToCloud(
@@ -117,6 +117,7 @@ export class AssetsService {
     buffer: Buffer,
     originalName: string,
     mimeType: string,
+    isImported: boolean,
   ): Promise<UploadMediaOutput> {
     const blurredImageBuffer = await this.blurImage(buffer).toBuffer();
     const [originalUrl, blurredUrl] = await Promise.all([
@@ -129,15 +130,17 @@ export class AssetsService {
         userId: creatorId,
         metaData: { originalName },
       }),
-      this.uploadsService.uploadR2Object({
-        buffer: blurredImageBuffer,
-        originalFileName: originalName,
-        imageType: ImageType.BLURRED,
-        mediaType,
-        mimeType,
-        userId: creatorId,
-        metaData: { originalName },
-      }),
+      isImported
+        ? null
+        : this.uploadsService.uploadR2Object({
+            buffer: blurredImageBuffer,
+            originalFileName: originalName,
+            imageType: ImageType.BLURRED,
+            mediaType,
+            mimeType,
+            userId: creatorId,
+            metaData: { originalName },
+          }),
     ]);
     return {
       rawUrl: originalUrl,
