@@ -326,9 +326,11 @@ export class ImportService {
     const { url, importType } = input;
     const page = await browser.newPage();
 
+    if (this.isTerminated) return;
+
     try {
       try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       } catch {
         try {
           await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
