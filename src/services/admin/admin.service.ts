@@ -3,7 +3,6 @@ import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
 import { AssetType, QueueTypes } from '../../util/enums';
-import { DownloadStates } from '../../util/enums/download-state';
 import { CreatorProfilesService, ExtendedUpdateCreatorProfileInput, GetAllCreatorsOutput } from '../creator-profiles';
 import { DownloaderService } from '../downloader/downloader.service';
 import { UploadVaultQueueInput } from '../downloader/dto';
@@ -37,26 +36,16 @@ export class AdminService {
 
     const creators = await Promise.all(
       users.map(async (creator) => {
+        const { fulfilled, pending, processing, rejected } =
+          await this.vaultObjectsRepository.getCountOfObjectsOfEachTypeOfACreator(creator.id);
         return {
           ...creator,
           vaultCount: await this.vaultObjectsRepository.getCreatorTotalVaultObjectsCount(creator.id, input),
           assetCount: await this.creatorAssetsRepository.getCreatorsAssetsCount(creator.id, input),
-          fulfilledObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
-            creator.id,
-            DownloadStates.FULFILLED,
-          ),
-          pendingObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
-            creator.id,
-            DownloadStates.PENDING,
-          ),
-          processingObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
-            creator.id,
-            DownloadStates.PROCESSING,
-          ),
-          rejectedObjectCount: await this.vaultObjectsRepository.getTotalStatsOfObjectsOfACreator(
-            creator.id,
-            DownloadStates.REJECTED,
-          ),
+          fulfilledObjectCount: fulfilled,
+          pendingObjectCount: pending,
+          processingObjectCount: processing,
+          rejectedObjectCount: rejected,
         };
       }),
     );

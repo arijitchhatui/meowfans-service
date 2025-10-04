@@ -23,7 +23,7 @@ export class PaginationInput {
   @Field(() => ID, { nullable: true })
   relatedEntityId?: string;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => String, { nullable: true })
   relatedUserId?: string;
 
   @Field(() => [PostTypes], { nullable: true })

@@ -60,20 +60,20 @@ export class AwsS3ClientService {
     return await getSignedUrl(this.awsS3RequestPreSignerClient, command, { expiresIn: 60 });
   }
 
-  public generateDefaultFanAvatarUrl(username: string): string {
-    return `https://avatar.iran.liara.run/username?username=${username}r&background=f4d9b2&color=FF9800`;
+  public generateDefaultFanAvatarUrl(): string {
+    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
   }
 
-  public generateDefaultCreatorAvatarUrl(username: string): string {
-    return `https://avatar.iran.liara.run/username?username=${username}&background=f4d9b2&color=FF9800`;
+  public generateDefaultCreatorAvatarUrl(): string {
+    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
   }
 
   public generateDefaultFanBannerUrl(): string {
-    return `https://picsum.photos/seed/${Math.floor(Math.random() * 100)}/4096/2160`;
+    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
   }
 
   public generateDefaultCreatorBannerUrl(): string {
-    return `https://picsum.photos/seed/${Math.floor(Math.random() * 100)}/4096/2160`;
+    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
   }
 
   public getImagePathAndUrl(input: { url: string; imageType: ImageType }): {

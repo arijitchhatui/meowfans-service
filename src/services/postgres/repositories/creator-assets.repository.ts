@@ -19,7 +19,7 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
       .leftJoinAndSelect('asset.vaultObject', 'vaultObject')
       .leftJoinAndSelect('ca.creatorProfile', 'creatorProfile')
       .leftJoinAndSelect('creatorProfile.user', 'user')
-      .where('ca.creatorId = :creatorId', { creatorId: creatorId })
+      .where('user.username = :username', { username: creatorId })
       .andWhere('ca.type = :type', { type: await this.insertAssetType(input.assetType) })
       .orderBy('vaultObject.suffix', input.orderBy)
       .limit(input.limit)

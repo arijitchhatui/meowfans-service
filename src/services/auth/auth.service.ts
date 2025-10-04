@@ -76,7 +76,7 @@ export class AuthService {
       username,
       password: await bcryptjs.hash(input.password, SALT),
       ...splitFullName(input.fullName),
-      avatarUrl: this.awsS3ClientService.generateDefaultFanAvatarUrl(input.fullName.replace(/\s+/g, '+')),
+      avatarUrl: this.awsS3ClientService.generateDefaultFanAvatarUrl(),
       bannerUrl: this.awsS3ClientService.generateDefaultFanBannerUrl(),
       fanProfile: this.fanProfilesRepository.create({
         appliedAt: new Date(),
@@ -99,7 +99,7 @@ export class AuthService {
       roles: [UserRoles.CREATOR],
       ...splitFullName(fullName),
       password: await bcryptjs.hash(password, SALT),
-      avatarUrl: this.awsS3ClientService.generateDefaultCreatorAvatarUrl(fullName),
+      avatarUrl: this.awsS3ClientService.generateDefaultCreatorAvatarUrl(),
       bannerUrl: this.awsS3ClientService.generateDefaultCreatorBannerUrl(),
 
       creatorProfile: this.creatorProfilesRepository.create({
@@ -126,7 +126,7 @@ export class AuthService {
       roles: [UserRoles.ADMIN],
       ...splitFullName(fullName),
       password: await bcryptjs.hash(password, SALT),
-      avatarUrl: this.awsS3ClientService.generateDefaultCreatorAvatarUrl(fullName),
+      avatarUrl: this.awsS3ClientService.generateDefaultCreatorAvatarUrl(),
       bannerUrl: this.awsS3ClientService.generateDefaultCreatorBannerUrl(),
 
       creatorProfile: this.creatorProfilesRepository.create({

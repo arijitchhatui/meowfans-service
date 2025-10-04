@@ -2,6 +2,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
 import { cluster } from 'radash';
+import { creatorProfileUrl } from '../../util/constants';
 import { QueueTypes } from '../../util/enums';
 import { UsersEntity } from '../postgres/entities';
 import { AssetsRepository, UsersRepository } from '../postgres/repositories';
@@ -47,15 +48,20 @@ export class UsersService {
           chunk.map(async (creatorId) => {
             const creator = await this.usersRepository.findOne({ where: { id: creatorId } });
             const creatorAsset = await this.assetsRepository.findOne({ where: { creatorId } });
-            if (creator && creatorAsset) {
-              await this.usersRepository.update(
-                { id: creator.id },
-                {
-                  avatarUrl: creatorAsset.rawUrl,
-                  bannerUrl: creatorAsset.rawUrl,
-                },
-              );
-              this.logger.log({ UPDATED: creator.username });
+            if (creator) {
+              if (!creatorAsset) {
+                await this.usersRepository.update(
+                  { id: creator.id },
+                  { avatarUrl: creatorProfileUrl, bannerUrl: creatorProfileUrl },
+                );
+                this.logger.log({ UPDATED: creator.username });
+              } else {
+                await this.usersRepository.update(
+                  { id: creator.id },
+                  { avatarUrl: creatorAsset.rawUrl, bannerUrl: creatorAsset.rawUrl },
+                );
+                this.logger.log({ UPDATED: creator.username });
+              }
             }
           }),
         );

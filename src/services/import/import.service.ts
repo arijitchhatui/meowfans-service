@@ -217,8 +217,6 @@ export class ImportService {
 
       const postUrls = await this.handleQueryUrls(browser, newInput, toBeImportedUrls);
 
-      await this.handleImportPages(browser, newInput, postUrls);
-
       this.logger.log({ METHOD: this.importProfile.name, postUrls });
     } catch {
       this.logger.error({ METHOD: this.importProfile.name, FAILED_URL: url });
@@ -228,7 +226,7 @@ export class ImportService {
   }
 
   public async handleImportPages(browser: Browser, input: CreateImportQueueInput, postUrls: string[]) {
-    for (const chunk of cluster(Array.from(new Set(postUrls)), 10)) {
+    for (const chunk of cluster(Array.from(new Set(postUrls)), 5)) {
       await Promise.all(
         chunk.map(async (postUrl) => {
           try {
@@ -274,13 +272,13 @@ export class ImportService {
         return imageUrls;
       }
 
-      // const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
-      // this.logger.log({
-      //   METHOD: this.importBranch.name,
-      //   validImageUrls,
-      // });
+      const validImageUrls = await this.handleBranchUrls(browser, input, filteredUrls);
+      this.logger.log({
+        METHOD: this.importBranch.name,
+        validImageUrls,
+      });
 
-      imageUrls.push(...filteredUrls);
+      imageUrls.push(...validImageUrls);
     } finally {
       await page.close();
     }
@@ -339,11 +337,15 @@ export class ImportService {
 
     this.logger.log({ okUrls });
 
-    for (const chunk of cluster(Array.from(new Set(okUrls)), serviceType.includes(ServiceType.DOS) ? 5 : 10)) {
+    for (const chunk of cluster(Array.from(new Set(okUrls)), serviceType.includes(ServiceType.DOS) ? 5 : 20)) {
       if (this.isTerminated) return;
       await Promise.all(
         chunk.map(async (okUrl) => {
-          await this.handleImportOKPage(browser, { ...input, url: okUrl });
+          try {
+            await this.handleImportOKPage(browser, { ...input, url: okUrl });
+          } catch (error) {
+            this.logger.log(error.message);
+          }
         }),
       );
     }
@@ -416,7 +418,7 @@ export class ImportService {
       return imageUrls;
     }
 
-    for (const chunk of cluster(Array.from(new Set(queryUrls)), input.serviceType.includes(ServiceType.RAS) ? 5 : 3)) {
+    for (const chunk of cluster(Array.from(new Set(queryUrls)))) {
       if (!this.isTerminated) {
         await Promise.all(
           chunk.map(async (queryUrl) => {
@@ -447,8 +449,12 @@ export class ImportService {
       if (!this.isTerminated) {
         await Promise.all(
           chunk.map(async (anchor) => {
-            const branchUrls = await this.handleBranchUrl(browser, { ...input, url: anchor });
-            imageUrls.push(...branchUrls);
+            try {
+              const branchUrls = await this.handleBranchUrl(browser, { ...input, url: anchor });
+              imageUrls.push(...branchUrls);
+            } catch (error) {
+              this.logger.log(error.message);
+            }
           }),
         );
       }
