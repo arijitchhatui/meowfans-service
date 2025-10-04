@@ -10,7 +10,7 @@ export class ExtractorConsumerService {
   private logger = new Logger(ExtractorConsumerService.name);
   constructor(private extractorService: ExtractorService) {}
 
-  @Process()
+  @Process({ concurrency: 5 })
   public async startConsuming(input: Job<CreateImportQueueInput>) {
     this.logger.log({ message: 'Started consuming' });
     try {

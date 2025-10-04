@@ -42,7 +42,7 @@ import { VaultsModule } from './vaults';
         persistedQueries: false,
         plugins: [],
         playground: false,
-        introspection: false,
+        introspection: false, // SET TO TRUE WHILE GENERATING GQL SCHEMA
       }),
     }),
     BullModule.forRootAsync({

@@ -108,10 +108,7 @@ export class DownloaderService {
     const { vaultObjectIds } = input;
     if (!vaultObjectIds.length) return;
 
-    this.logger.log({
-      method: this.handleUpload.name,
-      vaultObjectIds,
-    });
+    this.logger.log({ method: this.handleUpload.name, vaultObjectIds });
     const finalMessage = this.isTerminated
       ? '⚠️⚠️⚠️ THE DOWNLOADING PROCESS IS TERMINATED FORCEFULLY ⚠️⚠️⚠️'
       : `ALL OBJECTS DOWNLOADED FOR ${input.creatorId}`;
@@ -133,8 +130,33 @@ export class DownloaderService {
           }),
         );
       }
+      const counts = await this.vaultObjectsRepository.getCountOfObjectsOfEachType();
+      const creatorObjectCounts = await this.vaultObjectsRepository.getCountOfObjectsOfEachTypeOfACreator(
+        input.creatorId,
+      );
+      this.sseService.publish(
+        input.creatorId,
+        {
+          pending: counts.pending,
+          fulfilled: counts.fulfilled,
+          processing: counts.processing,
+          rejected: counts.rejected,
+        },
+        EventTypes.VaultDownload,
+      );
+      this.sseService.publish(
+        input.creatorId,
+        {
+          pending: creatorObjectCounts.pending,
+          fulfilled: creatorObjectCounts.fulfilled,
+          processing: creatorObjectCounts.processing,
+          rejected: creatorObjectCounts.rejected,
+        },
+        EventTypes.ImportObject,
+      );
     } finally {
       this.logger.log({ MESSAGE: finalMessage });
+      this.sseService.publish(input.creatorId, { finalMessage }, EventTypes.VaultDownloadCompleted);
 
       await this.vaultObjectsRepository.update(
         { id: In(vaultObjectIds), status: DownloadStates.PROCESSING },
@@ -185,8 +207,6 @@ export class DownloaderService {
 
   private async markAsProcessing(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.PROCESSING });
-
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PROCESSING }, EventTypes.VaultDownload);
   }
 
   private async markAsFulfilled(creatorId: string, vaultObjectId: string) {
@@ -195,8 +215,6 @@ export class DownloaderService {
 
   private async markAsPending(creatorId: string, vaultObjectId: string) {
     await this.vaultObjectsRepository.update({ id: vaultObjectId }, { status: DownloadStates.PENDING });
-
-    this.sseService.publish(creatorId, { vaultObjectId, status: DownloadStates.PENDING }, EventTypes.VaultDownload);
   }
 
   private async markAsRejected(creatorId: string, vaultObjectId: string) {

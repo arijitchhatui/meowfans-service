@@ -1,11 +1,12 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { chromium } from '@playwright/test';
+import { Browser, chromium } from '@playwright/test';
 import { Queue } from 'bull';
 import Redis from 'ioredis';
 import { EventTypes, ProviderTokens, QueueTypes } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
+import { ServiceType } from '../../util/enums/service-type';
 import { ImportService } from '../import';
 import { UsersRepository } from '../postgres/repositories';
 import { SSEService } from '../sse/sse.service';
@@ -65,8 +66,18 @@ export class ExtractorService {
     this.isTerminated = false;
     this.importService.initiateAllJobs();
 
-    const { importType } = input;
-    const browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
+    const { importType, serviceType } = input;
+    let browser: Browser;
+    switch (serviceType) {
+      case ServiceType.DOS:
+        browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
+        break;
+      case ServiceType.RAS:
+        browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_RAILWAY_ACCESS_KEY'));
+        break;
+      default:
+        browser = await chromium.connect(this.configService.getOrThrow<string>('PLAYWRIGHT_DO_ACCESS_KEY'));
+    }
 
     this.logger.log({
       METHOD: this.handleImport.name,
