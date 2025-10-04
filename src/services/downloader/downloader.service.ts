@@ -86,10 +86,7 @@ export class DownloaderService {
       where: { id: In(input.vaultObjectIds), status: In([DownloadStates.PENDING, DownloadStates.REJECTED]) },
     });
 
-    const toBeDownloadedIds = validObjectIds.map((validObject) => {
-      this.sseService.publish(creatorId, { status: DownloadStates.PROCESSING }, EventTypes.VaultDownload);
-      return validObject.id;
-    });
+    const toBeDownloadedIds = validObjectIds.map((validObject) => validObject.id);
 
     this.logger.log({ toBeDownloadedIds });
 
@@ -130,33 +127,9 @@ export class DownloaderService {
           }),
         );
       }
-      const counts = await this.vaultObjectsRepository.getCountOfObjectsOfEachType();
-      const creatorObjectCounts = await this.vaultObjectsRepository.getCountOfObjectsOfEachTypeOfACreator(
-        input.creatorId,
-      );
-      this.sseService.publish(
-        input.creatorId,
-        {
-          pending: counts.pending,
-          fulfilled: counts.fulfilled,
-          processing: counts.processing,
-          rejected: counts.rejected,
-        },
-        EventTypes.VaultDownload,
-      );
-      this.sseService.publish(
-        input.creatorId,
-        {
-          pending: creatorObjectCounts.pending,
-          fulfilled: creatorObjectCounts.fulfilled,
-          processing: creatorObjectCounts.processing,
-          rejected: creatorObjectCounts.rejected,
-        },
-        EventTypes.ImportObject,
-      );
     } finally {
       this.logger.log({ MESSAGE: finalMessage });
-      this.sseService.publish(input.creatorId, { finalMessage }, EventTypes.VaultDownloadCompleted);
+      // this.sseService.publish(input.creatorId, { finalMessage }, EventTypes.VaultDownloadCompleted);
 
       await this.vaultObjectsRepository.update(
         { id: In(vaultObjectIds), status: DownloadStates.PROCESSING },
