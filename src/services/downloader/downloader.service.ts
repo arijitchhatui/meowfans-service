@@ -6,7 +6,7 @@ import { Agent } from 'https';
 import Redis from 'ioredis';
 import { cluster } from 'radash';
 import { In } from 'typeorm';
-import { EventTypes, MediaType, ProviderTokens, QueueTypes } from '../../util/enums';
+import { MediaType, ProviderTokens, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
 import { AssetsService } from '../assets';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
