@@ -13,6 +13,7 @@ export * from './provider-tokens-type';
 export * from './quality-type';
 export * from './queue-type';
 export * from './scrape-quality-type';
+export * from './service-type';
 export * from './sort-order';
 export * from './user-roles';
 export * from './validation-error-code';

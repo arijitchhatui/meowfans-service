@@ -1,11 +1,11 @@
 import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger } from '@nestjs/common';
-import { FileType } from '../../util/enums';
+import { EventTypes, FileType } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
 import { CreatorProfilesRepository, VaultsRepository } from '../postgres/repositories';
 import { VaultsObjectsRepository } from '../postgres/repositories/vault-objects.repository';
 import { SSEService } from '../sse/sse.service';
-import { BulkInsertVaultInput, GetAllObjectsCountOutput } from './dto';
+import { BulkInsertVaultInput } from './dto';
 
 @Injectable()
 export class VaultsService {
@@ -40,23 +40,22 @@ export class VaultsService {
   }
 
   public async getCountOfObjectsOfEachType() {
-    return (await this.vaultObjectsRepository.getCountOfObjectsOfEachType()) as GetAllObjectsCountOutput;
+    return await this.vaultObjectsRepository.getCountOfObjectsOfEachType();
   }
 
   public async bulkInsert(creatorId: string, input: BulkInsertVaultInput) {
     const { objects, baseUrl, contentType, importType } = input;
 
-    if (!objects.length && importType.includes(ImportTypes.OK)) return;
+    if (!objects.length) return;
 
     await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
     let vault = await this.vaultsRepository.findOne({ where: { url: baseUrl, creatorId: creatorId } });
 
-    if (!vault) {
-      vault = await this.vaultsRepository.save({
-        creatorId: creatorId,
-        url: baseUrl,
-      });
-    }
+    if (!vault) vault = await this.vaultsRepository.save({ creatorId: creatorId, url: baseUrl });
+
+    const { pending, rejected, fulfilled, processing } =
+      await this.vaultObjectsRepository.getCountOfObjectsOfEachTypeOfACreator(creatorId);
+    this.sseService.publish(creatorId, { pending, rejected, fulfilled, processing }, EventTypes.ImportObject);
 
     for (const objectUrl of objects) {
       const exists = await this.vaultObjectsRepository.findOne({ where: { objectUrl: objectUrl } });

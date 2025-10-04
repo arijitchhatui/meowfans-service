@@ -72,7 +72,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
   }
 
   public async getCountOfObjectsOfEachType() {
-    return await this.createQueryBuilder('vault')
+    const result = await this.createQueryBuilder('vault')
       .select([
         `COUNT(*) FILTER (WHERE vault.status = 'PENDING') AS pending`,
         `COUNT(*) FILTER (WHERE vault.status = 'PROCESSING') AS processing`,
@@ -80,6 +80,21 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
         `COUNT(*) FILTER (WHERE vault.status = 'FULFILLED') AS fulfilled`,
       ])
       .getRawOne<GetAllObjectsCountOutput>();
+    return result ?? { pending: 0, processing: 0, rejected: 0, fulfilled: 0 };
+  }
+
+  public async getCountOfObjectsOfEachTypeOfACreator(creatorId: string): Promise<GetAllObjectsCountOutput> {
+    const result = await this.createQueryBuilder('vo')
+      .leftJoinAndSelect('vo.vault', 'vault')
+      .select([
+        `COUNT(*) FILTER (WHERE vo.status = 'PENDING') AS pending`,
+        `COUNT(*) FILTER (WHERE vo.status = 'PROCESSING') AS processing`,
+        `COUNT(*) FILTER (WHERE vo.status = 'REJECTED') AS rejected`,
+        `COUNT(*) FILTER (WHERE vo.status = 'FULFILLED') AS fulfilled`,
+      ])
+      .where('vault.creatorId = :creatorId', { creatorId })
+      .getRawOne<GetAllObjectsCountOutput>();
+    return result ?? { pending: 0, processing: 0, fulfilled: 0, rejected: 0 };
   }
 
   public async getCreatorTotalVaultObjectsCount(creatorId: string, input: PaginationInput) {

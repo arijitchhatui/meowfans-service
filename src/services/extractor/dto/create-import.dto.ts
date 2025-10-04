@@ -3,14 +3,19 @@ import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty, Validate } from 'class-validator';
 import { DocumentQualityType, FileType } from '../../../util/enums';
 import { ImportTypes } from '../../../util/enums/import-types';
+import { ServiceType } from '../../../util/enums/service-type';
 
 registerEnumType(DocumentQualityType, { name: 'DocumentQualityType' });
+registerEnumType(ServiceType, { name: 'ServiceType' });
 registerEnumType(ImportTypes, { name: 'ImportTypes' });
 @InputType()
 export class CreateImportInput {
   @IsNotEmpty()
   @Field(() => String)
   url: string;
+
+  @Field(() => ServiceType, { defaultValue: ServiceType.DOS })
+  serviceType: ServiceType;
 
   @Field(() => FileType, { defaultValue: FileType.IMAGE })
   fileType: FileType;

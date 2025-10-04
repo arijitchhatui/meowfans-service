@@ -7,6 +7,7 @@ import { cluster } from 'radash';
 import { OK_URI } from '../../util/constants';
 import { ContentType, DocumentQualityType } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
+import { ServiceType } from '../../util/enums/service-type';
 import { AuthService } from '../auth';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
 import { PasswordsRepository, UsersRepository } from '../postgres/repositories';
@@ -311,7 +312,7 @@ export class ImportService {
   }
 
   public async importOKPage(browser: Browser, input: CreateImportQueueInput) {
-    const { start, exclude } = input;
+    const { start, exclude, serviceType } = input;
     if (this.isTerminated) {
       this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return [];
@@ -324,7 +325,7 @@ export class ImportService {
 
     this.logger.log({ okUrls });
 
-    for (const chunk of cluster(Array.from(new Set(okUrls)), 5)) {
+    for (const chunk of cluster(Array.from(new Set(okUrls)), serviceType.includes(ServiceType.RAS) ? 5 : 7)) {
       if (this.isTerminated) return;
       await Promise.all(
         chunk.map(async (okUrl) => {
@@ -401,7 +402,7 @@ export class ImportService {
       return imageUrls;
     }
 
-    for (const chunk of cluster(Array.from(new Set(queryUrls)), 3)) {
+    for (const chunk of cluster(Array.from(new Set(queryUrls)), input.serviceType.includes(ServiceType.RAS) ? 5 : 3)) {
       if (!this.isTerminated) {
         await Promise.all(
           chunk.map(async (queryUrl) => {
