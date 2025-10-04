@@ -129,7 +129,7 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
   public async cleanUpVaultObjectsOfACreator(creatorId: string) {
     return await this.createQueryBuilder()
       .update(VaultObjectsEntity)
-      .set({ status: DownloadStates.REJECTED })
+      .set({ status: DownloadStates.PENDING })
       .where('status = :status', { status: DownloadStates.PROCESSING })
       .andWhere(
         `"vault_id" IN (
