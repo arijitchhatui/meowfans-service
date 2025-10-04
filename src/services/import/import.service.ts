@@ -124,7 +124,11 @@ export class ImportService {
       if (this.isTerminated) return;
       await Promise.all(
         chunk.map(async (profileUrl) => {
-          await this.handleImportProfile(browser, { ...input, url: profileUrl });
+          try {
+            await this.handleImportProfile(browser, { ...input, url: profileUrl });
+          } catch {
+            this.logger.error({ METHOD: this.handleImportProfiles.name, FAILED_PROFILE_URL: profileUrl });
+          }
         }),
       );
     }
@@ -135,20 +139,24 @@ export class ImportService {
 
     const user_name = input.url.split('/').filter(Boolean).at(-1);
     if (user_name && !input.exceptions.includes(user_name)) {
-      const { userId, username } = await this.scanOrCreateNewProfile(input.url);
+      try {
+        const { userId, username } = await this.scanOrCreateNewProfile(input.url);
 
-      await this.importProfile(browser, {
-        ...input,
-        creatorId: userId,
-        subDirectory: username,
-        url: input.url,
-      });
+        await this.importProfile(browser, {
+          ...input,
+          creatorId: userId,
+          subDirectory: username,
+          url: input.url,
+        });
 
-      this.logger.log({
-        METHOD: this.handleImportProfiles.name,
-        MESSAGE: '✅✅✅✅ ALL ASSETS IMPORTED',
-        TO: username,
-      });
+        this.logger.log({
+          METHOD: this.handleImportProfiles.name,
+          MESSAGE: '✅✅✅✅ PROFILE IMPORTED',
+          TO: username,
+        });
+      } catch {
+        this.logger.error({ METHOD: this.handleImportProfile.name, FAILED_PROFILE: input.url });
+      }
     }
   }
   public async importProfile(browser: Browser, input: CreateImportQueueInput) {
@@ -168,7 +176,7 @@ export class ImportService {
       } catch {
         try {
           await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-          this.logger.warn({ METHOD: this.importBranch.name, NAVIGATION_TIMEOUT: url });
+          this.logger.warn({ METHOD: this.importProfile.name, NAVIGATION_TIMEOUT: url });
         } catch {
           await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
         }
@@ -212,6 +220,8 @@ export class ImportService {
       await this.handleImportPages(browser, newInput, postUrls);
 
       this.logger.log({ METHOD: this.importProfile.name, postUrls });
+    } catch {
+      this.logger.error({ METHOD: this.importProfile.name, FAILED_URL: url });
     } finally {
       await page.close();
     }
@@ -221,7 +231,11 @@ export class ImportService {
     for (const chunk of cluster(Array.from(new Set(postUrls)), 10)) {
       await Promise.all(
         chunk.map(async (postUrl) => {
-          await this.importPage(browser, { ...input, url: postUrl });
+          try {
+            await this.importPage(browser, { ...input, url: postUrl });
+          } catch {
+            this.logger.error({ METHOD: this.handleImportPages.name, FAILED_POST_URL: postUrl });
+          }
         }),
       );
     }
