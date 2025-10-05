@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
 import { cluster } from 'radash';
-import { creatorProfileUrl } from '../../util/constants';
+import { DEFAULT_AVATAR_URL, DEFAULT_BANNER_URL } from '../../util/constants';
 import { QueueTypes } from '../../util/enums';
 import { UsersEntity } from '../postgres/entities';
 import { AssetsRepository, UsersRepository } from '../postgres/repositories';
@@ -52,7 +52,7 @@ export class UsersService {
               if (!creatorAsset) {
                 await this.usersRepository.update(
                   { id: creator.id },
-                  { avatarUrl: creatorProfileUrl, bannerUrl: creatorProfileUrl },
+                  { avatarUrl: DEFAULT_AVATAR_URL, bannerUrl: DEFAULT_BANNER_URL },
                 );
                 this.logger.log({ UPDATED: creator.username });
               } else {

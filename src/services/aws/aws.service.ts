@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
+import { DEFAULT_AVATAR_URL, DEFAULT_BANNER_URL } from '../../util/constants';
 import { ImageType, MediaType, ProviderTokens } from '../../util/enums';
 import { AwsS3Client, AwsS3RequestPreSignerClient } from './aws.module';
 
@@ -61,19 +62,19 @@ export class AwsS3ClientService {
   }
 
   public generateDefaultFanAvatarUrl(): string {
-    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
+    return DEFAULT_AVATAR_URL;
   }
 
   public generateDefaultCreatorAvatarUrl(): string {
-    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
+    return DEFAULT_AVATAR_URL;
   }
 
   public generateDefaultFanBannerUrl(): string {
-    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
+    return DEFAULT_BANNER_URL;
   }
 
   public generateDefaultCreatorBannerUrl(): string {
-    return `https://meowfans-media.sfo3.cdn.digitaloceanspaces.com/meowfans_creator_avatar.svg`;
+    return DEFAULT_BANNER_URL;
   }
 
   public getImagePathAndUrl(input: { url: string; imageType: ImageType }): {
