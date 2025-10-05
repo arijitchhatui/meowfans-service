@@ -337,7 +337,10 @@ export class ImportService {
 
     this.logger.log({ okUrls });
 
-    for (const chunk of cluster(Array.from(new Set(okUrls)), serviceType.includes(ServiceType.DOS) ? 5 : 20)) {
+    for (const chunk of cluster(
+      Array.from(new Set(okUrls)),
+      serviceType.includes(ServiceType.DOS) ? 5 : input.totalContent,
+    )) {
       if (this.isTerminated) return;
       await Promise.all(
         chunk.map(async (okUrl) => {
