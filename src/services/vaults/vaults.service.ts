@@ -44,14 +44,14 @@ export class VaultsService {
   }
 
   public async bulkInsert(creatorId: string, input: BulkInsertVaultInput) {
-    const { objects, baseUrl, contentType, importType } = input;
+    const { objects, baseUrl, contentType, importType, keywords, description } = input;
 
     if (!objects.length) return;
 
     await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
     let vault = await this.vaultsRepository.findOne({ where: { url: baseUrl, creatorId: creatorId } });
 
-    if (!vault) vault = await this.vaultsRepository.save({ creatorId: creatorId, url: baseUrl });
+    if (!vault) vault = await this.vaultsRepository.save({ creatorId: creatorId, url: baseUrl, keywords, description });
 
     for (const objectUrl of objects) {
       const exists = await this.vaultObjectsRepository.findOne({ where: { objectUrl: objectUrl } });

@@ -5,7 +5,7 @@ import * as migrations from './src/services/postgres/migrations';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  url: process.env.SUPABASE_DB_URL,
+  url: process.env.RAILWAY_DB_URL,
   namingStrategy: new SnakeNamingStrategy(),
   logging: false,
   entities,
