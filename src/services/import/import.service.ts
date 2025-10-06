@@ -418,11 +418,12 @@ export class ImportService {
     // this.logger.log({ okUrls });
     const vaults = await this.vaultsRepository.find();
     const vaultUrls = vaults.map((v) => v.url);
-
-    for (const chunk of cluster(
+    const chunks = cluster(
       Array.from(new Set(vaultUrls)),
       serviceType.includes(ServiceType.DOS) ? 5 : input.totalContent,
-    )) {
+    );
+
+    for (const chunk of chunks) {
       if (this.isTerminated) return;
       await Promise.all(
         chunk.map(async (okUrl) => {
@@ -434,6 +435,7 @@ export class ImportService {
           }
         }),
       );
+      this.logger.log({ LEFT_CHUNK_TO_UPDATE: chunk.length - chunks.indexOf(chunk) });
     }
   }
 
