@@ -10,7 +10,7 @@ import { ImportTypes } from '../../util/enums/import-types';
 import { ServiceType } from '../../util/enums/service-type';
 import { AuthService } from '../auth';
 import { DocumentSelectorService } from '../document-selector/document-selector.service';
-import { PasswordsRepository, UsersRepository } from '../postgres/repositories';
+import { PasswordsRepository, UsersRepository, VaultsRepository } from '../postgres/repositories';
 import { VaultsService } from '../vaults';
 import { CreateImportQueueInput } from './dto';
 
@@ -26,6 +26,7 @@ export class ImportService {
     private readonly authservice: AuthService,
     private readonly passwordsRepository: PasswordsRepository,
     private readonly vaultsService: VaultsService,
+    private readonly vaultsRepository: VaultsRepository,
   ) {}
 
   public terminateAllJobs() {
@@ -401,33 +402,64 @@ export class ImportService {
   }
 
   public async importOKPage(browser: Browser, input: CreateImportQueueInput) {
-    const { start, exclude, serviceType } = input;
+    const {
+      // start,
+      //  exclude,
+      serviceType,
+    } = input;
     if (this.isTerminated) {
       this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
       return [];
     }
-    const span = exclude;
+    // const span = exclude;
+    // const okUrls = Array.from({ length: span }, (_, i) => `${OK_URI}${start + i + 5}/`);
 
-    this.logger.log({ METHOD: this.importOKPage.name, ...input, span });
-
-    const okUrls = Array.from({ length: span }, (_, i) => `${OK_URI}${start + i + 5}/`);
-
-    this.logger.log({ okUrls });
+    // this.logger.log({ METHOD: this.importOKPage.name, ...input, span });
+    // this.logger.log({ okUrls });
+    const vaults = await this.vaultsRepository.find();
+    const vaultUrls = vaults.map((v) => v.url);
 
     for (const chunk of cluster(
-      Array.from(new Set(okUrls)),
+      Array.from(new Set(vaultUrls)),
       serviceType.includes(ServiceType.DOS) ? 5 : input.totalContent,
     )) {
       if (this.isTerminated) return;
       await Promise.all(
         chunk.map(async (okUrl) => {
           try {
-            await this.handleImportOKPage(browser, { ...input, url: okUrl });
+            await this.handleUpdateVaultDescription(browser, okUrl);
+            // await this.handleImportOKPage(browser, { ...input, url: okUrl });
           } catch (error) {
             this.logger.log(error.message);
           }
         }),
       );
+    }
+  }
+
+  public async handleUpdateVaultDescription(browser: Browser, url: string) {
+    const page = await browser.newPage();
+
+    if (this.isTerminated) return;
+
+    try {
+      try {
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      } catch {
+        try {
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+          this.logger.warn({ METHOD: this.handleImportOKPage.name, NAVIGATION_TIMEOUT: url });
+        } catch {
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        }
+      }
+
+      const { description, keywords } = await this.documentSelectorService.getMetaDescription(page);
+      await this.vaultsRepository.update({ url }, { description, keywords });
+    } catch (error) {
+      this.logger.error(error.message);
+    } finally {
+      await page.close();
     }
   }
 

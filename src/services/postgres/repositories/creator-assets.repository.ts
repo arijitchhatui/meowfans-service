@@ -14,18 +14,19 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
   }
 
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {
-    return await this.createQueryBuilder('ca')
+    return await this.getCreatorAssetsById(creatorId, input).limit(input.limit).offset(input.offset).getMany();
+  }
+
+  public getCreatorAssetsById(creatorId: string, input: PaginationInput) {
+    return this.createQueryBuilder('ca')
       .leftJoinAndSelect('ca.asset', 'asset')
       .leftJoinAndSelect('asset.vaultObject', 'vaultObject')
       .leftJoinAndSelect('vaultObject.vault', 'vault')
       .leftJoinAndSelect('ca.creatorProfile', 'creatorProfile')
       .leftJoinAndSelect('creatorProfile.user', 'user')
       .where('user.username = :username', { username: creatorId })
-      .andWhere('ca.type = :type', { type: await this.insertAssetType(input.assetType) })
-      .orderBy('vaultObject.suffix', input.orderBy)
-      .limit(input.limit)
-      .offset(input.offset)
-      .getMany();
+      .andWhere('ca.type = :type', { type: this.insertAssetType(input.assetType) })
+      .orderBy('vaultObject.suffix', input.orderBy);
   }
 
   public async updateAssetType(creatorId: string, input: UpdateAssetsInput) {
@@ -45,7 +46,7 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
     return updatedAssets ?? [];
   }
 
-  private async insertAssetType(assetType?: AssetType | null): Promise<AssetType> {
+  private insertAssetType(assetType?: AssetType | null): AssetType {
     return !assetType || !assetType.length ? AssetType.PRIVATE : assetType;
   }
 

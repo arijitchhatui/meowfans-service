@@ -4,17 +4,15 @@ import { FileType } from '../../util/enums';
 import { ImportTypes } from '../../util/enums/import-types';
 import { CreatorProfilesRepository, VaultsRepository } from '../postgres/repositories';
 import { VaultsObjectsRepository } from '../postgres/repositories/vault-objects.repository';
-import { SSEService } from '../sse/sse.service';
-import { BulkInsertVaultInput } from './dto';
+import { BulkInsertVaultInput, GetDefaultVaultsOutput } from './dto';
 
 @Injectable()
 export class VaultsService {
   private logger = new Logger(VaultsService.name);
   constructor(
-    private vaultsRepository: VaultsRepository,
-    private vaultObjectsRepository: VaultsObjectsRepository,
-    private creatorProfilesRepository: CreatorProfilesRepository,
-    private sseService: SSEService,
+    private readonly vaultsRepository: VaultsRepository,
+    private readonly vaultObjectsRepository: VaultsObjectsRepository,
+    private readonly creatorProfilesRepository: CreatorProfilesRepository,
   ) {}
 
   public async getCreatorVaults(creatorId: string, input: PaginationInput) {
@@ -41,6 +39,18 @@ export class VaultsService {
 
   public async getCountOfObjectsOfEachType() {
     return await this.vaultObjectsRepository.getCountOfObjectsOfEachType();
+  }
+
+  public async getDefaultVaults(input: PaginationInput): Promise<GetDefaultVaultsOutput> {
+    const { pageNumber, take } = input;
+    const skip = (pageNumber - 1) * take;
+
+    const [vaults, count] = await this.vaultsRepository.getDefaultVaults({ ...input, skip });
+
+    const totalPages = Math.ceil(count / take);
+    const hasPrev = pageNumber > 1;
+    const hasNext = pageNumber < totalPages;
+    return { vaults, count, totalPages, hasNext, hasPrev };
   }
 
   public async bulkInsert(creatorId: string, input: BulkInsertVaultInput) {

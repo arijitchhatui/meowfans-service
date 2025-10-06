@@ -67,6 +67,7 @@ export class VaultObjectsEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
+  @Field(() => AssetsEntity, { nullable: true })
   @OneToOne(() => AssetsEntity, (asset) => asset.vaultObject, { nullable: true })
   asset?: AssetsEntity | null;
 
