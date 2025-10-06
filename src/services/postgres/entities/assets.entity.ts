@@ -68,7 +68,11 @@ export class AssetsEntity {
   updatedAt: Date;
 
   @Field(() => VaultObjectsEntity, { nullable: true })
-  @OneToOne(() => VaultObjectsEntity, (vaultObject) => vaultObject.asset, { onDelete: 'SET NULL', nullable: true })
+  @OneToOne(() => VaultObjectsEntity, (vaultObject) => vaultObject.asset, {
+    cascade: true,
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'vault_object_id' })
   vaultObject?: VaultObjectsEntity;
 

@@ -43,7 +43,7 @@ export class VaultsEntity {
   description: string;
 
   @Field(() => [String], { nullable: true })
-  @Column({ type: 'text', array: true, nullable: true })
+  @Column('jsonb', { nullable: true })
   keywords: string[];
 
   @Field(() => Date)
@@ -59,6 +59,7 @@ export class VaultsEntity {
   @JoinColumn({ name: 'creator_id' })
   creatorProfile: CreatorProfilesEntity;
 
+  @Field(() => [VaultObjectsEntity])
   @OneToMany(() => VaultObjectsEntity, ({ vault }) => vault, { cascade: true })
   vaultObjects: VaultObjectsEntity[];
 }

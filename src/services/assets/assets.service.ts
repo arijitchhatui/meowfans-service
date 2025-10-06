@@ -4,13 +4,8 @@ import * as sharp from 'sharp';
 import { AssetType, FileType, ImageType, MediaType } from '../../util/enums';
 import { AwsS3ClientService } from '../aws';
 import { AssetsEntity } from '../postgres/entities';
-import {
-  AssetsRepository,
-  CreatorAssetsRepository,
-  CreatorProfilesRepository,
-  VaultsObjectsRepository,
-} from '../postgres/repositories';
-import { DeleteCreatorAsset, UpdateAssetsInput } from './dto';
+import { AssetsRepository, CreatorAssetsRepository, CreatorProfilesRepository } from '../postgres/repositories';
+import { DeleteCreatorAsset, GetDefaultAssetsOutput, UpdateAssetsInput } from './dto';
 import { UploadMediaOutput } from './dto/upload-media.output.dto';
 
 @Injectable()
@@ -28,7 +23,6 @@ export class AssetsService {
     private creatorAssetsRepository: CreatorAssetsRepository,
     private assetsRepository: AssetsRepository,
     private uploadsService: AwsS3ClientService,
-    private vaultObjectsRepository: VaultsObjectsRepository,
   ) {}
 
   public async getCreatorAssets(creatorId: string, input: PaginationInput) {
@@ -37,6 +31,22 @@ export class AssetsService {
 
   public async updateAssets(creatorId: string, input: UpdateAssetsInput) {
     return await this.creatorAssetsRepository.updateAssetType(creatorId, input);
+  }
+
+  public async getDefaultAssets(input: PaginationInput): Promise<GetDefaultAssetsOutput> {
+    const { pageNumber, take } = input;
+    const skip = (pageNumber - 1) * take;
+
+    const [assets, count] = await this.creatorAssetsRepository
+      .getCreatorAssetsById('porn', input)
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    const totalPages = Math.ceil(count / take);
+    const hasPrev = pageNumber > 1;
+    const hasNext = pageNumber < totalPages;
+    return { assets, count, totalPages, hasNext, hasPrev };
   }
 
   public async deleteCreatorAssets(creatorId: string, input: DeleteCreatorAsset) {

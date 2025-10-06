@@ -4,7 +4,7 @@ import { UserRoles } from '../../../src/util/enums/user-roles';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { CreatorAssetsEntity } from '../postgres/entities';
 import { AssetsService } from './assets.service';
-import { DeleteCreatorAsset, UpdateAssetsInput } from './dto';
+import { DeleteCreatorAsset, GetDefaultAssetsOutput, UpdateAssetsInput } from './dto';
 
 @Resolver()
 export class AssetsResolver {
@@ -26,6 +26,11 @@ export class AssetsResolver {
     @Args('input') input: PaginationInput,
   ): Promise<CreatorAssetsEntity[]> {
     return await this.assetsService.getCreatorAssets(creatorId, input);
+  }
+
+  @Query(() => GetDefaultAssetsOutput)
+  public async getDefaultAssets(@Args('input') input: PaginationInput): Promise<GetDefaultAssetsOutput> {
+    return await this.assetsService.getDefaultAssets(input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])

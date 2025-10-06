@@ -163,6 +163,7 @@ export class DownloaderService {
             destination,
             vaultObject.id,
           );
+
           await this.markAsFulfilled(creatorId, vaultObject.id);
           this.logger.log({ METHOD: this.handleUpload.name, DOWNLOADED_AND_UPLOADED: vaultObject.objectUrl });
         } else await this.markAsRejected(creatorId, vaultObject.id);
