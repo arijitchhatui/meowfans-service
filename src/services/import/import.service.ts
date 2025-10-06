@@ -308,16 +308,93 @@ export class ImportService {
 
       this.logger.log({ METHOD: this.importPage.name, VISITING_SINGLE_BRANCH_URL: url });
 
+      const { description, keywords } = await this.documentSelectorService.getMetaDescription(page);
       const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
       const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
+
+      this.logger.log({
+        METHOD: this.importPage.name,
+        urls,
+        filteredUrls,
+        FILTERED_IMAGES_COUNT: filteredUrls.length,
+        description,
+        keywords,
+      });
+
+      if (filteredUrls.length > 0 && !this.isTerminated) {
+        await this.handleUploadToVault(
+          creatorId,
+          input.url,
+          filteredUrls,
+          ContentType.SFW,
+          importType,
+          keywords,
+          description,
+        );
+      }
+
+      return [];
+    } finally {
+      await page.close();
+    }
+  }
+
+  public async importPICS(browser: Browser, input: CreateImportQueueInput) {
+    if (this.isTerminated) {
+      this.logger.log({ message: 'TERMINATED FORCEFULLY', status: this.isTerminated });
+      return [];
+    }
+
+    const { url, qualityType, creatorId, importType } = input;
+    const page = await browser.newPage();
+
+    try {
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      } catch {
+        try {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+          this.logger.warn({ METHOD: this.importPage.name, NAVIGATION_TIMEOUT: url });
+        } catch {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        }
+      }
+
+      const { description, keywords } = await this.documentSelectorService.getMetaDescription(page);
+      for (let i = 0; i < 20; i++) {
+        await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+        await page.waitForTimeout(1000);
+      }
+
+      this.logger.log({ METHOD: this.importPage.name, VISITING_SINGLE_BRANCH_URL: url });
+
+      const urls = await this.documentSelectorService.getContentUrls(page, qualityType);
+      const filteredUrls = this.documentSelectorService.filterByExtension(urls, url);
+      const regex = /^https:\/\/www\.pornpics\.com\/([a-zA-Z]{3,})\/$/;
+      const subUrls = urls.filter((u) => regex.test(u));
+      const galleries = urls.filter((url) => url.includes('/galleries'));
+      this.logger.log({
+        urls,
+        filteredUrls,
+        galleries,
+        p: Array.from(new Set(subUrls)),
+      });
 
       this.logger.log({ METHOD: this.importPage.name, urls, filteredUrls, FILTERED_IMAGES_COUNT: filteredUrls.length });
 
       if (filteredUrls.length > 0 && !this.isTerminated) {
-        await this.handleUploadToVault(creatorId, input.url, filteredUrls, ContentType.SFW, importType);
+        await this.handleUploadToVault(
+          creatorId,
+          input.url,
+          filteredUrls,
+          ContentType.SFW,
+          importType,
+          keywords,
+          description,
+        );
       }
 
-      return filteredUrls;
+      return [];
     } finally {
       await page.close();
     }
@@ -373,6 +450,7 @@ export class ImportService {
       }
 
       const title = await page.title();
+      const { description, keywords } = await this.documentSelectorService.getMetaDescription(page);
 
       const handles = title
         .split(' ')
@@ -390,6 +468,8 @@ export class ImportService {
         handles,
         userName,
         profileUrl,
+        description,
+        keywords,
       });
 
       const urls = await this.documentSelectorService.getContentUrls(page, DocumentQualityType.DIV_DEFINITION);
@@ -404,7 +484,7 @@ export class ImportService {
 
       if (filteredUrls.length > 1 && !this.isTerminated) {
         const { userId } = await this.scanOrCreateNewProfile(profileUrl);
-        await this.handleUploadToVault(userId, url, filteredUrls, ContentType.NSFW, importType);
+        await this.handleUploadToVault(userId, url, filteredUrls, ContentType.NSFW, importType, keywords, description);
       }
 
       return filteredUrls;
@@ -487,12 +567,16 @@ export class ImportService {
     filteredUrls: string[],
     contentType: ContentType,
     importType: ImportTypes,
+    keywords: string[],
+    description: string,
   ) {
     await this.vaultsService.bulkInsert(creatorId, {
       objects: filteredUrls,
       baseUrl: baseUrl,
       contentType,
       importType,
+      keywords,
+      description,
     });
   }
 

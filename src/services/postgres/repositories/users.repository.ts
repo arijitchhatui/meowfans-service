@@ -27,7 +27,7 @@ export class UsersRepository extends Repository<UsersEntity> {
   public async isAdmin(adminId: string): Promise<boolean> {
     return this.createQueryBuilder('user')
       .where('user.roles && :roles', { roles: [UserRoles.ADMIN] })
-      .andWhere('user.id =:userId', { userId: adminId })
+      .andWhere('user.id = :userId', { userId: adminId })
       .getExists();
   }
 

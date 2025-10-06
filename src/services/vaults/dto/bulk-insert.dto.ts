@@ -15,4 +15,10 @@ export class BulkInsertVaultInput {
 
   @Field(() => ImportTypes, { nullable: true })
   importType: ImportTypes;
+
+  @Field(() => [String], { nullable: true })
+  keywords: string[];
+
+  @Field(() => String, { nullable: true })
+  description: string;
 }

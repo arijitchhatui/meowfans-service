@@ -20,6 +20,7 @@ registerEnumType(DownloadStates, { name: 'DownloadStates' });
 @Entity({ name: 'vaults' })
 @Index('IDX_VAULT_URL', ['url'])
 @Index('IDX_CREATOR_ID', ['creatorId'])
+@Index('IDX_VAULTS_KEYWORDS_GIN', ['keywords'])
 export class VaultsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')
@@ -36,6 +37,14 @@ export class VaultsEntity {
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
+
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Field(() => [String], { nullable: true })
+  @Column({ type: 'text', array: true, nullable: true })
+  keywords: string[];
 
   @Field(() => Date)
   @UpdateDateColumn()

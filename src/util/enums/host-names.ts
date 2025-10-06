@@ -4,6 +4,7 @@ export enum HostNames {
   COOMER = 'coomer.st',
   KEMONO = 'kemono.cr',
   WALLHAVEN = 'wallhaven.cc',
+  PORNPICS = 'pornpics.com',
 }
 
 registerEnumType(HostNames, { name: 'HostNames' });

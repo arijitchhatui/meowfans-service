@@ -17,6 +17,7 @@ export class CreatorAssetsRepository extends Repository<CreatorAssetsEntity> {
     return await this.createQueryBuilder('ca')
       .leftJoinAndSelect('ca.asset', 'asset')
       .leftJoinAndSelect('asset.vaultObject', 'vaultObject')
+      .leftJoinAndSelect('vaultObject.vault', 'vault')
       .leftJoinAndSelect('ca.creatorProfile', 'creatorProfile')
       .leftJoinAndSelect('creatorProfile.user', 'user')
       .where('user.username = :username', { username: creatorId })

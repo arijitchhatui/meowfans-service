@@ -66,6 +66,14 @@ export class DocumentSelectorService {
     return await page.evaluate(() => Array.from(document.querySelectorAll('a')).map((anchor) => anchor.href));
   }
 
+  public async getMetaDescription(page: Page): Promise<{ description: string; keywords: string[] }> {
+    return await page.evaluate(() => {
+      const description = document.querySelector('meta[name=description]')?.getAttribute('content') || '';
+      const keywords = document.querySelector('meta[name=keywords]')?.getAttribute('content') || '';
+      return { description, keywords: keywords.split(',') ?? [] };
+    });
+  }
+
   public async getVideoUrls(page: Page): Promise<string[]> {
     return await page.evaluate(() => Array.from(document.querySelectorAll('video')).map((vid) => vid.src));
   }
