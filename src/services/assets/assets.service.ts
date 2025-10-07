@@ -73,6 +73,10 @@ export class AssetsService {
     return await this.creatorAssetsRepository.getCreatorAssets(relatedUserId, { ...input, limit: 10 });
   }
 
+  public async getAssetByVaultObjectId(vaultObjectId: string) {
+    return await this.assetsRepository.exists({ where: { vaultObjectId } });
+  }
+
   public async deleteAllAssets(creatorId: string) {
     await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId } });
     const result = await this.creatorAssetsRepository.delete({ creatorId });

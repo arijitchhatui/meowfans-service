@@ -5,9 +5,8 @@ import { Queue } from 'bull';
 import { cluster } from 'radash';
 import { DEFAULT_AVATAR_URL, DEFAULT_BANNER_URL } from '../../util/constants';
 import { QueueTypes } from '../../util/enums';
-import { UsersEntity } from '../postgres/entities';
-import { AssetsRepository, UsersRepository } from '../postgres/repositories';
-import { UpdateUsersInput } from './dto';
+import { AssetsRepository, UsersRepository, VaultsObjectsRepository } from '../postgres/repositories';
+import { GetUserOutput, UpdateUsersInput } from './dto';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +15,7 @@ export class UsersService {
   public constructor(
     private readonly usersRepository: UsersRepository,
     private readonly assetsRepository: AssetsRepository,
+    private readonly vaultsObjectsRepository: VaultsObjectsRepository,
     @InjectQueue(QueueTypes.CREATOR_UPDATE_QUEUE) private readonly updateCreatorQueue: Queue<UpdateUsersInput>,
   ) {}
 
@@ -24,10 +24,17 @@ export class UsersService {
     return result;
   }
 
-  public async getUser(username: string) {
-    const user = await this.usersRepository.findOne({ where: { username: username } });
-    if (user) return user;
-    return {} as UsersEntity;
+  public async getUser(username: string): Promise<GetUserOutput> {
+    const user = await this.usersRepository.findOneOrFail({ where: { username: username } });
+    const { fulfilled, pending, processing, rejected } =
+      await this.vaultsObjectsRepository.getCountOfObjectsOfEachTypeOfACreator(user.id);
+    return {
+      ...user,
+      fulfilledCount: fulfilled,
+      pendingCount: pending,
+      rejectedCount: rejected,
+      processingCount: processing,
+    };
   }
 
   public async updateAllCreatorProfiles(input: UpdateUsersInput) {
