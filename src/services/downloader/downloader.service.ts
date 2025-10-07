@@ -145,10 +145,11 @@ export class DownloaderService {
       where: { id: vaultObjectId },
       relations: { vault: true },
     });
+    const vaultObjectIdExistsInAssets = await this.assetsService.getAssetByVaultObjectId(vaultObjectId);
 
     if (this.isTerminated) return;
 
-    if (vaultObject.status !== DownloadStates.FULFILLED) {
+    if (vaultObject.status !== DownloadStates.FULFILLED && !vaultObjectIdExistsInAssets) {
       try {
         const buffer = await this.fetch(vaultObject.objectUrl, vaultObject.vault.url);
         const mimeType = this.documentSelectorService.resolveMimeType(vaultObject.objectUrl);

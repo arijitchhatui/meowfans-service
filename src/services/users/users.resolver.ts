@@ -3,8 +3,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
 import { GetDefaultCreatorsOutput } from '../creator-profiles';
-import { UsersEntity } from '../postgres/entities';
-import { UpdateUsersInput } from './dto';
+import { GetUserOutput, UpdateUsersInput } from './dto';
 import { UsersService } from './users.service';
 
 @Resolver()
@@ -18,8 +17,8 @@ export class UsersResolver {
   }
 
   @Auth(GqlAuthGuard, [UserRoles.ADMIN, UserRoles.CREATOR, UserRoles.FAN])
-  @Query(() => UsersEntity)
-  public async getUser(@Args('username') username: string): Promise<UsersEntity> {
+  @Query(() => GetUserOutput)
+  public async getUser(@Args('username') username: string): Promise<GetUserOutput> {
     return await this.usersService.getUser(username);
   }
 

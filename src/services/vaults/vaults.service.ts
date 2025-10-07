@@ -75,25 +75,30 @@ export class VaultsService {
     const isAdmin = await this.usersRepository.isAdmin(input.adminId);
     if (!isAdmin) return;
 
-    const vaults = await this.vaultsRepository.find();
-    const chunks = cluster(Array.from(new Set(vaults)), 15);
-    for (const chunk of chunks) {
-      await Promise.all(
-        chunk.map(async (vault) => {
-          try {
-            const exists = await this.vaultObjectsRepository.findOne({
-              where: { status: DownloadStates.FULFILLED, vaultId: vault.id },
-            });
-            if (exists) {
-              const previewAsset = await this.assetsRepository.findOne({ where: { vaultObjectId: exists.id } });
-              if (previewAsset) await this.vaultsRepository.update({ id: vault.id }, { preview: previewAsset.rawUrl });
-              this.logger.log({ UPDATED: vault.id });
+    try {
+      const vaults = await this.vaultsRepository.find();
+      const chunks = cluster(Array.from(new Set(vaults)), 15);
+      for (const chunk of chunks) {
+        await Promise.all(
+          chunk.map(async (vault) => {
+            try {
+              const exists = await this.vaultObjectsRepository.findOne({
+                where: { status: DownloadStates.FULFILLED, vaultId: vault.id },
+              });
+              if (exists) {
+                const previewAsset = await this.assetsRepository.findOne({ where: { vaultObjectId: exists.id } });
+                if (previewAsset)
+                  await this.vaultsRepository.update({ id: vault.id }, { preview: previewAsset.rawUrl });
+                this.logger.log({ UPDATED: vault.id });
+              }
+            } catch (error) {
+              this.logger.error(error.message);
             }
-          } catch (error) {
-            this.logger.error(error.message);
-          }
-        }),
-      );
+          }),
+        );
+      }
+    } finally {
+      this.logger.log({ MESSAGE: 'ALL PREVIEWS UPDATED' });
     }
   }
 
