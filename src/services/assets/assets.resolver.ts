@@ -33,6 +33,11 @@ export class AssetsResolver {
     return await this.assetsService.getDefaultAssets(input);
   }
 
+  @Query(() => [CreatorAssetsEntity])
+  public async getDefaultCreatorAssets(@Args('input') input: PaginationInput): Promise<CreatorAssetsEntity[]> {
+    return await this.assetsService.getDefaultCreatorAssets(input);
+  }
+
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
   @Mutation(() => [CreatorAssetsEntity])
   public async updateAssets(

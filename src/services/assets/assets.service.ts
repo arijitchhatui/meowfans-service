@@ -65,6 +65,14 @@ export class AssetsService {
     return deleteResult.some((deleted) => deleted);
   }
 
+  public async getDefaultCreatorAssets(input: PaginationInput) {
+    const { relatedUserId } = input;
+
+    if (!relatedUserId) return [];
+
+    return await this.creatorAssetsRepository.getCreatorAssets(relatedUserId, { ...input, limit: 10 });
+  }
+
   public async deleteAllAssets(creatorId: string) {
     await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId } });
     const result = await this.creatorAssetsRepository.delete({ creatorId });

@@ -1,6 +1,8 @@
+import { PaginationInput } from '@app/helpers';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
+import { GetDefaultCreatorsOutput } from '../creator-profiles';
 import { UsersEntity } from '../postgres/entities';
 import { UpdateUsersInput } from './dto';
 import { UsersService } from './users.service';
@@ -25,5 +27,10 @@ export class UsersResolver {
   @Mutation(() => String)
   public async updateAllCreatorProfiles(@CurrentUser() adminId: string, @Args('input') input: UpdateUsersInput) {
     return await this.usersService.updateAllCreatorProfiles(input);
+  }
+
+  @Query(() => GetDefaultCreatorsOutput)
+  public async getDefaultCreators(@Args('input') input: PaginationInput): Promise<GetDefaultCreatorsOutput> {
+    return await this.usersService.getDefaultCreators(input);
   }
 }

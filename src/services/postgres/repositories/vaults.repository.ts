@@ -14,15 +14,11 @@ export class VaultsRepository extends Repository<VaultsEntity> {
   public async getDefaultVaults(input: PaginationInput) {
     const qb = this.createQueryBuilder('v')
       .innerJoinAndSelect('v.creatorProfile', 'creatorProfile')
-      .innerJoinAndSelect('v.vaultObjects', 'vaultObjects')
-      .leftJoinAndSelect('vaultObjects.asset', 'asset')
       .leftJoinAndSelect('creatorProfile.user', 'user')
       .where('user.username = :username', { username: 'porn' })
-      .orderBy('v.createdAt', input.orderBy)
       .skip(input.skip)
       .take(input.take);
 
-    // console.log(qb.getSql());
     return qb.getManyAndCount();
   }
 }

@@ -39,3 +39,21 @@ export class GetAllCreatorsOutput {
   @Field(() => Boolean)
   hasNext: boolean;
 }
+
+@ObjectType()
+export class GetDefaultCreatorsOutput {
+  @Field(() => [UsersEntity])
+  creators: UsersEntity[];
+
+  @Field(() => Int)
+  count: number;
+
+  @Field(() => Int)
+  totalPages: number;
+
+  @Field(() => Boolean)
+  hasPrev: boolean;
+
+  @Field(() => Boolean)
+  hasNext: boolean;
+}
