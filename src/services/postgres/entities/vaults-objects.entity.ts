@@ -35,7 +35,7 @@ export class VaultObjectsEntity {
   @Column()
   vaultId: string;
 
-  @Field(() => Number)
+  @Field(() => Number, { nullable: true })
   @Column({ type: 'bigint', nullable: true })
   suffix: number | null;
 

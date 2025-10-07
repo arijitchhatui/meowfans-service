@@ -69,7 +69,6 @@ export class AdminService {
 
   public async getCreatorAssets(input: PaginationInput) {
     const { relatedUserId } = input;
-
     if (!relatedUserId) return [];
 
     return await this.creatorAssetsRepository.getCreatorAssets(relatedUserId, input);

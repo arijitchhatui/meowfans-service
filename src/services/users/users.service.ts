@@ -1,3 +1,4 @@
+import { PaginationInput } from '@app/helpers';
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
@@ -33,6 +34,16 @@ export class UsersService {
     await this.updateCreatorQueue.add(input);
 
     return 'Updating started';
+  }
+
+  public async getDefaultCreators(input: PaginationInput) {
+    const { pageNumber, take } = input;
+    const skip = (pageNumber - 1) * take;
+    const [creators, count] = await this.usersRepository.getAllCreators({ ...input, skip });
+    const totalPages = Math.ceil(count / take);
+    const hasPrev = pageNumber > 1;
+    const hasNext = pageNumber < totalPages;
+    return { creators, count, totalPages, hasNext, hasPrev };
   }
 
   public async handleUpdateCreator(input: UpdateUsersInput) {

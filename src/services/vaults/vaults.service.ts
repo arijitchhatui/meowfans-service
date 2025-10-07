@@ -1,10 +1,24 @@
 import { PaginationInput } from '@app/helpers';
-import { Injectable, Logger } from '@nestjs/common';
-import { FileType } from '../../util/enums';
+import { InjectQueue } from '@nestjs/bull';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Queue } from 'bull';
+import { cluster } from 'radash';
+import { FileType, QueueTypes } from '../../util/enums';
+import { DownloadStates } from '../../util/enums/download-state';
 import { ImportTypes } from '../../util/enums/import-types';
-import { CreatorProfilesRepository, VaultsRepository } from '../postgres/repositories';
+import {
+  AssetsRepository,
+  CreatorProfilesRepository,
+  UsersRepository,
+  VaultsRepository,
+} from '../postgres/repositories';
 import { VaultsObjectsRepository } from '../postgres/repositories/vault-objects.repository';
-import { BulkInsertVaultInput, GetDefaultVaultsOutput } from './dto';
+import {
+  BulkInsertVaultInput,
+  GetDefaultVaultObjectsOutput,
+  GetDefaultVaultsOutput,
+  UpdatePreviewOfVaultsInput,
+} from './dto';
 
 @Injectable()
 export class VaultsService {
@@ -13,19 +27,16 @@ export class VaultsService {
     private readonly vaultsRepository: VaultsRepository,
     private readonly vaultObjectsRepository: VaultsObjectsRepository,
     private readonly creatorProfilesRepository: CreatorProfilesRepository,
+    private readonly usersRepository: UsersRepository,
+    private readonly assetsRepository: AssetsRepository,
+    @InjectQueue(QueueTypes.UPDATE_PREVIEW_OF_VAULT)
+    private readonly updatePreviewOfVaultsQueue: Queue<UpdatePreviewOfVaultsInput>,
   ) {}
 
-  public async getCreatorVaults(creatorId: string, input: PaginationInput) {
-    await this.creatorProfilesRepository.findOneOrFail({ where: { creatorId: creatorId } });
-    return await this.vaultsRepository.find({
-      where: { creatorId: creatorId },
-      relations: { vaultObjects: true },
-      skip: input.offset,
-      take: input.limit,
-      order: {
-        id: input.orderBy,
-      },
-    });
+  public async getVaultObjectsByVaultId(input: PaginationInput): Promise<GetDefaultVaultObjectsOutput> {
+    const vault = await this.vaultsRepository.findOneOrFail({ where: { id: input.relatedEntityId } });
+    const vaultObjects = await this.vaultObjectsRepository.getVaultObjectsByVaultId(input);
+    return { vault, ...vaultObjects };
   }
 
   public async getCreatorVaultObjects(creatorId: string, input: PaginationInput) {
@@ -51,6 +62,39 @@ export class VaultsService {
     const hasPrev = pageNumber > 1;
     const hasNext = pageNumber < totalPages;
     return { vaults, count, totalPages, hasNext, hasPrev };
+  }
+
+  public async updatePreviewOfVaults(adminId: string) {
+    const isAdmin = await this.usersRepository.isAdmin(adminId);
+    if (!isAdmin) throw new UnauthorizedException({ message: 'unauthorized' });
+    await this.updatePreviewOfVaultsQueue.add({ adminId });
+    return 'Done';
+  }
+
+  public async handleUpdatePreviewOfVaults(input: UpdatePreviewOfVaultsInput) {
+    const isAdmin = await this.usersRepository.isAdmin(input.adminId);
+    if (!isAdmin) return;
+
+    const vaults = await this.vaultsRepository.find();
+    const chunks = cluster(Array.from(new Set(vaults)), 15);
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map(async (vault) => {
+          try {
+            const exists = await this.vaultObjectsRepository.findOne({
+              where: { status: DownloadStates.FULFILLED, vaultId: vault.id },
+            });
+            if (exists) {
+              const previewAsset = await this.assetsRepository.findOne({ where: { vaultObjectId: exists.id } });
+              if (previewAsset) await this.vaultsRepository.update({ id: vault.id }, { preview: previewAsset.rawUrl });
+              this.logger.log({ UPDATED: vault.id });
+            }
+          } catch (error) {
+            this.logger.error(error.message);
+          }
+        }),
+      );
+    }
   }
 
   public async bulkInsert(creatorId: string, input: BulkInsertVaultInput) {

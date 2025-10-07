@@ -1,22 +1,18 @@
 import { PaginationInput } from '@app/helpers';
-import { Args, Int, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { VaultObjectsEntity, VaultsEntity } from '../postgres/entities';
-import { GetAllObjectsCountOutput, GetDefaultVaultsOutput } from './dto';
+import { VaultObjectsEntity } from '../postgres/entities';
+import { GetAllObjectsCountOutput, GetDefaultVaultObjectsOutput, GetDefaultVaultsOutput } from './dto';
 import { VaultsService } from './vaults.service';
 
 @Resolver()
 export class VaultsResolver {
   constructor(private vaultsService: VaultsService) {}
 
-  @Auth(GqlAuthGuard, [UserRoles.CREATOR])
-  @Query(() => [VaultsEntity])
-  public async getCreatorVaults(
-    @CurrentUser() creatorId: string,
-    @Args('input') input: PaginationInput,
-  ): Promise<VaultsEntity[]> {
-    return await this.vaultsService.getCreatorVaults(creatorId, input);
+  @Query(() => GetDefaultVaultObjectsOutput)
+  public async getVaultObjectsByVaultId(@Args('input') input: PaginationInput): Promise<GetDefaultVaultObjectsOutput> {
+    return await this.vaultsService.getVaultObjectsByVaultId(input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
@@ -31,6 +27,12 @@ export class VaultsResolver {
   @Query(() => GetDefaultVaultsOutput)
   public async getDefaultVaults(@Args('input') input: PaginationInput): Promise<GetDefaultVaultsOutput> {
     return await this.vaultsService.getDefaultVaults(input);
+  }
+
+  @Auth(GqlAuthGuard, [UserRoles.ADMIN])
+  @Mutation(() => String)
+  public async updatePreviewOfVaults(@CurrentUser() adminId: string) {
+    return await this.vaultsService.updatePreviewOfVaults(adminId);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR, UserRoles.ADMIN])

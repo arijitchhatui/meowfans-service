@@ -11,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { DEFAULT_BANNER_URL } from '../../../util/constants';
 import { DownloadStates } from '../../../util/enums/download-state';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
 import { VaultObjectsEntity } from './vaults-objects.entity';
@@ -33,6 +34,10 @@ export class VaultsEntity {
   @Field()
   @Column()
   url: string;
+
+  @Field(() => String, { defaultValue: DEFAULT_BANNER_URL })
+  @Column({ type: 'varchar', default: DEFAULT_BANNER_URL })
+  preview: string;
 
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp' })

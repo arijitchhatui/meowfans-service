@@ -139,4 +139,21 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
       )
       .execute();
   }
+
+  public async getVaultObjectsByVaultId(input: PaginationInput) {
+    const { pageNumber, take } = input;
+    const skip = (pageNumber - 1) * take;
+    const [vaultObjects, count] = await this.findAndCount({
+      where: { vaultId: input.relatedEntityId },
+      relations: { asset: true },
+      take,
+      skip,
+      order: { createdAt: input.orderBy },
+    });
+    const totalPages = Math.ceil(count / take);
+    const hasPrev = pageNumber > 1;
+    const hasNext = pageNumber < totalPages;
+
+    return { vaultObjects, count, totalPages, hasNext, hasPrev };
+  }
 }
