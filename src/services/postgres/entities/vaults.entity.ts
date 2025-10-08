@@ -6,6 +6,7 @@ import {
   Entity,
   Index,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -14,6 +15,7 @@ import {
 import { DEFAULT_BANNER_URL } from '../../../util/constants';
 import { DownloadStates } from '../../../util/enums/download-state';
 import { CreatorProfilesEntity } from './creator-profiles.entity';
+import { TagsEntity } from './tags.entity';
 import { VaultObjectsEntity } from './vaults-objects.entity';
 
 registerEnumType(DownloadStates, { name: 'DownloadStates' });
@@ -67,4 +69,7 @@ export class VaultsEntity {
   @Field(() => [VaultObjectsEntity])
   @OneToMany(() => VaultObjectsEntity, ({ vault }) => vault, { cascade: true })
   vaultObjects: VaultObjectsEntity[];
+
+  @ManyToMany(() => TagsEntity, (tags) => tags.vaults, { onDelete: 'CASCADE', cascade: true })
+  tags: TagsEntity[];
 }

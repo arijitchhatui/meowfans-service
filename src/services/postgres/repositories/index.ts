@@ -21,6 +21,7 @@ export * from './post-shares.repository';
 export * from './posts.repository';
 export * from './sessions.repository';
 export * from './social-accounts.repository';
+export * from './tags.repository';
 export * from './users.repository';
 export * from './vault-objects.repository';
 export * from './vaults.repository';

@@ -20,6 +20,9 @@ export class PaginationInput {
   @Field(() => SortOrder, { defaultValue: SortOrder.DESC, nullable: true })
   orderBy: SortOrder;
 
+  @Field(() => String, { nullable: true })
+  searchTerm?: string;
+
   @Field(() => ID, { nullable: true })
   relatedEntityId?: string;
 

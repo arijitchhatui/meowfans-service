@@ -2,7 +2,7 @@ import { PaginationInput } from '@app/helpers';
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserRoles } from '../../util/enums';
 import { Auth, CurrentUser, GqlAuthGuard } from '../auth';
-import { VaultObjectsEntity } from '../postgres/entities';
+import { TagsEntity, VaultObjectsEntity } from '../postgres/entities';
 import { GetAllObjectsCountOutput, GetDefaultVaultObjectsOutput, GetDefaultVaultsOutput } from './dto';
 import { VaultsService } from './vaults.service';
 
@@ -13,6 +13,10 @@ export class VaultsResolver {
   @Query(() => GetDefaultVaultObjectsOutput)
   public async getVaultObjectsByVaultId(@Args('input') input: PaginationInput): Promise<GetDefaultVaultObjectsOutput> {
     return await this.vaultsService.getVaultObjectsByVaultId(input);
+  }
+  @Query(() => [TagsEntity])
+  public async getTags(@Args('input') input: PaginationInput): Promise<TagsEntity[]> {
+    return await this.vaultsService.getTags(input);
   }
 
   @Auth(GqlAuthGuard, [UserRoles.CREATOR])
