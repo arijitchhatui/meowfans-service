@@ -1,6 +1,7 @@
 import { PaginationInput } from '@app/helpers';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
+import { DEFAULT_BANNER_URL } from '../../../util/constants';
 import { VaultsEntity } from '../entities/vaults.entity';
 
 @Injectable()
@@ -15,9 +16,22 @@ export class VaultsRepository extends Repository<VaultsEntity> {
     const qb = this.createQueryBuilder('v')
       .innerJoinAndSelect('v.creatorProfile', 'creatorProfile')
       .leftJoinAndSelect('creatorProfile.user', 'user')
-      .where('user.username = :username', { username: 'porn' })
-      .skip(input.skip)
-      .take(input.take);
+      .innerJoin('v.vaultObjects', 'vo')
+      .innerJoin('vo.asset', 'asset')
+      .leftJoinAndSelect('v.tags', 'tags');
+
+    if (input.searchTerm?.length) {
+      qb.andWhere(
+        '(tags.label ILIKE :searchTerm OR user.username ILIKE :searchTerm OR v.description  ILIKE :searchTerm)',
+        { searchTerm: `%${input.searchTerm}%` },
+      );
+    }
+
+    qb.andWhere('v.preview != :defaultPreview', { defaultPreview: DEFAULT_BANNER_URL })
+      .andWhere('asset.id IS NOT NULL')
+      .skip(input.skip ?? 0)
+      .take(input.take ?? 30)
+      .orderBy('v.createdAt', 'DESC');
 
     return qb.getManyAndCount();
   }

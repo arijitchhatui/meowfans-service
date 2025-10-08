@@ -3,12 +3,14 @@ import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { Queue } from 'bull';
 import { cluster } from 'radash';
+import { In } from 'typeorm';
 import { FileType, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
 import { ImportTypes } from '../../util/enums/import-types';
 import {
   AssetsRepository,
   CreatorProfilesRepository,
+  TagsRepository,
   UsersRepository,
   VaultsRepository,
 } from '../postgres/repositories';
@@ -29,6 +31,7 @@ export class VaultsService {
     private readonly creatorProfilesRepository: CreatorProfilesRepository,
     private readonly usersRepository: UsersRepository,
     private readonly assetsRepository: AssetsRepository,
+    private readonly tagsRepository: TagsRepository,
     @InjectQueue(QueueTypes.UPDATE_PREVIEW_OF_VAULT)
     private readonly updatePreviewOfVaultsQueue: Queue<UpdatePreviewOfVaultsInput>,
   ) {}
@@ -128,5 +131,57 @@ export class VaultsService {
         this.logger.log('VAULT OBJECT INSERTED✅✅✅✅');
       }
     }
+  }
+
+  public async getTags(input: PaginationInput) {
+    return await this.tagsRepository.getTags(input);
+  }
+
+  public async createTags() {
+    const vaults = await this.vaultsRepository.find();
+
+    const keywords = Array.from(
+      new Set(
+        vaults
+          .map((v) => {
+            const final: string[] = [];
+            final.push(...(v.keywords?.map((k) => k.toLowerCase().trim()) ?? []));
+            return final;
+          })
+          .flat(1),
+      ),
+    );
+
+    this.logger.log(`Chunk Size ${keywords.length}`);
+    for (const keywordChunk of cluster(keywords, 10000)) {
+      await this.tagsRepository.save(keywordChunk.filter((v) => v).map((label) => ({ label })));
+      this.logger.log('Chunk Saved');
+    }
+    this.logger.log('Chunk Saved (Done)');
+  }
+
+  public async createVaultTags() {
+    const vaults = await this.vaultsRepository.find();
+
+    this.logger.log({ total: vaults.length });
+    for (const vault of vaults) {
+      const keywords = (vault.keywords ?? []).filter((v) => v).map((v) => v.toLowerCase().trim());
+      const tags = await this.tagsRepository.find({ where: { label: In(keywords) } });
+
+      if (tags.length) {
+        vault.tags = tags;
+      }
+      this.logger.log({ message: 'done', id: vault.id });
+    }
+
+    this.logger.log(`Chunk Size ${vaults.length}`);
+    for (const vChunk of cluster(
+      vaults.filter((v) => v.tags?.length),
+      1000,
+    )) {
+      await this.vaultsRepository.save(vChunk);
+      this.logger.log('Chunk Saved');
+    }
+    this.logger.log('Chunk Saved (Done)');
   }
 }
