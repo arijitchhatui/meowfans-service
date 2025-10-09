@@ -1,9 +1,10 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { VaultsEntity } from './vaults.entity';
 
 @ObjectType()
 @Entity({ name: 'tags' })
+@Index('IDX_TAG_LABEL', ['label'])
 export class TagsEntity {
   @Field(() => String)
   @PrimaryGeneratedColumn('uuid')

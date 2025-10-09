@@ -14,11 +14,14 @@ export class VaultsRepository extends Repository<VaultsEntity> {
 
   public async getDefaultVaults(input: PaginationInput) {
     const qb = this.createQueryBuilder('v')
-      .innerJoinAndSelect('v.creatorProfile', 'creatorProfile')
-      .leftJoinAndSelect('creatorProfile.user', 'user')
+      .leftJoin('v.creatorProfile', 'creatorProfile')
+      .leftJoin('creatorProfile.user', 'user')
       .innerJoin('v.vaultObjects', 'vo')
       .innerJoin('vo.asset', 'asset')
-      .leftJoinAndSelect('v.tags', 'tags');
+      .leftJoin('v.tags', 'tags')
+      .addSelect(['user.id', 'user.username', 'user.avatarUrl', 'user.bannerUrl'])
+      .addSelect(['tags.id', 'tags.label'])
+      .addSelect(['creatorProfile.creatorId']);
 
     if (input.searchTerm?.length) {
       qb.andWhere(
@@ -28,11 +31,9 @@ export class VaultsRepository extends Repository<VaultsEntity> {
     }
 
     qb.andWhere('v.preview != :defaultPreview', { defaultPreview: DEFAULT_BANNER_URL })
-      .andWhere('asset.id IS NOT NULL')
       .skip(input.skip ?? 0)
       .take(input.take ?? 30)
       .orderBy('v.createdAt', 'DESC');
-
     return qb.getManyAndCount();
   }
 }
