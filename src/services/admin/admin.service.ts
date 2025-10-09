@@ -55,13 +55,12 @@ export class AdminService {
 
   public async getCreatorVaultObjects(input: PaginationInput) {
     const { relatedUserId } = input;
+    const user = await this.usersRepository.findOne({ where: { id: relatedUserId } });
 
-    this.logger.log('by admin');
-
-    if (!relatedUserId) return {} as GetCreatorVaultObjectsOutput;
+    if (!user) return {} as GetCreatorVaultObjectsOutput;
 
     const [vaultObjects, count] = await this.vaultObjectsRepository
-      .getCreatorVaultObjects(relatedUserId, input)
+      .getCreatorVaultObjects(user.id, input)
       .getManyAndCount();
 
     return { vaultObjects, count };

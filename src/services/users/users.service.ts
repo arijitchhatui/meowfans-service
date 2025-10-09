@@ -25,7 +25,8 @@ export class UsersService {
   }
 
   public async getUser(username: string): Promise<GetUserOutput> {
-    const user = await this.usersRepository.findOneOrFail({ where: { username: username } });
+    const user = await this.usersRepository.findOne({ where: { username: username } });
+    if (!user) return {} as GetUserOutput;
     const { fulfilled, pending, processing, rejected } =
       await this.vaultsObjectsRepository.getCountOfObjectsOfEachTypeOfACreator(user.id);
     return {

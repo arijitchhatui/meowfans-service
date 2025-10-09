@@ -24,6 +24,8 @@ registerEnumType(DownloadStates, { name: 'DownloadStates' });
 @Index('IDX_VAULT_URL', ['url'])
 @Index('IDX_CREATOR_ID', ['creatorId'])
 @Index('IDX_VAULTS_KEYWORDS_GIN', ['keywords'])
+@Index('IDX_VAULTS_DESCRIPTION', ['description'])
+@Index('IDX_VAULTS_PREVIEW', ['preview'])
 export class VaultsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

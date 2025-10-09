@@ -22,6 +22,9 @@ registerEnumType(ContentType, { name: 'ContentType' });
 @Entity({ name: 'vault_objects' })
 @Index('IDX_VAULT_OBJECT_URL', ['objectUrl'])
 @Index('IDX_VAULT_ID', ['vaultId'])
+@Index('IDX_VAULT_OBJECT_STATUS', ['status'])
+@Index('IDX_VAULT_OBJECT_FILE_TYPE', ['fileType'])
+@Index('IDX_VAULT_OBJECT_CONTENT_TYPE', ['contentType'])
 export class VaultObjectsEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')

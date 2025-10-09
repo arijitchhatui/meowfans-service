@@ -52,6 +52,15 @@ export class DocumentSelectorService {
             .filter((href): href is string => !!href),
         );
 
+      case DocumentQualityType.SOURCE_DEFINITION:
+        this.logger.log({
+          METHOD: this.getContentUrls.name,
+          message: 'Collecting source definition',
+        });
+        return await page.evaluate(() => {
+          return Array.from(document.querySelectorAll('source')).map((source) => source.src);
+        });
+
       default:
         this.logger.log({
           METHOD: this.getContentUrls.name,

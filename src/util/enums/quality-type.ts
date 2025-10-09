@@ -3,4 +3,5 @@ export enum DocumentQualityType {
   LOW_DEFINITION = 'lowDefinition',
   DEFAULT_DEFINITION = 'defaultDefinition',
   DIV_DEFINITION = 'divDefinition',
+  SOURCE_DEFINITION = 'source_definition',
 }
