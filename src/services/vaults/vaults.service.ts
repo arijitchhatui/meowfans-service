@@ -4,7 +4,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { Queue } from 'bull';
 import { cluster } from 'radash';
 import { In } from 'typeorm';
-import { FileType, QueueTypes } from '../../util/enums';
+import { DataFetchType, FileType, QueueTypes } from '../../util/enums';
 import { DownloadStates } from '../../util/enums/download-state';
 import { ImportTypes } from '../../util/enums/import-types';
 import {
@@ -56,15 +56,24 @@ export class VaultsService {
   }
 
   public async getDefaultVaults(input: PaginationInput): Promise<GetDefaultVaultsOutput> {
-    const { pageNumber, take } = input;
-    const skip = (pageNumber - 1) * take;
+    switch (input.dataFetchType) {
+      case DataFetchType.Pagination: {
+        const { pageNumber, take } = input;
+        const skip = (pageNumber - 1) * take;
 
-    const [vaults, count] = await this.vaultsRepository.getDefaultVaults({ ...input, skip });
+        const [vaults, count] = await this.vaultsRepository.getDefaultVaults({ ...input, skip });
 
-    const totalPages = Math.ceil(count / take);
-    const hasPrev = pageNumber > 1;
-    const hasNext = pageNumber < totalPages;
-    return { vaults, count, totalPages, hasNext, hasPrev };
+        const totalPages = Math.ceil(count / take);
+        const hasPrev = pageNumber > 1;
+        const hasNext = pageNumber < totalPages;
+        return { vaults, count, totalPages, hasNext, hasPrev };
+      }
+      default: {
+        const [vaults] = await this.vaultsRepository.getDefaultVaults(input);
+
+        return { vaults };
+      }
+    }
   }
 
   public async updatePreviewOfVaults(adminId: string) {
