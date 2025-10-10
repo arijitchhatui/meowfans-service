@@ -111,7 +111,7 @@ export class DownloaderService {
       : `ALL OBJECTS DOWNLOADED FOR ${input.creatorId}`;
 
     try {
-      for (const chunk of cluster(Array.from(new Set(vaultObjectIds)), 5)) {
+      for (const chunk of cluster(Array.from(new Set(vaultObjectIds)), 10)) {
         if (this.isTerminated) {
           const terminatedResult = await this.vaultObjectsRepository.update(
             { id: In(vaultObjectIds), status: DownloadStates.PROCESSING },

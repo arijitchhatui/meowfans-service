@@ -1,6 +1,6 @@
 import { Field, ID, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { AssetType, PostTypes, SortOrder, UserRoles } from '../../src/util/enums';
+import { AssetType, DataFetchType, PostTypes, SortOrder, UserRoles } from '../../src/util/enums';
 import { DownloadStates } from '../../src/util/enums/download-state';
 
 registerEnumType(SortOrder, { name: 'SortOrder' });
@@ -49,4 +49,7 @@ export class PaginationInput {
 
   @Field(() => Int, { defaultValue: 30, nullable: true })
   take: number;
+
+  @Field(() => DataFetchType, { nullable: true })
+  dataFetchType: DataFetchType;
 }

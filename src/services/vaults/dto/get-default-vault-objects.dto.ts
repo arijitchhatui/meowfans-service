@@ -10,14 +10,14 @@ export class GetDefaultVaultObjectsOutput {
   vault: VaultsEntity;
 
   @Field(() => Int, { defaultValue: 0 })
-  count: number;
+  count?: number;
 
   @Field(() => Int, { defaultValue: 0 })
-  totalPages: number;
+  totalPages?: number;
 
   @Field(() => Boolean, { defaultValue: false })
-  hasPrev: boolean;
+  hasPrev?: boolean;
 
   @Field(() => Boolean, { defaultValue: false })
-  hasNext: boolean;
+  hasNext?: boolean;
 }

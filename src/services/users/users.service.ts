@@ -4,7 +4,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bull';
 import { cluster } from 'radash';
 import { DEFAULT_AVATAR_URL, DEFAULT_BANNER_URL } from '../../util/constants';
-import { QueueTypes } from '../../util/enums';
+import { DataFetchType, QueueTypes } from '../../util/enums';
 import { AssetsRepository, UsersRepository, VaultsObjectsRepository } from '../postgres/repositories';
 import { GetUserOutput, UpdateUsersInput } from './dto';
 
@@ -45,13 +45,22 @@ export class UsersService {
   }
 
   public async getDefaultCreators(input: PaginationInput) {
-    const { pageNumber, take } = input;
-    const skip = (pageNumber - 1) * take;
-    const [creators, count] = await this.usersRepository.getAllCreators({ ...input, skip });
-    const totalPages = Math.ceil(count / take);
-    const hasPrev = pageNumber > 1;
-    const hasNext = pageNumber < totalPages;
-    return { creators, count, totalPages, hasNext, hasPrev };
+    switch (input.dataFetchType) {
+      case DataFetchType.Pagination: {
+        const { pageNumber, take } = input;
+        const skip = (pageNumber - 1) * take;
+        const [creators, count] = await this.usersRepository.getAllCreators({ ...input, skip });
+        const totalPages = Math.ceil(count / take);
+        const hasPrev = pageNumber > 1;
+        const hasNext = pageNumber < totalPages;
+        return { creators, count, totalPages, hasNext, hasPrev };
+      }
+
+      default: {
+        const [creators] = await this.usersRepository.getAllCreators(input);
+        return { creators };
+      }
+    }
   }
 
   public async handleUpdateCreator(input: UpdateUsersInput) {

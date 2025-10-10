@@ -1,7 +1,7 @@
 import { PaginationInput } from '@app/helpers';
 import { Injectable, Optional } from '@nestjs/common';
 import { EntityManager, EntityTarget, Repository } from 'typeorm';
-import { FileType } from '../../../util/enums';
+import { DataFetchType, FileType } from '../../../util/enums';
 import { DownloadStates } from '../../../util/enums/download-state';
 import { GetAllObjectsCountOutput } from '../../vaults/dto';
 import { VaultObjectsEntity } from '../entities';
@@ -141,19 +141,39 @@ export class VaultsObjectsRepository extends Repository<VaultObjectsEntity> {
   }
 
   public async getVaultObjectsByVaultId(input: PaginationInput) {
-    const { pageNumber, take } = input;
-    const skip = (pageNumber - 1) * take;
-    const [vaultObjects, count] = await this.findAndCount({
-      where: { vaultId: input.relatedEntityId },
-      relations: { asset: true },
-      take,
-      skip,
-      order: { createdAt: input.orderBy },
-    });
-    const totalPages = Math.ceil(count / take);
-    const hasPrev = pageNumber > 1;
-    const hasNext = pageNumber < totalPages;
+    switch (input.dataFetchType) {
+      case DataFetchType.Pagination: {
+        const { pageNumber, take } = input;
+        const skip = (pageNumber - 1) * take;
 
-    return { vaultObjects, count, totalPages, hasNext, hasPrev };
+        const [vaultObjects, count] = await this.findAndCount({
+          where: { vaultId: input.relatedEntityId },
+          relations: { asset: true, vault: { creatorProfile: { user: true } } },
+          take,
+          skip,
+          order: { createdAt: input.orderBy },
+        });
+
+        const totalPages = Math.ceil(count / take);
+        const hasPrev = pageNumber > 1;
+        const hasNext = pageNumber < totalPages;
+
+        return { vaultObjects, count, totalPages, hasNext, hasPrev };
+      }
+
+      default: {
+        const { skip, take } = input;
+
+        const [vaultObjects] = await this.findAndCount({
+          where: { vaultId: input.relatedEntityId },
+          relations: { asset: true, vault: { creatorProfile: { user: true } } },
+          take,
+          skip,
+          order: { createdAt: input.orderBy },
+        });
+
+        return { vaultObjects };
+      }
+    }
   }
 }

@@ -70,7 +70,7 @@ export class AssetsService {
 
     if (!relatedUserId) return [];
 
-    return await this.creatorAssetsRepository.getCreatorAssets(relatedUserId, { ...input, limit: 10 });
+    return await this.creatorAssetsRepository.getCreatorAssets(relatedUserId, input);
   }
 
   public async getAssetByVaultObjectId(vaultObjectId: string) {
